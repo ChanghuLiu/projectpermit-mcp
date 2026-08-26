@@ -188,8 +188,9 @@ def configure_x402(app: Any) -> None:
             mime_type="application/json",
             description=(
                 "Evidence-linked municipal construction permit/planning preflight for "
-                "Gatineau, Ottawa, Toronto and Mississauga. Returns deterministic rule "
-                "results with official-source evidence. Not municipal authorization or legal advice."
+                "Gatineau, Ottawa, Toronto, Mississauga, Laval and Longueuil. Returns "
+                "deterministic rule results with official-source evidence. Not municipal "
+                "authorization or legal advice."
             ),
             extensions={**discovery_extensions},
         )
