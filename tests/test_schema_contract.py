@@ -21,6 +21,10 @@ class SchemaContractTest(unittest.TestCase):
             {"jurisdiction": "ottawa_on", "project": {"family": "deck_porch", "deck_height_mm": 700, "deck_area_m2": 12, "deck_attached": True, "principal_access": False}},
             {"jurisdiction": "gatineau_qc", "project": {"family": "interior_renovation", "estimated_cost_cad": 10000, "structural_change": False}, "property": {"heritage": False, "piia": False}},
             {"jurisdiction": "gatineau_qc", "project": {"family": "addition", "floor_area_increase": True}},
+            {"jurisdiction": "toronto_on", "project": {"family": "window_door", "action": "replace_same_size", "single_dwelling_house": True, "structural_change": False, "new_exit": False}},
+            {"jurisdiction": "toronto_on", "project": {"family": "basement", "action": "finish_basement", "structural_change": False, "material_alteration": False, "dwelling_unit_change": False, "new_plumbing": False}},
+            {"jurisdiction": "mississauga_on", "project": {"family": "window_door", "action": "replace_same_size"}},
+            {"jurisdiction": "mississauga_on", "project": {"family": "deck_porch", "deck_height_mm": 605}},
         ]
 
     def test_sample_inputs_match_request_schema(self):
