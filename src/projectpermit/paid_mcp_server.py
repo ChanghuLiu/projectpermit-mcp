@@ -1,8 +1,8 @@
 """x402-native paid MCP transport for ProjectPermit.
 
-This server uses the official x402 Python MCP payment wrapper. The deterministic
-BuildRequirements engine remains payment-agnostic; payment is applied only at the
-MCP tool boundary.
+This server uses MCP Python SDK v2 plus the transport-agnostic x402 MCP payment
+wrapper. BuildRequirements remains payment-agnostic; payment is enforced only at
+the MCP tool boundary.
 """
 from __future__ import annotations
 
@@ -10,8 +10,8 @@ import json
 import os
 from typing import Any
 
-from mcp.server.fastmcp import Context, FastMCP
-from mcp.types import CallToolResult
+from mcp.server.mcpserver import Context, MCPServer
+from mcp.types import CallToolResult, TextContent
 
 from x402.extensions.bazaar import (
     DeclareMcpDiscoveryConfig,
@@ -24,7 +24,6 @@ from x402.mcp import (
     ResourceInfo,
     SyncPaymentWrapperConfig,
     create_payment_wrapper_sync,
-    wrap_fastmcp_tool_sync,
 )
 from x402.schemas import ResourceConfig
 from x402.server import x402ResourceServerSync
@@ -81,19 +80,40 @@ def _settings() -> dict[str, str]:
     }
 
 
-def build_paid_server() -> FastMCP:
+def _to_call_tool_result(result: MCPToolResult) -> CallToolResult:
+    """Bridge x402's transport-neutral MCP result into MCP SDK v2 types."""
+    content = []
+    for item in result.content:
+        if item.get("type") == "text":
+            content.append(TextContent(type="text", text=str(item.get("text", ""))))
+        else:
+            # x402 payment challenges and ProjectPermit responses are text today.
+            # Preserve any future unknown item without crashing the protocol call.
+            content.append(TextContent(type="text", text=json.dumps(item, ensure_ascii=False)))
+
+    return CallToolResult(
+        content=content,
+        is_error=result.is_error,
+        structured_content=result.structured_content,
+        _meta=result.meta or None,
+    )
+
+
+def build_paid_server() -> MCPServer:
     settings = _settings()
     if not settings["pay_to"]:
         raise RuntimeError("PROJECTPERMIT_X402_PAY_TO is required for paid MCP")
     if not settings["network"].startswith("eip155:"):
         raise RuntimeError("Phase 0 paid MCP supports EVM eip155:* networks only")
 
-    port = int(os.getenv("PORT") or os.getenv("PROJECTPERMIT_PAID_MCP_PORT") or "4022")
-    host = os.getenv(
-        "PROJECTPERMIT_PAID_MCP_HOST",
-        "0.0.0.0" if os.getenv("PORT") else "127.0.0.1",
+    server = MCPServer(
+        "ProjectPermit x402",
+        instructions=(
+            "Paid evidence-linked municipal construction permit preflight. "
+            "The check_project_requirements tool uses x402 USDC payment. "
+            "Results are preflight information, not municipal authorization."
+        ),
     )
-    server = FastMCP("ProjectPermit x402", host=host, port=port)
 
     facilitator = HTTPFacilitatorClientSync(
         FacilitatorConfig(url=settings["facilitator_url"])
@@ -120,13 +140,13 @@ def build_paid_server() -> FastMCP:
                 "Gatineau, Quebec and Ottawa, Ontario. Returns determination, reasons, "
                 "property flags, unresolved questions, and official-source evidence."
             ),
-            transport="sse",
+            transport="streamable-http",
             input_schema=INPUT_SCHEMA,
             example=EXAMPLE,
         )
     )
 
-    paid = create_payment_wrapper_sync(
+    wrapper = create_payment_wrapper_sync(
         resource_server,
         SyncPaymentWrapperConfig(
             accepts=accepts,
@@ -164,9 +184,12 @@ def build_paid_server() -> FastMCP:
             structured_content=result,
         )
 
-    paid_tool = wrap_fastmcp_tool_sync(paid, execute, tool_name=TOOL_NAME)
+    # create_payment_wrapper_sync returns a normal (args, extra) handler wrapper.
+    # The old x402 FastMCP adapter is intentionally not used: MCP SDK v2 renamed
+    # FastMCP to MCPServer, while the core x402 wrapper itself is version-neutral.
+    paid_tool = wrapper(execute)
 
-    @server.tool(name="projectpermit_info")
+    @server.tool()
     def projectpermit_info() -> dict[str, Any]:
         """Free discovery/status tool; does not perform a permit determination."""
         return {
@@ -178,7 +201,7 @@ def build_paid_server() -> FastMCP:
             "disclaimer": "Preflight information only; not municipal authorization.",
         }
 
-    @server.tool(name=TOOL_NAME)
+    @server.tool()
     def check_project_requirements(
         jurisdiction: str,
         project: dict[str, Any],
@@ -188,7 +211,8 @@ def build_paid_server() -> FastMCP:
         context: dict[str, Any] | None = None,
     ) -> CallToolResult:
         """Paid evidence-linked permit preflight. Requires x402 USDC payment."""
-        return paid_tool(
+        request_meta = dict(ctx.request_context.meta or {})
+        result = paid_tool(
             {
                 "jurisdiction": jurisdiction,
                 "project": project,
@@ -196,16 +220,27 @@ def build_paid_server() -> FastMCP:
                 "property": property or {},
                 "context": context or {},
             },
-            ctx,
+            {"_meta": request_meta, "toolName": TOOL_NAME},
         )
+        return _to_call_tool_result(result)
 
     return server
 
 
 def main() -> None:
-    server = build_paid_server()
-    # Official x402 Python MCP integration currently uses FastMCP's SSE adapter.
-    server.run(transport="sse")
+    railway_port = os.getenv("PORT")
+    host = os.getenv(
+        "PROJECTPERMIT_PAID_MCP_HOST",
+        "0.0.0.0" if railway_port else "127.0.0.1",
+    )
+    port = int(os.getenv("PROJECTPERMIT_PAID_MCP_PORT") or railway_port or "4022")
+    build_paid_server().run(
+        transport="streamable-http",
+        host=host,
+        port=port,
+        json_response=True,
+        stateless_http=True,
+    )
 
 
 if __name__ == "__main__":
