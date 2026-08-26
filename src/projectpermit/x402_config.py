@@ -2,11 +2,100 @@
 
 BuildRequirements remains payment-agnostic. This module is imported by the FastAPI
 transport and is a no-op unless PROJECTPERMIT_X402_ENABLED=true.
+
+The HTTP route also declares Bazaar discovery metadata. This is intentionally a
+compatibility/discovery twin of the native paid MCP tool: both surfaces execute the
+same deterministic ProjectPermit engine and use the same payment settings.
 """
 from __future__ import annotations
 
 import os
 from typing import Any
+
+
+HTTP_DISCOVERY_INPUT: dict[str, Any] = {
+    "jurisdiction": "ottawa_on",
+    "project": {"family": "window_door", "action": "replace_same_size"},
+    "property": {"heritage": False},
+    "resolve_address": False,
+}
+
+HTTP_DISCOVERY_INPUT_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "jurisdiction": {
+            "type": "string",
+            "enum": ["gatineau_qc", "ottawa_on"],
+            "description": "Phase 0 municipality identifier.",
+        },
+        "project": {
+            "type": "object",
+            "description": "Normalized project facts such as family, action, structural_change and estimated_cost_cad.",
+        },
+        "address": {
+            "type": ["string", "null"],
+            "description": "Optional civic address for address-aware preflight.",
+        },
+        "property": {
+            "type": "object",
+            "description": "Known property overlays/facts such as heritage or PIIA status.",
+        },
+        "context": {
+            "type": "object",
+            "description": "Optional rule-version or workflow context.",
+        },
+        "resolve_address": {
+            "type": "boolean",
+            "description": "Resolve the civic address against the supported municipal geocoder/GIS adapter.",
+        },
+    },
+    "required": ["jurisdiction", "project"],
+}
+
+# Keep the output declaration deliberately stable and minimal. The example shows a
+# representative successful result, while the schema only promises the durable
+# top-level contract needed by an autonomous buyer to understand the capability.
+HTTP_DISCOVERY_OUTPUT_EXAMPLE: dict[str, Any] = {
+    "jurisdiction": {"country": "CA", "province": "ON", "municipality": "Ottawa"},
+    "determination": "LIKELY_NOT_REQUIRED",
+    "requirements": [
+        {
+            "type": "building_permit",
+            "status": "LIKELY_NOT_REQUIRED",
+            "rule_id": "OTT-WIN-002",
+        }
+    ],
+    "confidence": "HIGH",
+    "engine_version": "phase0-0.1.0",
+}
+
+HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "jurisdiction": {"type": "object"},
+        "determination": {
+            "type": "string",
+            "enum": [
+                "LIKELY_REQUIRED",
+                "LIKELY_NOT_REQUIRED",
+                "ADDITIONAL_REVIEW_REQUIRED",
+                "MUNICIPAL_CONFIRMATION_REQUIRED",
+            ],
+        },
+        "requirements": {"type": "array"},
+        "confidence": {"type": "string"},
+        "disclaimer": {"type": "string"},
+        "engine_version": {"type": "string"},
+        "address_context": {"type": "object"},
+    },
+    "required": [
+        "jurisdiction",
+        "determination",
+        "requirements",
+        "confidence",
+        "engine_version",
+    ],
+}
 
 
 def _truthy(value: str | None) -> bool:
@@ -42,6 +131,11 @@ def configure_x402(app: Any) -> None:
         return
 
     try:
+        from x402.extensions.bazaar import (
+            OutputConfig,
+            bazaar_resource_server_extension,
+            declare_discovery_extension,
+        )
         from x402.http import FacilitatorConfig, HTTPFacilitatorClient, PaymentOption
         from x402.http.middleware.fastapi import PaymentMiddlewareASGI
         from x402.http.types import RouteConfig
@@ -49,7 +143,7 @@ def configure_x402(app: Any) -> None:
         from x402.server import x402ResourceServer
     except ImportError as exc:  # pragma: no cover - optional deployment dependency
         raise RuntimeError(
-            'x402 is enabled but the Python x402 FastAPI extra is missing. Install: pip install "x402[fastapi,evm]"'
+            'x402 is enabled but the Python x402 FastAPI/EVM extension support is missing. Install: pip install "x402[fastapi,evm]"'
         ) from exc
 
     facilitator = HTTPFacilitatorClient(FacilitatorConfig(url=settings["facilitator_url"]))
@@ -62,6 +156,20 @@ def configure_x402(app: Any) -> None:
         raise RuntimeError(
             "Phase 0 x402 transport currently enables EVM exact scheme only; configure an eip155:* network"
         )
+
+    # Bazaar's HTTP discovery declaration needs the resource-server extension so
+    # middleware can enrich the declaration with the actual request method.
+    resource_server.register_extension(bazaar_resource_server_extension)
+
+    discovery_extensions = declare_discovery_extension(
+        input=HTTP_DISCOVERY_INPUT,
+        input_schema=HTTP_DISCOVERY_INPUT_SCHEMA,
+        body_type="json",
+        output=OutputConfig(
+            example=HTTP_DISCOVERY_OUTPUT_EXAMPLE,
+            schema=HTTP_DISCOVERY_OUTPUT_SCHEMA,
+        ),
+    )
 
     routes = {
         "POST /v1/check-project-requirements": RouteConfig(
@@ -76,8 +184,10 @@ def configure_x402(app: Any) -> None:
             mime_type="application/json",
             description=(
                 "Evidence-linked municipal construction permit/planning preflight for "
-                "Gatineau and Ottawa. Not municipal authorization or legal advice."
+                "Gatineau, Quebec and Ottawa, Ontario. Returns deterministic rule results "
+                "with official-source evidence. Not municipal authorization or legal advice."
             ),
+            extensions={**discovery_extensions},
         )
     }
     app.add_middleware(PaymentMiddlewareASGI, routes=routes, server=resource_server)
