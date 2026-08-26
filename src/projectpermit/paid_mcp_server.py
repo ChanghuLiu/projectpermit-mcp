@@ -2,7 +2,7 @@
 
 This server uses MCP Python SDK v2 plus the transport-agnostic x402 MCP payment
 wrapper. BuildRequirements remains payment-agnostic; payment is enforced only at
-the MCP tool boundary.
+the MCP tool boundary. HTTP, free MCP and paid MCP share the same preflight service.
 """
 from __future__ import annotations
 
@@ -28,7 +28,8 @@ from x402.mcp import (
 from x402.schemas import ResourceConfig
 from x402.server import x402ResourceServerSync
 
-from .jurisdiction_router import SUPPORTED_JURISDICTIONS, evaluate_project
+from .jurisdiction_router import SUPPORTED_JURISDICTIONS
+from .preflight_service import run_preflight
 
 
 TOOL_NAME = "check_project_requirements"
@@ -57,6 +58,11 @@ INPUT_SCHEMA: dict[str, Any] = {
             "type": "object",
             "description": "Optional rule-version or workflow context.",
         },
+        "resolve_address": {
+            "type": "boolean",
+            "description": "When true, enrich the request from first-party municipal address/GIS data before rule evaluation.",
+            "default": False,
+        },
     },
     "required": ["jurisdiction", "project"],
     "additionalProperties": False,
@@ -66,6 +72,7 @@ EXAMPLE = {
     "jurisdiction": "ottawa_on",
     "project": {"family": "window_door", "action": "replace_same_size"},
     "property": {"heritage": False},
+    "resolve_address": False,
 }
 
 
@@ -162,14 +169,16 @@ def build_paid_server() -> MCPServer:
     )
 
     def execute(args: dict[str, Any], _: Any) -> MCPToolResult:
-        payload = {
-            "jurisdiction": args["jurisdiction"],
-            "project": args["project"],
-            "address": args.get("address"),
-            "property": args.get("property") or {},
-            "context": args.get("context") or {},
-        }
-        result = evaluate_project(payload)
+        result = run_preflight(
+            {
+                "jurisdiction": args["jurisdiction"],
+                "project": args["project"],
+                "address": args.get("address"),
+                "property": args.get("property") or {},
+                "context": args.get("context") or {},
+                "resolve_address": bool(args.get("resolve_address", False)),
+            }
+        )
         return MCPToolResult(
             content=[{"type": "text", "text": json.dumps(result, ensure_ascii=False)}],
             structured_content=result,
@@ -186,6 +195,7 @@ def build_paid_server() -> MCPServer:
             "price": settings["price"],
             "network": settings["network"],
             "jurisdictions": list(SUPPORTED_JURISDICTIONS),
+            "address_resolution": True,
             "disclaimer": "Preflight information only; not municipal authorization.",
         }
 
@@ -197,6 +207,7 @@ def build_paid_server() -> MCPServer:
         address: str | None = None,
         property: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
+        resolve_address: bool = False,
     ) -> CallToolResult:
         """Paid evidence-linked permit preflight. Requires x402 USDC payment."""
         request_meta = dict(ctx.request_context.meta or {})
@@ -207,6 +218,7 @@ def build_paid_server() -> MCPServer:
                 "address": address,
                 "property": property or {},
                 "context": context or {},
+                "resolve_address": resolve_address,
             },
             {"_meta": request_meta, "toolName": TOOL_NAME},
         )
