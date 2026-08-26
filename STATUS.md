@@ -4,7 +4,7 @@ Updated: 2026-08-26
 
 ## Current state
 
-**Phase 0 core + x402 paid MCP E2E: PASS.**
+**Phase 0 testnet discovery / market-validation release readiness: PASS.**
 
 ProjectPermit is deployed as an evidence-linked, deterministic municipal permit preflight for Gatineau, Quebec and Ottawa, Ontario. The rules engine does not call an LLM and the payment layer is kept outside BuildRequirements.
 
@@ -30,6 +30,8 @@ ProjectPermit is deployed as an evidence-linked, deterministic municipal permit 
 - Docker + GitHub Actions CI
 - MCP SDK v2 / x402 settlement-metadata compatibility bridge and regression test
 - facilitator capability probe and Bazaar catalog lookup scripts
+- GoPlausible Bazaar indexing proven end to end
+- canonical HTTPS Bazaar resource URL proven after settlement
 
 ## Live services
 
@@ -42,7 +44,7 @@ Paid MCP exposes:
 - `projectpermit_info` — free discovery/status
 - `check_project_requirements` — x402-paid permit preflight
 
-Current test price: **$0.01 USDC per paid tool call** on Base Sepolia.
+Current test price: **$0.01 USDC per paid tool/API call** on Base Sepolia.
 
 ## Verification
 
@@ -56,39 +58,53 @@ The repository contains the deterministic golden corpus and automated tests. Cur
 - Docker build and live container `/health`
 - public free MCP connection/tool invocation
 - public paid MCP unpaid challenge
+- public HTTP Bazaar unpaid challenge
 - facilitator capability matrix
-- read-only Bazaar catalog state
+- read-only Bazaar catalog state, including canonical HTTPS listing
 
-A real buyer-side x402 MCP call has completed successfully through the public Railway service. Server logs independently confirmed successful facilitator `/verify` and `/settle` calls and the deterministic tool returned a real Ottawa preflight result.
+Real buyer-side x402 calls have completed successfully through the public Railway services. Server logs independently confirmed the expected `402 -> 200` HTTP flow and successful facilitator verification/settlement. The deterministic engine returned the expected Ottawa preflight result.
 
-## Bazaar canary
+Final canonical-HTTPS HTTP settlement transaction:
 
-The x402.org public testnet facilitator remains a known-good Base Sepolia payment facilitator, but its public endpoint does not expose `/discovery/resources` or `/discovery/search`.
+`0x2070aa9a55287162876d2d53a1f1ebe865ba912d7dfc66c75173b88967972950`
 
-For the paid MCP Bazaar canary, `projectpermit-x402-mcp` is currently configured with:
+## Bazaar result
+
+The x402.org public testnet facilitator remains a known-good Base Sepolia payment facilitator, but its public endpoint does not expose the Bazaar listing endpoints used by this canary.
+
+For Bazaar discovery, ProjectPermit uses:
 
 `https://facilitator.goplausible.xyz`
 
-Free capability probes confirmed that this facilitator:
+The final read-only catalog verification reports:
 
-- supports x402 v2 `exact` on Base Sepolia
-- exposes `/discovery/resources`
-- accepts the same paid MCP challenge shape used by ProjectPermit
-- allows the ProjectPermit paid MCP service to initialize and serve its x402 challenge normally
+- catalog total: **1682**
+- ProjectPermit matches: **2**
+- canonical HTTPS matches: **1**
+- canonical resource: `https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements`
+- method: `POST`
+- price: `10000` USDC atomic units = **$0.01 test USDC**
+- network: `eip155:84532`
+- scheme: `exact`
+- canonical listing `settleCount`: **1**
+- status: **`FOUND_CANONICAL_HTTPS`**
 
-The pre-settlement catalog snapshot reports **ProjectPermit absent**, which is expected before the first ProjectPermit settlement through this Bazaar-capable facilitator.
+A stale pre-fix `http://` catalog row also remains in the external facilitator catalog. It is not the canonical ProjectPermit resource and is retained by the facilitator as historical discovery state; the canonical HTTPS row is present and is the release gate.
 
 ## Known unresolved items
 
-1. **Bazaar indexing:** one final 0.01 Base Sepolia test-USDC MCP settlement through the current GoPlausible canary is required, followed by a read-only catalog lookup to prove indexing end to end.
-2. **Gatineau PIIA/heritage:** public municipal mapping confirms the concept/layers, but a stable unauthenticated machine endpoint has not yet been locked. Unknown overlay state must never be mapped to `false`.
-3. **Mainnet:** intentionally disabled until testnet plumbing and product-value validation are complete.
+1. **Gatineau PIIA/heritage:** public municipal mapping confirms the concept/layers, but a stable unauthenticated machine endpoint has not yet been locked. Unknown overlay state must never be mapped to `false`.
+2. **Mainnet:** intentionally disabled until testnet discovery and product-value validation produce enough demand evidence.
+3. **External Bazaar stale row:** the pre-fix `http://` discovery row remains alongside the canonical HTTPS row. This is external catalog hygiene, not a blocker for Phase 0.
 
-## Next gate
+## Next phase
 
-1. Perform exactly one paid MCP call through the current GoPlausible canary.
-2. Confirm `/verify` and `/settle` in Railway logs.
-3. Confirm ProjectPermit appears in the Bazaar `/discovery/resources` catalog and inspect its discovery metadata.
-4. Mark Phase 0 release readiness complete if indexing succeeds.
+Phase 0 is complete for **testnet discovery / market validation**. The next work should focus on demand and market size rather than more payment plumbing:
+
+1. validate that external agents can discover and choose the capability from Bazaar,
+2. measure discovery impressions / calls / paid-call conversion where observable,
+3. expand the highest-value jurisdiction/project families only after demand evidence,
+4. estimate realistic monthly paid API/MCP calls and TAM/SAM/SOM before mainnet pricing,
+5. keep mainnet payments blocked until product-value validation passes.
 
 No additional paid calls should be made merely for smoke testing unless a regression specifically requires them.
