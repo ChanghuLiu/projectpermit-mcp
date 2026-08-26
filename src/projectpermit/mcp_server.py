@@ -1,14 +1,14 @@
 """Standard MCP transport for ProjectPermit.
 
-Payment is deliberately not embedded here in Phase 0. The same engine is exposed by
-FastAPI so x402 payment enforcement can wrap the paid HTTP resource independently.
+Payment is deliberately not embedded here. The same deterministic jurisdiction
+router is exposed by FastAPI and the paid MCP transport.
 """
 from __future__ import annotations
 
 import os
 from typing import Any
 
-from .engine import evaluate_project
+from .jurisdiction_router import SUPPORTED_JURISDICTIONS, evaluate_project
 
 
 def build_server():
@@ -38,7 +38,7 @@ def build_server():
     ) -> dict[str, Any]:
         """Return evidence-linked permit/planning preflight requirements.
 
-        Supported Phase 0 jurisdictions are `gatineau_qc` and `ottawa_on`.
+        Supported jurisdictions include Gatineau, Ottawa, Toronto and Mississauga.
         The tool is deterministic and does not perform natural-language scope extraction.
         """
         return evaluate_project(
