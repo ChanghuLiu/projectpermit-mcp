@@ -25,9 +25,11 @@ class ApiSmokeTest(unittest.TestCase):
             },
             set(jurisdictions),
         )
-        for jurisdiction in ('gatineau_qc', 'ottawa_on', 'toronto_on', 'mississauga_on'):
+        for jurisdiction in (
+            'gatineau_qc', 'ottawa_on', 'toronto_on', 'mississauga_on', 'vancouver_bc',
+        ):
             self.assertTrue(jurisdictions[jurisdiction]['address_resolution'])
-        for jurisdiction in ('laval_qc', 'longueuil_qc', 'vancouver_bc'):
+        for jurisdiction in ('laval_qc', 'longueuil_qc'):
             self.assertFalse(jurisdictions[jurisdiction]['address_resolution'])
         self.assertEqual(8, len(payload['project_families']))
 
