@@ -14,18 +14,8 @@ URL = os.getenv(
 )
 
 CASES = [
-    (
-        "ottawa_on",
-        {"family": "window_door", "action": "replace_same_size"},
-        {"heritage": False},
-        "LIKELY_NOT_REQUIRED",
-    ),
-    (
-        "gatineau_qc",
-        {"family": "addition", "floor_area_increase": True},
-        {},
-        "REQUIRED",
-    ),
+    ("ottawa_on", {"family": "window_door", "action": "replace_same_size"}, {"heritage": False}, "LIKELY_NOT_REQUIRED"),
+    ("gatineau_qc", {"family": "addition", "floor_area_increase": True}, {}, "REQUIRED"),
     (
         "toronto_on",
         {
@@ -38,24 +28,10 @@ CASES = [
         {},
         "LIKELY_NOT_REQUIRED",
     ),
-    (
-        "mississauga_on",
-        {"family": "window_door", "action": "replace_same_size"},
-        {},
-        "LIKELY_NOT_REQUIRED",
-    ),
-    (
-        "laval_qc",
-        {"family": "window_door", "action": "replace_same_size"},
-        {"piia": False},
-        "LIKELY_NOT_REQUIRED",
-    ),
-    (
-        "longueuil_qc",
-        {"family": "window_door", "action": "enlarge_existing_opening"},
-        {},
-        "REQUIRED",
-    ),
+    ("mississauga_on", {"family": "window_door", "action": "replace_same_size"}, {}, "LIKELY_NOT_REQUIRED"),
+    ("laval_qc", {"family": "window_door", "action": "replace_same_size"}, {"piia": False}, "LIKELY_NOT_REQUIRED"),
+    ("longueuil_qc", {"family": "window_door", "action": "enlarge_existing_opening"}, {}, "REQUIRED"),
+    ("vancouver_bc", {"family": "interior_renovation", "action": "painting"}, {}, "LIKELY_NOT_REQUIRED"),
 ]
 
 
@@ -86,11 +62,7 @@ async def main() -> None:
             for jurisdiction, project, property_facts, expected in CASES:
                 result = await session.call_tool(
                     "check_project_requirements",
-                    {
-                        "jurisdiction": jurisdiction,
-                        "project": project,
-                        "property": property_facts,
-                    },
+                    {"jurisdiction": jurisdiction, "project": project, "property": property_facts},
                 )
                 if result.is_error:
                     raise SystemExit(f"MCP tool returned error for {jurisdiction}: {result}")
@@ -103,7 +75,7 @@ async def main() -> None:
                         f"Unexpected determination for {jurisdiction}: expected {expected}, got {actual}: {payload}"
                     )
 
-            print("remote_mcp_six_jurisdictions=PASS")
+            print("remote_mcp_seven_jurisdictions=PASS")
             print("remote_mcp_smoke=PASS")
 
 
