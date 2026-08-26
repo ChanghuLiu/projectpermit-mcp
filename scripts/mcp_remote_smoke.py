@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 
 from mcp import ClientSession
@@ -11,6 +12,50 @@ URL = os.getenv(
     "PROJECTPERMIT_MCP_URL",
     "https://projectpermit-mcp-production.up.railway.app/mcp",
 )
+
+CASES = [
+    (
+        "ottawa_on",
+        {"family": "window_door", "action": "replace_same_size"},
+        {"heritage": False},
+        "LIKELY_NOT_REQUIRED",
+    ),
+    (
+        "gatineau_qc",
+        {"family": "addition", "floor_area_increase": True},
+        {},
+        "REQUIRED",
+    ),
+    (
+        "toronto_on",
+        {
+            "family": "window_door",
+            "action": "replace_same_size",
+            "single_dwelling_house": True,
+            "structural_change": False,
+            "new_exit": False,
+        },
+        {},
+        "LIKELY_NOT_REQUIRED",
+    ),
+    (
+        "mississauga_on",
+        {"family": "window_door", "action": "replace_same_size"},
+        {},
+        "LIKELY_NOT_REQUIRED",
+    ),
+]
+
+
+def _structured_or_text(result):
+    structured = getattr(result, "structured_content", None)
+    if structured:
+        return structured
+    rendered = "\n".join(getattr(block, "text", "") for block in result.content)
+    try:
+        return json.loads(rendered)
+    except json.JSONDecodeError:
+        return {"_rendered": rendered}
 
 
 async def main() -> None:
@@ -26,30 +71,27 @@ async def main() -> None:
             if "check_project_requirements" not in names:
                 raise SystemExit("ProjectPermit tool not found")
 
-            result = await session.call_tool(
-                "check_project_requirements",
-                {
-                    "jurisdiction": "ottawa_on",
-                    "project": {
-                        "family": "window_door",
-                        "action": "replace_same_size",
+            for jurisdiction, project, property_facts, expected in CASES:
+                result = await session.call_tool(
+                    "check_project_requirements",
+                    {
+                        "jurisdiction": jurisdiction,
+                        "project": project,
+                        "property": property_facts,
                     },
-                    "property": {"heritage": False},
-                },
-            )
-            if result.is_error:
-                raise SystemExit(f"MCP tool returned error: {result}")
+                )
+                if result.is_error:
+                    raise SystemExit(f"MCP tool returned error for {jurisdiction}: {result}")
+                payload = _structured_or_text(result)
+                actual = payload.get("determination")
+                municipality = (payload.get("jurisdiction") or {}).get("municipality")
+                print(f"case={jurisdiction} municipality={municipality} determination={actual}")
+                if actual != expected:
+                    raise SystemExit(
+                        f"Unexpected determination for {jurisdiction}: expected {expected}, got {actual}: {payload}"
+                    )
 
-            rendered = "\n".join(
-                getattr(block, "text", "") for block in result.content
-            )
-            print(rendered)
-            if "LIKELY_NOT_REQUIRED" not in rendered:
-                structured = getattr(result, "structured_content", None)
-                print(f"structured={structured}")
-                if not structured or structured.get("determination") != "LIKELY_NOT_REQUIRED":
-                    raise SystemExit("Unexpected ProjectPermit determination")
-
+            print("remote_mcp_four_jurisdictions=PASS")
             print("remote_mcp_smoke=PASS")
 
 
