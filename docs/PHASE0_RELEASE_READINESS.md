@@ -6,7 +6,13 @@ ProjectPermit Phase 0 is intended to prove three things before municipality expa
 
 1. deterministic permit preflight can be delivered with official evidence,
 2. an external agent can call it through MCP,
-3. a paid MCP call can settle through x402 without putting payment logic inside BuildRequirements.
+3. a paid MCP/API call can settle through x402 without putting payment logic inside BuildRequirements.
+
+## Release decision
+
+**PASS — Phase 0 is release-ready for testnet discovery / market validation.**
+
+This does **not** authorize mainnet payments, expanded legal claims, or presentation as an official municipality service.
 
 ## Gate matrix
 
@@ -27,12 +33,12 @@ ProjectPermit Phase 0 is intended to prove three things before municipality expa
 | x402 unpaid challenge | PASS | Remote paid-MCP challenge returns v2 payment requirements |
 | Paid HTTP x402 E2E | PASS | Real Base Sepolia buyer call + server verification/settlement |
 | Paid MCP x402 E2E | PASS | Real Base Sepolia MCP buyer call + deterministic tool result |
-| Server-side x402 `/verify` | PASS | Railway logs confirmed facilitator HTTP 200 |
-| Server-side x402 `/settle` | PASS | Railway logs confirmed facilitator HTTP 200 |
+| Server-side x402 `/verify` | PASS | Railway logs confirmed facilitator HTTP 200 in paid runs |
+| Server-side x402 `/settle` | PASS | Railway logs confirmed facilitator HTTP 200 in paid runs |
 | MCP v2 settlement receipt compatibility | PASS | Compatibility shim + regression smoke |
-| Bazaar-capable facilitator canary | PASS | GoPlausible supports Base Sepolia exact v2 + discovery listing; paid MCP service boots and challenges correctly |
-| ProjectPermit pre-index Bazaar snapshot | PASS | Read-only catalog lookup reports absent before first canary settlement |
-| ProjectPermit indexed in Bazaar | PENDING | Requires exactly one paid MCP settlement through current GoPlausible canary, then read-only lookup |
+| Bazaar-capable facilitator canary | PASS | GoPlausible supports Base Sepolia exact v2 + discovery listing |
+| ProjectPermit Bazaar indexing | PASS | Catalog grew and ProjectPermit appeared after settlement |
+| Canonical HTTPS Bazaar resource | PASS | `FOUND_CANONICAL_HTTPS`; exact public HTTPS POST URL present |
 | Gatineau stable PIIA/heritage machine endpoint | OPEN / NON-BLOCKING | Unknown remains unknown; no unsafe false default |
 | Mainnet payments | INTENTIONALLY BLOCKED | Do not enable before product-value validation |
 
@@ -43,24 +49,53 @@ ProjectPermit Phase 0 is intended to prove three things before municipality expa
 
 The paid MCP tool is `check_project_requirements`; `projectpermit_info` remains free.
 
-## Current payment canary
+## Current test payment profile
 
 - Network: Base Sepolia — `eip155:84532`
 - Asset: Circle test USDC
 - Price: `$0.01`
-- Facilitator: `https://facilitator.goplausible.xyz`
+- Facilitator used for Bazaar validation: `https://facilitator.goplausible.xyz`
 - Payment recipient: configured as a public EVM address in Railway; payer secrets never belong in the repository or server environment.
 
-## Release decision rule
+## Final Bazaar evidence
 
-Phase 0 can be marked **release-ready for testnet discovery/market validation** when the final Bazaar-indexing gate passes.
+After the canonical HTTPS fix and one final real paid HTTP call:
 
-Passing Phase 0 does **not** authorize mainnet, expanded legal claims, or presentation as an official municipality service. Those remain separate product decisions.
+- Railway independently recorded `POST` 402 followed by `POST` 200.
+- Buyer received `settlement_success=True`.
+- Settlement transaction: `0x2070aa9a55287162876d2d53a1f1ebe865ba912d7dfc66c75173b88967972950`.
+- GoPlausible catalog total reached **1682**.
+- ProjectPermit catalog matches: **2**.
+- Canonical HTTPS matches: **1**.
+- Canonical resource URL: `https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements`.
+- Canonical row method: `POST`.
+- Canonical row network: `eip155:84532`.
+- Canonical row price: `10000` USDC atomic units.
+- Canonical row scheme: `exact`.
+- Canonical row `settleCount`: **1**.
+- Lookup status: **`projectpermit_bazaar=FOUND_CANONICAL_HTTPS`**.
 
-## Final remaining procedure
+The external catalog still contains one stale pre-fix `http://` row. Because the canonical HTTPS row is separately present and validated, this is not a Phase 0 blocker.
 
-1. Make one and only one paid MCP test call through the current canary.
-2. Confirm facilitator `/verify` and `/settle` return success in Railway logs.
-3. Run the read-only ProjectPermit Bazaar lookup.
-4. Inspect the catalog row for the paid MCP discovery metadata and settlement count.
-5. If present, mark the Bazaar gate PASS and tag the Phase 0 testnet release.
+## Phase 0 conclusion
+
+The product now has evidence for the full testnet path:
+
+**external buyer / agent -> discovery -> x402 challenge -> payment authorization -> facilitator verification -> deterministic ProjectPermit execution -> settlement -> structured result -> Bazaar listing**
+
+Phase 0 payment plumbing should now be treated as complete. Further paid smoke calls are discouraged unless a specific regression requires them.
+
+## Next gate: market validation
+
+The next decision is no longer technical transport readiness. It is whether the capability can generate enough repeat paid calls to justify expansion.
+
+Required next-phase evidence:
+
+1. external-agent discovery and selection behavior,
+2. paid call frequency per customer/workflow,
+3. realistic target-agent / target-enterprise count,
+4. jurisdiction and project-family expansion demand,
+5. TAM / SAM / SOM and potential monthly API/MCP calls,
+6. willingness to pay at realistic mainnet prices.
+
+Mainnet remains intentionally blocked until that evidence is strong enough.
