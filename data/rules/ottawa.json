@@ -1,0 +1,14 @@
+{
+  "jurisdiction": "ottawa_on",
+  "version": "phase0-0.1.0",
+  "important_boundaries": [
+    "Same-size window/door replacement is listed as permit-exempt; new/enlarged/relocated openings require a building permit.",
+    "Structural alterations including adding/removing walls require a permit.",
+    "Plumbing alterations/additions/extensions require a permit, except replacing existing fixtures.",
+    "Attached/adjacent deck over 600 mm above grade requires a permit regardless of area; elevated principal-access deck requires a permit.",
+    "Qualifying low-rise residential sheds/gazebos/pergolas/similar structures up to 15 m2 can use the 2025 A-001 exemption if independent, <=1 storey, no plumbing, no heating, and personal ancillary use only.",
+    "Designated heritage / Heritage District Overlay properties are not subject to normal permit exemptions and require City review.",
+    "Applications deemed complete on/after 2026-03-11 require dual zoning review under 2008-250 and 2026-50 with the most restrictive provisions applying; some 2026-50 provisions remain under appeal."
+  ],
+  "source_ids": ["OTT_GENERAL", "OTT_EXEMPT", "OTT_DECK", "OTT_ACCESSORY", "OTT_ADDITION", "OTT_ADU", "OTT_BASEMENT", "OTT_ZONING_2026", "OTT_ZONING_APPEALS", "OTT_GIS_2026", "OTT_GIS_2008"]
+}
