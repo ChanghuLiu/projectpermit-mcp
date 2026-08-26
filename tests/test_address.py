@@ -5,6 +5,7 @@ from projectpermit.address import (
     GatineauAddressAdapter,
     TorontoAddressAdapter,
 )
+from projectpermit.mississauga_address import MississaugaAddressAdapter
 
 
 class AddressAdapterTest(unittest.TestCase):
@@ -100,6 +101,57 @@ class AddressAdapterTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             TorontoAddressAdapter(fake).resolve("100 Imaginary St, Toronto, ON")
+
+    def test_mississauga_adapter_uses_official_address_zoning_and_heritage_layers(self):
+        calls = []
+
+        def fake(url):
+            calls.append(url)
+            if "/Address/FeatureServer/0/query" in url:
+                return {
+                    "features": [{
+                        "attributes": {
+                            "ADDR_ID": 456,
+                            "FULLNAME": "300 CITY CENTRE DR",
+                            "CITY_PIN": 999,
+                            "WARD": "4",
+                            "LATITUDE": 43.5890,
+                            "LONGITUDE": -79.6441,
+                        },
+                        "geometry": {"x": -79.6441, "y": 43.5890},
+                    }]
+                }
+            if "/Mississauga_Zoning_Bylaw/FeatureServer/0/query" in url:
+                return {"features": [{"attributes": {"ZONE_CODE": "CC1", "ZONE_CATEGORY": "City Centre"}}]}
+            if "/City_Heritage_Properties/FeatureServer/5/query" in url:
+                return {"features": [{"attributes": {"HERITAGE_STATUS": "Listed"}}]}
+            if "/Property_Search/FeatureServer/0/query" in url:
+                return {"features": [{"attributes": {"CITY_PIN": 999, "ROLL_NO": "R1", "TERA_PIN": "T1"}}]}
+            return {"features": []}
+
+        out = MississaugaAddressAdapter(fake).resolve("300 City Centre Dr, Mississauga, ON")
+        self.assertEqual("mississauga_on", out["jurisdiction"])
+        self.assertEqual("300 CITY CENTRE DR", out["address_resolution"]["matched_address"])
+        self.assertEqual(100.0, out["address_resolution"]["score"])
+        self.assertEqual("CC1", out["property"]["zoning_code"])
+        self.assertTrue(out["property"]["heritage"])
+        self.assertEqual(4, len(calls))
+        self.assertTrue(any("UPPER%28FULLNAME%29" in url for url in calls))
+        self.assertTrue(any("CITY_PIN+%3D+999" in url for url in calls))
+
+    def test_mississauga_adapter_fails_closed_on_ambiguous_address(self):
+        def fake(url):
+            if "/Address/FeatureServer/0/query" in url:
+                return {
+                    "features": [
+                        {"attributes": {"FULLNAME": "10 MAIN ST", "LONGITUDE": -79.6, "LATITUDE": 43.6}},
+                        {"attributes": {"FULLNAME": "10 MAIN ST", "LONGITUDE": -79.6, "LATITUDE": 43.6}},
+                    ]
+                }
+            return {"features": []}
+
+        with self.assertRaises(ValueError):
+            MississaugaAddressAdapter(fake).resolve("10 Main St, Mississauga, ON")
 
 
 if __name__ == "__main__":
