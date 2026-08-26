@@ -88,6 +88,20 @@ uvicorn projectpermit.api:app --host 0.0.0.0 --port 8000
 
 The protected resource is `POST /v1/check-project-requirements`. `/health` remains free for deployment monitoring.
 
+### Real paid smoke test
+
+Run this only on your own machine. Keep the payer private key local; never paste or commit it.
+
+```bash
+python -m venv .venv-buyer
+source .venv-buyer/bin/activate
+pip install -e '.[buyer]'
+export EVM_PRIVATE_KEY='0x...'
+python scripts/x402_paid_smoke.py
+```
+
+The payer wallet must have enough **Base Sepolia USDC** for the `$0.01` test payment. A successful run should return HTTP 200 and a decoded settlement response. The server itself never needs the payer private key.
+
 ## Phase 0 safety boundary
 
 Determinations intentionally use preflight language such as `LIKELY_REQUIRED`, `LIKELY_NOT_REQUIRED`, `ADDITIONAL_REVIEW_REQUIRED`, and `MUNICIPAL_CONFIRMATION_REQUIRED` where uncertainty exists. The engine should not be presented as a municipality, permit issuer, lawyer, architect, or engineer.
