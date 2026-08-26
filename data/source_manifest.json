@@ -26,6 +26,10 @@
     {"source_id":"TOR_ZONING_PROPERTY","authority":"City of Toronto","kind":"official_gis","criticality":"critical","url":"https://gis.toronto.ca/arcgis/rest/services/cot_geospatial11/MapServer/18"},
     {"source_id":"TOR_HERITAGE_DISTRICT","authority":"City of Toronto","kind":"official_gis","criticality":"high","url":"https://gis.toronto.ca/arcgis/rest/services/cot_geospatial11/MapServer/40"},
     {"source_id":"TOR_HERITAGE_REGISTER","authority":"City of Toronto","kind":"official_gis","criticality":"high","url":"https://gis.toronto.ca/arcgis/rest/services/cot_geospatial11/MapServer/56"},
-    {"source_id":"MIS_GENERAL","authority":"City of Mississauga","kind":"official_guidance","criticality":"critical","url":"https://www.mississauga.ca/services-and-programs/building-and-renovating/building-permits/when-a-building-permit-is-required/"}
+    {"source_id":"MIS_GENERAL","authority":"City of Mississauga","kind":"official_guidance","criticality":"critical","url":"https://www.mississauga.ca/services-and-programs/building-and-renovating/building-permits/when-a-building-permit-is-required/"},
+    {"source_id":"MIS_ADDRESS","authority":"City of Mississauga","kind":"official_gis","criticality":"critical","url":"https://services6.arcgis.com/hM5ymMLbxIyWTjn2/ArcGIS/rest/services/Address/FeatureServer/0"},
+    {"source_id":"MIS_ZONING","authority":"City of Mississauga","kind":"official_gis","criticality":"critical","url":"https://services6.arcgis.com/hM5ymMLbxIyWTjn2/ArcGIS/rest/services/Mississauga_Zoning_Bylaw/FeatureServer/0"},
+    {"source_id":"MIS_HERITAGE","authority":"City of Mississauga","kind":"official_gis","criticality":"high","url":"https://services6.arcgis.com/hM5ymMLbxIyWTjn2/ArcGIS/rest/services/City_Heritage_Properties/FeatureServer/5"},
+    {"source_id":"MIS_PROPERTY","authority":"City of Mississauga","kind":"official_gis","criticality":"high","url":"https://services6.arcgis.com/hM5ymMLbxIyWTjn2/ArcGIS/rest/services/Property_Search/FeatureServer/0"}
   ]
 }
