@@ -29,7 +29,7 @@ from x402.schemas import ResourceConfig
 from x402.server import x402ResourceServerSync
 
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
-from .preflight_service import run_preflight
+from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 
 
 TOOL_NAME = "check_project_requirements"
@@ -60,7 +60,7 @@ INPUT_SCHEMA: dict[str, Any] = {
         },
         "resolve_address": {
             "type": "boolean",
-            "description": "When true, enrich the request from first-party municipal address/GIS data before rule evaluation.",
+            "description": "When true, enrich the request from first-party municipal address/GIS data before rule evaluation where supported.",
             "default": False,
         },
     },
@@ -142,8 +142,8 @@ def build_paid_server() -> MCPServer:
             tool_name=TOOL_NAME,
             description=(
                 "Evidence-linked municipal construction permit/planning preflight for "
-                "Gatineau, Ottawa, Toronto and Mississauga. Returns deterministic "
-                "requirements and official-source evidence."
+                "Gatineau, Ottawa, Toronto, Mississauga, Laval and Longueuil. Returns "
+                "deterministic requirements and official-source evidence."
             ),
             transport="streamable-http",
             input_schema=INPUT_SCHEMA,
@@ -162,7 +162,14 @@ def build_paid_server() -> MCPServer:
                     "authorization, legal advice, or engineering certification."
                 ),
                 service_name="ProjectPermit",
-                tags=["building-permit", "construction", "renovation", "ontario", "canada"],
+                tags=[
+                    "building-permit",
+                    "construction",
+                    "renovation",
+                    "ontario",
+                    "quebec",
+                    "canada",
+                ],
             ),
             extensions=extensions,
         ),
@@ -195,7 +202,7 @@ def build_paid_server() -> MCPServer:
             "price": settings["price"],
             "network": settings["network"],
             "jurisdictions": list(SUPPORTED_JURISDICTIONS),
-            "address_resolution": True,
+            "address_resolution_jurisdictions": list(SUPPORTED_ADDRESS_JURISDICTIONS),
             "disclaimer": "Preflight information only; not municipal authorization.",
         }
 
