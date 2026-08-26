@@ -15,7 +15,10 @@ import httpx
 
 FACILITATOR = os.getenv("PROJECTPERMIT_BAZAAR_URL", "https://facilitator.goplausible.xyz").rstrip("/")
 PAY_TO = os.getenv("PROJECTPERMIT_X402_PAY_TO", "0xDAAef0FD525278aAD0bA11066A96c338642A3d1A")
-DOMAIN = "projectpermit-x402-mcp-production.up.railway.app"
+DOMAINS = (
+    "projectpermit-x402-mcp-production.up.railway.app",
+    "projectpermit-api-v2-production.up.railway.app",
+)
 TOOL_NAME = "check_project_requirements"
 PAGE_SIZE = 200
 MAX_PAGES = 20
@@ -75,7 +78,7 @@ def main() -> None:
                 # Require a ProjectPermit-specific identifier. PAY_TO is printed for
                 # verification but is deliberately not sufficient by itself because
                 # one merchant can own multiple Bazaar resources.
-                if DOMAIN.lower() in haystack or TOOL_NAME.lower() in haystack:
+                if any(domain.lower() in haystack for domain in DOMAINS) or TOOL_NAME.lower() in haystack:
                     matches.append(item)
 
             if matches:
