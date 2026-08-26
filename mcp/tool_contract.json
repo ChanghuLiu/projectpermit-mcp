@@ -1,0 +1,14 @@
+{
+  "name": "check_project_requirements",
+  "description": "Return evidence-linked municipal permit/building/planning preflight requirements for a normalized construction project. The caller should extract project facts from natural language before calling this tool.",
+  "inputSchema": {"$ref": "../schemas/request.schema.json"},
+  "outputSchema": {"$ref": "../schemas/response.schema.json"},
+  "phase0_supported_jurisdictions": ["gatineau_qc", "ottawa_on"],
+  "non_goals": [
+    "legal opinion",
+    "municipal approval",
+    "building-code design certification",
+    "permit submission",
+    "engineering safety certification"
+  ]
+}
