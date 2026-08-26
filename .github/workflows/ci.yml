@@ -31,3 +31,17 @@ jobs:
       - run: pip install -e '.[mcp,x402]'
       - run: python -c "from projectpermit.mcp_server import build_server; print(type(build_server()).__name__)"
       - run: PROJECTPERMIT_X402_ENABLED=false python -c "from projectpermit.api import app; print(app.title)"
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t projectpermit:ci .
+      - run: docker run -d --rm --name projectpermit-ci -e PORT=8765 -p 8765:8765 projectpermit:ci
+      - run: |
+          for i in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8765/health; then exit 0; fi
+            sleep 1
+          done
+          docker logs projectpermit-ci
+          exit 1
