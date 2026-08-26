@@ -1,28 +1,41 @@
-# ProjectPermit / BuildRequirements — Phase 0
+# ProjectPermit / BuildRequirements
 
 ProjectPermit is an evidence-linked municipal permit preflight engine for construction and renovation projects. **BuildRequirements** is the deterministic rules engine inside it.
 
-Phase 0 supports:
+## Current jurisdiction coverage
+
+Phase 0 release-readiness is complete for the original two-city proving ground:
 
 - `gatineau_qc`
 - `ottawa_on`
-- 8 project families
-- address resolution using municipal GIS/geocoders
-- rule-version and overlay-aware results
-- official-source evidence on every rule result
-- a FastAPI endpoint and MCP v2 servers
-- x402 pay-per-call at the transport/tool boundary
+
+Phase 1A adds deterministic rule coverage for:
+
+- `toronto_on`
+- `mississauga_on`
+
+The engine currently covers 8 normalized project families, preserves uncertainty instead of guessing, attaches official-source evidence to every rule result, and exposes the same jurisdiction router through HTTP, standard MCP, and x402-paid MCP.
+
+Address/GIS resolution remains available for Gatineau and Ottawa. Toronto/Mississauga rule checks are available with `resolve_address=false` while their property/GIS adapters are built.
 
 The engine deliberately does **not** call an LLM. A calling agent normalizes natural-language scope into structured facts; BuildRequirements applies deterministic municipal rules.
 
-## Live Phase 0 endpoints
+## Live endpoints
 
 - HTTP API: `https://projectpermit-api-v2-production.up.railway.app`
 - Paid MCP: `https://projectpermit-x402-mcp-production.up.railway.app/mcp`
 
-The paid MCP exposes a free `projectpermit_info` tool and the paid `check_project_requirements` tool. The current test price is **$0.01 USDC** on Base Sepolia (`eip155:84532`).
+The paid MCP exposes a free `projectpermit_info` tool and the paid `check_project_requirements` tool. The current **testnet discovery price** is **$0.01 USDC** on Base Sepolia (`eip155:84532`); it is not the intended commercial price.
 
 The result is a preflight information package, **not municipal authorization, legal advice, engineering certification, or building-code design approval**.
+
+## Market thesis
+
+The business target is not a homeowner-only `Do I need a permit?` wizard. ProjectPermit is intended to become a **cross-jurisdiction permit-requirements intelligence layer** for contractor, property-management, construction/design, permitting, and real-estate software Agents.
+
+The Phase 0 payment/discovery plumbing is proven. The next validation risk is whether external B2B workflows generate enough repeated paid calls to justify maintaining more municipal rule adapters.
+
+See `docs/MARKET_VALIDATION.md` for the call-volume model, competitive analysis, pricing thesis, expansion-city scorecard, and 30-day demand gates.
 
 ## Quick start
 
@@ -56,84 +69,60 @@ Example:
 
 ```json
 {
-  "jurisdiction": "ottawa_on",
-  "address": "110 Laurier Ave W, Ottawa, ON",
+  "jurisdiction": "toronto_on",
   "resolve_address": false,
   "project": {
     "family": "window_door",
-    "action": "enlarge_existing_window",
-    "structural_change": true
+    "action": "replace_same_size",
+    "single_dwelling_house": true,
+    "structural_change": false,
+    "new_exit": false
   }
 }
 ```
 
 ## Repository map
 
-- `src/projectpermit/engine.py` — deterministic rule engine
+- `src/projectpermit/engine.py` — original Gatineau/Ottawa deterministic rules
+- `src/projectpermit/expansion_rules.py` — Toronto/Mississauga Phase 1A rules
+- `src/projectpermit/jurisdiction_router.py` — public jurisdiction dispatcher
 - `src/projectpermit/address.py` — municipal address/GIS adapters
 - `src/projectpermit/api.py` — HTTP API
 - `src/projectpermit/mcp_server.py` — standard MCP v2 server
 - `src/projectpermit/paid_mcp_server.py` — x402-native paid MCP v2 server
 - `src/projectpermit/mcp_v2_x402_compat.py` — MCP SDK v2 / x402 result compatibility shim
-- `data/golden_cases.json` — deterministic regression corpus
 - `data/source_manifest.json` — official source registry/freshness metadata
 - `schemas/` — public request/response schemas
 - `scripts/paid_mcp_unpaid_smoke.py` — no-cost remote payment-challenge test
 - `scripts/paid_mcp_buyer_smoke.py` — real buyer-side testnet paid MCP call
 - `scripts/facilitator_capability_probe.py` — no-cost facilitator capability matrix
 - `scripts/projectpermit_bazaar_lookup.py` — read-only Bazaar catalog lookup
-- `docs/PHASE0_SPEC.md` — product and engineering scope
+- `docs/PHASE0_SPEC.md` — original product/engineering scope
+- `docs/PHASE0_RELEASE_READINESS.md` — completed Phase 0 release gate
+- `docs/MARKET_VALIDATION.md` — market size, monthly-call model, pricing and expansion gates
 - `docs/X402_ARCHITECTURE.md` — payment/discovery design
 
-## x402 profiles
+## x402 / Bazaar status
 
-### HTTP payment smoke
+The canonical paid HTTP resource is:
 
-The public-values-only profile at `config/x402.base-sepolia.env.example` targets Base Sepolia and can use the x402.org public testnet facilitator for HTTP payment testing.
+`https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements`
 
-The protected HTTP resource is `POST /v1/check-project-requirements`; `/health` remains free.
+It is indexed by the current Bazaar-capable facilitator canary with canonical HTTPS discovery metadata. A real buyer-side HTTP call and a real paid MCP call have both completed successfully with server-side verification and settlement.
 
-### Paid MCP / Bazaar canary
-
-The public paid MCP currently uses a Bazaar-capable facilitator canary:
+The current paid MCP / Bazaar canary facilitator is:
 
 `https://facilitator.goplausible.xyz`
 
-The tool challenge declares the x402 Bazaar MCP discovery extension, including its tool name, transport, input schema, example, service name, and tags. A successful Bazaar-capable settlement is expected to make the tool queryable through the facilitator's discovery catalog.
-
-## Real paid MCP smoke test
-
-Run this only on your own machine. Keep the payer private key local; never paste or commit it. Do not repeat the paid smoke test unless a regression specifically requires another settlement.
-
-```bash
-python -m venv .venv-buyer
-source .venv-buyer/bin/activate
-pip install -e '.[buyer]'
-
-read -s EVM_PRIVATE_KEY
-export EVM_PRIVATE_KEY
-echo
-
-python scripts/paid_mcp_buyer_smoke.py
-```
-
-The payer wallet needs Base Sepolia test USDC. A successful run should show:
-
-- `payment_made=True`
-- `is_error=False`
-- `settlement_success=True`
-- `settlement_network=eip155:84532`
-- `settlement_transaction=0x...`
-- `paid_mcp_buyer_smoke=PASS`
-
-The server never needs the payer private key.
+No additional paid smoke calls should be made merely to prove plumbing that has already passed.
 
 ## CI / verification
 
 Current CI covers:
 
 - Python 3.11 + 3.13
-- deterministic rule and schema tests
+- deterministic jurisdiction-rule and schema tests
+- official source-manifest contracts
 - MCP v2 integration
 - x402 wire behavior
 - MCP v2 settlement-receipt compatibility
@@ -141,12 +130,12 @@ Current CI covers:
 - public MCP tool invocation
 - public paid-MCP payment challenge
 - facilitator capability checks
-- read-only Bazaar catalog state
+- canonical HTTPS Bazaar catalog state
 
-A real buyer-side paid MCP call has already completed successfully through the public service, with server-side `/verify` and `/settle` confirmation. The remaining Phase 0 discovery gate is one settlement through the current Bazaar-capable facilitator followed by a catalog lookup.
+See `STATUS.md` and `docs/PHASE0_RELEASE_READINESS.md` for Phase 0 evidence and `docs/MARKET_VALIDATION.md` for the Phase 1 business gates.
 
-See `STATUS.md` and `docs/PHASE0_RELEASE_READINESS.md` for the current gate status.
+## Safety boundary
 
-## Phase 0 safety boundary
+Determinations intentionally use preflight language such as `REQUIRED`, `LIKELY_REQUIRED`, `LIKELY_NOT_REQUIRED`, `ADDITIONAL_REVIEW_REQUIRED`, and `MUNICIPAL_CONFIRMATION_REQUIRED` where uncertainty exists. Ambiguous official thresholds are conservatively routed to confirmation instead of being silently resolved.
 
-Determinations intentionally use preflight language such as `LIKELY_REQUIRED`, `LIKELY_NOT_REQUIRED`, `ADDITIONAL_REVIEW_REQUIRED`, and `MUNICIPAL_CONFIRMATION_REQUIRED` where uncertainty exists. The engine should not be presented as a municipality, permit issuer, lawyer, architect, or engineer.
+The engine should not be presented as a municipality, permit issuer, lawyer, architect, or engineer.
