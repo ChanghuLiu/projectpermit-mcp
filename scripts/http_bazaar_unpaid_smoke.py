@@ -18,6 +18,15 @@ PAYLOAD = {
     "resolve_address": False,
 }
 
+EXPECTED_JURISDICTIONS = {
+    "gatineau_qc",
+    "ottawa_on",
+    "toronto_on",
+    "mississauga_on",
+    "laval_qc",
+    "longueuil_qc",
+}
+
 
 def main() -> None:
     print(f"paid_http_url={URL}")
@@ -35,9 +44,9 @@ def main() -> None:
     if resource.get("url") != URL:
         raise SystemExit(f"Unexpected x402 resource URL: {resource}")
     description = str(resource.get("description") or "")
-    for city in ("Gatineau", "Ottawa", "Toronto", "Mississauga"):
+    for city in ("Gatineau", "Ottawa", "Toronto", "Mississauga", "Laval", "Longueuil"):
         if city not in description:
-            raise SystemExit(f"Expanded jurisdiction missing from x402 resource description: {city}: {description}")
+            raise SystemExit(f"Jurisdiction missing from x402 resource description: {city}: {description}")
 
     accepts = challenge.get("accepts") or []
     if not any(item.get("network") == "eip155:84532" for item in accepts):
@@ -60,23 +69,18 @@ def main() -> None:
     if body.get("jurisdiction") != "ottawa_on":
         raise SystemExit(f"Unexpected Bazaar input example: {body}")
 
-    # Newer SDKs include the declared request schema in the challenge. When it is
-    # present, require all supported jurisdictions; older facilitators may omit it
-    # from the rendered discovery info, so description + live rule smoke remain the
-    # cross-version compatibility assertions.
     input_schema = input_info.get("schema") or input_info.get("inputSchema") or {}
     jurisdiction_schema = ((input_schema.get("properties") or {}).get("jurisdiction") or {})
     if jurisdiction_schema:
         enum = set(jurisdiction_schema.get("enum") or [])
-        expected = {"gatineau_qc", "ottawa_on", "toronto_on", "mississauga_on"}
-        if not expected.issubset(enum):
-            raise SystemExit(f"Expanded jurisdiction enum missing from Bazaar schema: {enum}")
+        if not EXPECTED_JURISDICTIONS.issubset(enum):
+            raise SystemExit(f"Jurisdiction enum missing from Bazaar schema: {enum}")
 
     output = info.get("output") or {}
     if (output.get("example") or {}).get("engine_version") != "phase0-0.1.0":
         raise SystemExit(f"Unexpected Bazaar output example: {output}")
 
-    print("http_bazaar_four_jurisdictions=PASS")
+    print("http_bazaar_six_jurisdictions=PASS")
     print("http_bazaar_unpaid_smoke=PASS")
 
 
