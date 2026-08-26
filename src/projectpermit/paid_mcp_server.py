@@ -56,7 +56,7 @@ INPUT_SCHEMA: dict[str, Any] = {
         },
         "context": {
             "type": "object",
-            "description": "Optional rule-version or workflow context.",
+            "description": "Optional rule-version/workflow context. For validation, client_tag may be a stable non-PII integration tag.",
         },
         "resolve_address": {
             "type": "boolean",
@@ -219,13 +219,14 @@ def build_paid_server() -> MCPServer:
     ) -> CallToolResult:
         """Paid evidence-linked permit preflight. Requires x402 USDC payment."""
         request_meta = dict(ctx.request_context.meta or {})
+        tool_context = {**(context or {}), "_transport": "paid_mcp"}
         result = paid_tool(
             {
                 "jurisdiction": jurisdiction,
                 "project": project,
                 "address": address,
                 "property": property or {},
-                "context": context or {},
+                "context": tool_context,
                 "resolve_address": resolve_address,
             },
             {"_meta": request_meta, "toolName": TOOL_NAME},
