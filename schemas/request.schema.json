@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectpermit.example/schemas/check-project-requirements.request.json",
+  "title": "check_project_requirements request",
+  "type": "object",
+  "required": ["jurisdiction", "project"],
+  "properties": {
+    "jurisdiction": {"enum": ["gatineau_qc", "ottawa_on"]},
+    "address": {"type": "string"},
+    "project": {
+      "type": "object",
+      "required": ["family"],
+      "properties": {
+        "family": {"enum": ["window_door", "interior_renovation", "basement", "dwelling_change", "deck_porch", "accessory_structure", "addition", "kitchen_bath_plumbing"]},
+        "action": {"type": "string"},
+        "estimated_cost_cad": {"type": "number", "minimum": 0},
+        "structural_change": {"type": "boolean"},
+        "modifies_walls": {"type": "boolean"},
+        "new_opening": {"type": "boolean"},
+        "closes_opening": {"type": "boolean"},
+        "floor_area_increase": {"type": "boolean"},
+        "plumbing_change": {"type": "boolean"},
+        "replace_existing_plumbing_fixture_only": {"type": "boolean"},
+        "dwelling_unit_change": {"type": "boolean"},
+        "deck_height_mm": {"type": "number", "minimum": 0},
+        "deck_area_m2": {"type": "number", "minimum": 0},
+        "deck_attached": {"type": "boolean"},
+        "principal_access": {"type": "boolean"},
+        "accessory_area_m2": {"type": "number", "minimum": 0},
+        "accessory_detached": {"type": "boolean"},
+        "accessory_storeys": {"type": "integer", "minimum": 1},
+        "accessory_plumbing": {"type": "boolean"},
+        "accessory_heated": {"type": "boolean"},
+        "accessory_personal_ancillary_use": {"type": "boolean"},
+        "accessory_structure_kind": {"enum": ["shed", "gazebo", "pergola", "similar", "garage", "other"]},
+        "accessory_permanent": {"type": "boolean"},
+        "foundation_work": {"type": "boolean"},
+        "fire_safety_system_change": {"type": "boolean"},
+        "exterior_wall_cladding_change": {"type": "boolean"},
+        "roof_replacement": {"type": "boolean"},
+        "roof_slope_percent": {"type": "number", "minimum": 0},
+        "replace_same_size_opening": {"type": "boolean"},
+        "new_bedroom": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "property": {
+      "type": "object",
+      "properties": {
+        "heritage": {"type": ["boolean", "null"]},
+        "piia": {"type": ["boolean", "null"]},
+        "zoning_code": {"type": ["string", "null"]},
+        "zoning_under_appeal": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "context": {
+      "type": "object",
+      "properties": {"permit_application_complete_date": {"type": "string", "format": "date"}},
+      "additionalProperties": true
+    },
+    "resolve_address": {"type": "boolean", "default": false}
+  },
+  "additionalProperties": true
+}
