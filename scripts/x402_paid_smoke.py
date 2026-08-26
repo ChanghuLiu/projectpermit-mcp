@@ -26,6 +26,7 @@ PAYLOAD = {
     "jurisdiction": "ottawa_on",
     "project": {"family": "window_door", "action": "replace_same_size"},
     "property": {"heritage": False},
+    "context": {"client_tag": "projectpermit-owner-smoke"},
     "resolve_address": False,
 }
 
@@ -45,9 +46,6 @@ async def main() -> None:
     http_client = x402HTTPClient(client)
 
     async with x402HttpxClient(client) as http:
-        # x402HttpxClient handles one 402 challenge and one paid retry. There is no
-        # application-level retry loop in this script, so one invocation can settle
-        # at most this single request.
         response = await http.post(URL, json=PAYLOAD)
         await response.aread()
         print(f"status={response.status_code}")
