@@ -5,7 +5,7 @@
   "type": "object",
   "required": ["jurisdiction", "project"],
   "properties": {
-    "jurisdiction": {"enum": ["gatineau_qc", "ottawa_on", "toronto_on", "mississauga_on"]},
+    "jurisdiction": {"enum": ["gatineau_qc", "ottawa_on", "toronto_on", "mississauga_on", "laval_qc", "longueuil_qc"]},
     "address": {"type": "string"},
     "project": {
       "type": "object",
@@ -17,6 +17,8 @@
         "structural_change": {"type": "boolean"},
         "material_alteration": {"type": "boolean"},
         "modifies_walls": {"type": "boolean"},
+        "room_dimensions_change": {"type": "boolean"},
+        "room_count_change": {"type": "boolean"},
         "new_opening": {"type": "boolean"},
         "closes_opening": {"type": "boolean"},
         "floor_area_increase": {"type": "boolean"},
@@ -32,6 +34,8 @@
         "deck_attached": {"type": "boolean"},
         "principal_access": {"type": "boolean"},
         "covered": {"type": "boolean"},
+        "yard": {"enum": ["front", "side", "rear", "secondary_front", "street_facing", "other"]},
+        "distance_to_lot_line_m": {"type": "number", "minimum": 0},
         "accessory_area_m2": {"type": "number", "minimum": 0},
         "accessory_detached": {"type": "boolean"},
         "accessory_storeys": {"type": "integer", "minimum": 1},
@@ -47,6 +51,7 @@
         "recladding": {"type": "boolean"},
         "same_cladding_material": {"type": "boolean"},
         "roof_replacement": {"type": "boolean"},
+        "same_roof_material": {"type": "boolean"},
         "roof_slope_percent": {"type": "number", "minimum": 0},
         "replace_same_size_opening": {"type": "boolean"},
         "new_bedroom": {"type": "boolean"}
