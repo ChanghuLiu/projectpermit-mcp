@@ -1,0 +1,14 @@
+{
+  "jurisdiction": "gatineau_qc",
+  "version": "phase0-0.1.0",
+  "important_boundaries": [
+    "Existing principal-building work under CAD 26,000 before tax can be exempt only for listed categories and only when no always-required trigger applies.",
+    "Foundation, structure or interior-wall work is always permit-required regardless of cost.",
+    "Adding or closing an opening is always permit-required regardless of cost.",
+    "PIIA or heritage-citation applicability defeats the ordinary under-CAD-26,000 exemption.",
+    "The public summary says 'less than 26,000' for exemption and 'more than 26,000' for required renovation; exact CAD 26,000 is intentionally routed to municipal confirmation in Phase 0.",
+    "Permanent detached accessory structures require a permit; movable detached accessory structures do not, but zoning standards still apply.",
+    "Porch/balcony/gallery/terrace/exterior stair/ramp/awning/canopy is listed as permit-exempt when not subject to PIIA/heritage approval."
+  ],
+  "source_ids": ["GAT_GENERAL", "GAT_FAQ", "GAT_PRINCIPAL", "GAT_ACCESSORY", "GAT_GIS", "GAT_ZONING_DATA"]
+}
