@@ -17,7 +17,9 @@ from mcp.client.streamable_http import streamable_http_client
 from x402 import x402ClientSync
 from x402.mechanisms.evm import EthAccountSigner
 from x402.mechanisms.evm.exact.register import register_exact_evm_client
-from x402.mcp import MCPToolResult, x402MCPClient
+from x402.mcp import x402MCPClient
+
+from projectpermit.mcp_v2_x402_compat import to_x402_compatible_result
 
 URL = os.getenv(
     "PROJECTPERMIT_PAID_MCP_URL",
@@ -43,24 +45,16 @@ class MCPClientAdapter:
     async def close(self) -> None:
         pass
 
-    async def call_tool(self, params: dict[str, Any], **kwargs: Any) -> MCPToolResult:
+    async def call_tool(self, params: dict[str, Any], **kwargs: Any) -> Any:
         result = await self._session.call_tool(
             name=params.get("name", ""),
             arguments=params.get("arguments", {}) or {},
             meta=params.get("_meta"),
         )
-        content: list[dict[str, Any]] = []
-        for item in result.content:
-            if hasattr(item, "text"):
-                content.append({"type": "text", "text": item.text})
-            else:
-                content.append({"type": getattr(item, "type", "text"), "text": str(item)})
-        return MCPToolResult(
-            content=content,
-            is_error=result.is_error,
-            meta=dict(result.meta or {}),
-            structured_content=result.structured_content,
-        )
+        # x402 currently re-normalizes the adapter result and still probes the
+        # pre-v2 attribute names `_meta` and `structuredContent`. Preserve the
+        # MCP SDK v2 `meta` / `structured_content` fields through that step.
+        return to_x402_compatible_result(result)
 
     async def list_tools(self) -> Any:
         return await self._session.list_tools()
@@ -117,6 +111,8 @@ async def main() -> None:
                 print(f"settlement_success={receipt.success}")
                 print(f"settlement_network={receipt.network}")
                 print(f"settlement_transaction={receipt.transaction}")
+            else:
+                print("settlement_receipt=missing")
 
             if result.is_error or not result.payment_made:
                 raise SystemExit("Paid MCP call did not complete successfully")
