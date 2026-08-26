@@ -31,6 +31,7 @@ jobs:
       - run: pip install -e '.[mcp,x402]'
       - run: python -c "from projectpermit.mcp_server import build_server; print(type(build_server()).__name__)"
       - run: PROJECTPERMIT_X402_ENABLED=false python -c "from projectpermit.api import app; print(app.title)"
+      - run: PYTHONPATH=src python tests/x402_wire_smoke.py
 
   container:
     runs-on: ubuntu-latest
