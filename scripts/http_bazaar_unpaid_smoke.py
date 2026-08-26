@@ -31,6 +31,10 @@ def main() -> None:
         raise SystemExit("Missing PAYMENT-REQUIRED header")
 
     challenge = decode_payment_required_header(header).model_dump(by_alias=True, exclude_none=True)
+    resource = challenge.get("resource") or {}
+    if resource.get("url") != URL:
+        raise SystemExit(f"Unexpected x402 resource URL: {resource}")
+
     accepts = challenge.get("accepts") or []
     if not any(item.get("network") == "eip155:84532" for item in accepts):
         raise SystemExit("Base Sepolia payment option missing")
