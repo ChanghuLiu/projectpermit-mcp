@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import Any, Dict, Optional
 
-from .jurisdiction_router import evaluate_project
+from .jurisdiction_router import SUPPORTED_JURISDICTIONS, evaluate_project
 from .address import (
     GatineauAddressAdapter,
     OttawaAddressAdapter,
@@ -25,6 +25,35 @@ class PreflightRequest(BaseModel):
 @app.get("/health")
 def health():
     return {"ok": True, "engine_version": "phase1a-0.2.0"}
+
+@app.get("/v1/capabilities")
+def capabilities():
+    """Free machine-readable discovery; no permit determination is performed."""
+    address_resolvers = {"gatineau_qc", "ottawa_on", "toronto_on"}
+    return {
+        "service": "ProjectPermit",
+        "engine_version": "phase1a-0.2.0",
+        "jurisdictions": [
+            {
+                "id": jurisdiction,
+                "rule_preflight": True,
+                "address_resolution": jurisdiction in address_resolvers,
+            }
+            for jurisdiction in SUPPORTED_JURISDICTIONS
+        ],
+        "project_families": [
+            "window_door",
+            "interior_renovation",
+            "basement",
+            "dwelling_change",
+            "deck_porch",
+            "accessory_structure",
+            "addition",
+            "kitchen_bath_plumbing",
+        ],
+        "paid_resource": "/v1/check-project-requirements",
+        "disclaimer": "Preflight information only; not municipal authorization or legal advice.",
+    }
 
 @app.post("/v1/check-project-requirements")
 def check_project_requirements(req: PreflightRequest):
