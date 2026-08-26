@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e .
+      - run: PYTHONPATH=src python -m unittest discover -s tests -v
+      - run: python -m compileall -q src
+
+  optional-integrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e '.[mcp,x402]'
+      - run: python -c "from projectpermit.mcp_server import build_server; print(type(build_server()).__name__)"
+      - run: PROJECTPERMIT_X402_ENABLED=false python -c "from projectpermit.api import app; print(app.title)"
