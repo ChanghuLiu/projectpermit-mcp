@@ -24,7 +24,8 @@ def build_server():
         instructions=(
             "Municipal construction permit preflight. Normalize the user's proposed "
             "construction scope into structured facts before calling the tool. Results "
-            "are evidence-linked preflight information, not municipal authorization."
+            "are evidence-linked preflight information, not municipal authorization. "
+            "This public standard MCP endpoint is a temporary developer-validation preview."
         ),
     )
 
@@ -39,9 +40,9 @@ def build_server():
     ) -> dict[str, Any]:
         """Return evidence-linked permit/planning preflight requirements.
 
-        Supported jurisdictions include Gatineau, Ottawa, Toronto and Mississauga.
-        Set `resolve_address=true` to enrich the request with first-party municipal
-        address/zoning/heritage context before deterministic rule evaluation.
+        Supports the ProjectPermit jurisdiction router. Set `resolve_address=true`
+        to enrich the request with first-party municipal address/zoning/heritage
+        context where a resolver is available.
         """
         return run_preflight(
             {
@@ -49,7 +50,7 @@ def build_server():
                 "project": project,
                 "address": address,
                 "property": property or {},
-                "context": context or {},
+                "context": {**(context or {}), "_transport": "standard_mcp"},
                 "resolve_address": resolve_address,
             }
         )
