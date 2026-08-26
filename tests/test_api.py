@@ -22,8 +22,10 @@ class ApiSmokeTest(unittest.TestCase):
             {'gatineau_qc', 'ottawa_on', 'toronto_on', 'mississauga_on'},
             set(jurisdictions),
         )
+        self.assertTrue(jurisdictions['gatineau_qc']['address_resolution'])
+        self.assertTrue(jurisdictions['ottawa_on']['address_resolution'])
         self.assertTrue(jurisdictions['toronto_on']['address_resolution'])
-        self.assertFalse(jurisdictions['mississauga_on']['address_resolution'])
+        self.assertTrue(jurisdictions['mississauga_on']['address_resolution'])
         self.assertEqual(8, len(payload['project_families']))
 
     def test_ottawa_same_size_window(self):
@@ -69,15 +71,6 @@ class ApiSmokeTest(unittest.TestCase):
         })
         self.assertEqual(200, r.status_code)
         self.assertEqual('REQUIRED', r.json()['determination'])
-
-    def test_missing_mississauga_address_resolver_is_422(self):
-        r = self.client.post('/v1/check-project-requirements', json={
-            'jurisdiction': 'mississauga_on',
-            'address': '300 City Centre Dr, Mississauga, ON',
-            'resolve_address': True,
-            'project': {'family': 'window_door', 'action': 'replace_same_size'},
-        })
-        self.assertEqual(422, r.status_code)
 
 
 if __name__ == '__main__':
