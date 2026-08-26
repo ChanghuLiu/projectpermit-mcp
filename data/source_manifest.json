@@ -39,6 +39,10 @@
     {"source_id":"LON_RENO","authority":"Ville de Longueuil","kind":"official_guidance_pdf","criticality":"critical","url":"https://cms.longueuil.quebec/sites/default/files/medias/documents/2025-07/R%C3%A9novation%20int%C3%A9rieure%20et%20ou%20ext%C3%A9rieure%20r%C3%A9sidentielle%20juillet%202025.pdf"},
     {"source_id":"LON_WINDOWS","authority":"Ville de Longueuil","kind":"official_guidance_pdf","criticality":"critical","url":"https://cms.longueuil.quebec/sites/default/files/medias/documents/2025-07/Ajout%2C%20modification%20ou%20retrait%20de%20porte%28s%29%20et_ou%20fen%C3%AAtre%28s%29%20juillet%202025.pdf"},
     {"source_id":"LON_PERMITS","authority":"Ville de Longueuil","kind":"official_permit_portal_guidance","criticality":"high","url":"https://www.longueuil.quebec/fr/services/amenagement-urbanisme/demande-de-permis-en-ligne"},
-    {"source_id":"LON_URBANISM","authority":"Ville de Longueuil","kind":"official_regulation_index","criticality":"high","url":"https://longueuil.quebec/fr/services/amenagement-urbanisme"}
+    {"source_id":"LON_URBANISM","authority":"Ville de Longueuil","kind":"official_regulation_index","criticality":"high","url":"https://longueuil.quebec/fr/services/amenagement-urbanisme"},
+    {"source_id":"VAN_WHEN","authority":"City of Vancouver","kind":"official_guidance","criticality":"critical","url":"https://vancouver.ca/home-property-development/when-you-need-a-permit.aspx"},
+    {"source_id":"VAN_RENO","authority":"City of Vancouver","kind":"official_guidance","criticality":"critical","url":"https://vancouver.ca/home-property-development/renovate-home.aspx"},
+    {"source_id":"VAN_SUITE","authority":"City of Vancouver","kind":"official_guidance","criticality":"high","url":"https://vancouver.ca/home-property-development/creating-a-secondary-suite.aspx"},
+    {"source_id":"VAN_VBBL_2025","authority":"City of Vancouver","kind":"official_building_bylaw_pdf","criticality":"critical","url":"https://vancouver.ca/files/cov/vbbl-2025-volume-1-v2-01.pdf"}
   ]
 }
