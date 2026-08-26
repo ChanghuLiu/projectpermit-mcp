@@ -13,6 +13,10 @@ import os
 from typing import Any
 
 
+HTTP_PUBLIC_RESOURCE_URL = (
+    "https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements"
+)
+
 HTTP_DISCOVERY_INPUT: dict[str, Any] = {
     "jurisdiction": "ottawa_on",
     "project": {"family": "window_door", "action": "replace_same_size"},
@@ -181,6 +185,7 @@ def configure_x402(app: Any) -> None:
                     network=network,
                 )
             ],
+            resource=HTTP_PUBLIC_RESOURCE_URL,
             mime_type="application/json",
             description=(
                 "Evidence-linked municipal construction permit/planning preflight for "
