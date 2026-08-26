@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import Any, Dict, Optional
 
-from .engine import evaluate_project
+from .jurisdiction_router import evaluate_project
 from .address import OttawaAddressAdapter, GatineauAddressAdapter
 from .http_fetch import fetch_json
 from .x402_config import configure_x402
@@ -36,6 +36,8 @@ def check_project_requirements(req: PreflightRequest):
                 address_context = GatineauAddressAdapter(fetch_json).geocode(req.address)
             else:
                 raise HTTPException(status_code=422, detail="address resolver not available for jurisdiction")
+        except HTTPException:
+            raise
         except Exception as exc:
             raise HTTPException(status_code=502, detail=f"municipal GIS resolution failed: {exc}") from exc
         resolved_property = {k: v for k, v in address_context.get("property", {}).items() if v is not None}
