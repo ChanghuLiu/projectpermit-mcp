@@ -4,26 +4,34 @@ ProjectPermit is an evidence-linked municipal permit preflight engine for constr
 
 ## Current jurisdiction coverage
 
-Phase 0 release-readiness is complete for the original two-city proving ground:
+Phase 0 release-readiness is complete for the original proving ground:
 
 - `gatineau_qc`
 - `ottawa_on`
 
-Phase 1A adds deterministic rule coverage for:
+Phase 1A added:
 
 - `toronto_on`
 - `mississauga_on`
 
-The engine currently covers 8 normalized project families, preserves uncertainty instead of guessing, attaches official-source evidence to every rule result, and exposes the same jurisdiction router through HTTP, standard MCP, and x402-paid MCP.
+Phase 1B adds conservative deterministic coverage for:
 
-Address/GIS resolution remains available for Gatineau and Ottawa. Toronto/Mississauga rule checks are available with `resolve_address=false` while their property/GIS adapters are built.
+- `laval_qc`
+- `longueuil_qc`
+
+The engine covers 8 normalized project families, preserves uncertainty instead of guessing, attaches official-source evidence to every rule result, and exposes the same jurisdiction router through HTTP, standard MCP, and x402-paid MCP.
+
+First-party municipal address/GIS resolution is available for Gatineau, Ottawa, Toronto and Mississauga. Laval and Longueuil currently support rule preflight with `resolve_address=false` while reliable no-cost property adapters are evaluated.
 
 The engine deliberately does **not** call an LLM. A calling agent normalizes natural-language scope into structured facts; BuildRequirements applies deterministic municipal rules.
 
 ## Live endpoints
 
 - HTTP API: `https://projectpermit-api-v2-production.up.railway.app`
+- Free MCP: `https://projectpermit-mcp-production.up.railway.app/mcp`
 - Paid MCP: `https://projectpermit-x402-mcp-production.up.railway.app/mcp`
+
+The HTTP API also exposes free machine-readable capability discovery at `GET /v1/capabilities`.
 
 The paid MCP exposes a free `projectpermit_info` tool and the paid `check_project_requirements` tool. The current **testnet discovery price** is **$0.01 USDC** on Base Sepolia (`eip155:84532`); it is not the intended commercial price.
 
@@ -35,7 +43,15 @@ The business target is not a homeowner-only `Do I need a permit?` wizard. Projec
 
 The Phase 0 payment/discovery plumbing is proven. The next validation risk is whether external B2B workflows generate enough repeated paid calls to justify maintaining more municipal rule adapters.
 
-See `docs/MARKET_VALIDATION.md` for the call-volume model, competitive analysis, pricing thesis, expansion-city scorecard, and 30-day demand gates.
+See `docs/MARKET_VALIDATION.md` for the call-volume model, competitive analysis, pricing thesis, expansion-city scorecard, and demand gates.
+
+## Architecture
+
+All transports now call the same shared address-aware preflight pipeline:
+
+`HTTP / free MCP / x402 paid MCP -> preflight_service -> municipal address/GIS adapters -> jurisdiction router -> deterministic rules`
+
+Resolved non-null municipal property facts can enrich a request before rule evaluation. Unknown overlays remain unknown and never silently overwrite an explicit caller value.
 
 ## Quick start
 
@@ -81,12 +97,17 @@ Example:
 }
 ```
 
+For an address-aware jurisdiction, set `resolve_address=true` and supply `address`; the same behavior is available through standard MCP and paid MCP.
+
 ## Repository map
 
 - `src/projectpermit/engine.py` — original Gatineau/Ottawa deterministic rules
 - `src/projectpermit/expansion_rules.py` — Toronto/Mississauga Phase 1A rules
+- `src/projectpermit/quebec_expansion_rules.py` — Laval/Longueuil Phase 1B rules
 - `src/projectpermit/jurisdiction_router.py` — public jurisdiction dispatcher
-- `src/projectpermit/address.py` — municipal address/GIS adapters
+- `src/projectpermit/preflight_service.py` — shared address-aware preflight pipeline
+- `src/projectpermit/address.py` — Gatineau/Ottawa/Toronto address/GIS adapters
+- `src/projectpermit/mississauga_address.py` — Mississauga address/property adapter
 - `src/projectpermit/api.py` — HTTP API
 - `src/projectpermit/mcp_server.py` — standard MCP v2 server
 - `src/projectpermit/paid_mcp_server.py` — x402-native paid MCP v2 server
@@ -122,17 +143,18 @@ Current CI covers:
 
 - Python 3.11 + 3.13
 - deterministic jurisdiction-rule and schema tests
+- shared address-aware preflight service regressions
 - official source-manifest contracts
 - MCP v2 integration
 - x402 wire behavior
 - MCP v2 settlement-receipt compatibility
 - Docker build + live `/health`
-- public MCP tool invocation
-- public paid-MCP payment challenge
+- public multi-jurisdiction MCP tool invocation
+- public paid-MCP unpaid challenge
 - facilitator capability checks
 - canonical HTTPS Bazaar catalog state
 
-See `STATUS.md` and `docs/PHASE0_RELEASE_READINESS.md` for Phase 0 evidence and `docs/MARKET_VALIDATION.md` for the Phase 1 business gates.
+See `STATUS.md` and `docs/PHASE0_RELEASE_READINESS.md` for release evidence and `docs/MARKET_VALIDATION.md` for the business gates.
 
 ## Safety boundary
 
