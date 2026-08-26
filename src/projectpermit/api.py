@@ -59,7 +59,9 @@ def capabilities():
 @app.post("/v1/check-project-requirements")
 def check_project_requirements(req: PreflightRequest):
     try:
-        return run_preflight(req.model_dump())
+        facts = req.model_dump()
+        facts["context"] = {**facts.get("context", {}), "_transport": "http_api"}
+        return run_preflight(facts)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=f"municipal address resolution failed: {exc}") from exc
     except Exception as exc:
