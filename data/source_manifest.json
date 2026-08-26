@@ -22,6 +22,10 @@
     {"source_id":"OTT_BASEMENT","authority":"City of Ottawa","kind":"official_guidance","criticality":"high","url":"https://ottawa.ca/en/planning-development-and-construction/building-and-renovating/do-i-need-building-permit/finishing-basement"},
     {"source_id":"OTT_GIS_2008","authority":"City of Ottawa","kind":"official_gis","criticality":"critical","url":"https://maps.ottawa.ca/arcgis/rest/services/Zoning_Bylaw_2008_250/MapServer"},
     {"source_id":"TOR_GENERAL","authority":"City of Toronto","kind":"official_guidance","criticality":"critical","url":"https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/when-do-i-need-a-building-permit/"},
+    {"source_id":"TOR_ADDRESS","authority":"City of Toronto","kind":"official_gis","criticality":"critical","url":"https://gis.toronto.ca/arcgis/rest/services/cot_geospatial27/FeatureServer/101"},
+    {"source_id":"TOR_ZONING_PROPERTY","authority":"City of Toronto","kind":"official_gis","criticality":"critical","url":"https://gis.toronto.ca/arcgis/rest/services/cot_geospatial11/MapServer/18"},
+    {"source_id":"TOR_HERITAGE_DISTRICT","authority":"City of Toronto","kind":"official_gis","criticality":"high","url":"https://gis.toronto.ca/arcgis/rest/services/cot_geospatial11/MapServer/40"},
+    {"source_id":"TOR_HERITAGE_REGISTER","authority":"City of Toronto","kind":"official_gis","criticality":"high","url":"https://gis.toronto.ca/arcgis/rest/services/cot_geospatial11/MapServer/56"},
     {"source_id":"MIS_GENERAL","authority":"City of Mississauga","kind":"official_guidance","criticality":"critical","url":"https://www.mississauga.ca/services-and-programs/building-and-renovating/building-permits/when-a-building-permit-is-required/"}
   ]
 }
