@@ -11,7 +11,7 @@ class ApiSmokeTest(unittest.TestCase):
         r = self.client.get('/health')
         self.assertEqual(200, r.status_code)
         self.assertTrue(r.json()['ok'])
-        self.assertEqual('phase1a-0.2.0', r.json()['engine_version'])
+        self.assertEqual('phase1b-0.3.0', r.json()['engine_version'])
 
     def test_free_capabilities(self):
         r = self.client.get('/v1/capabilities')
@@ -19,13 +19,18 @@ class ApiSmokeTest(unittest.TestCase):
         payload = r.json()
         jurisdictions = {item['id']: item for item in payload['jurisdictions']}
         self.assertEqual(
-            {'gatineau_qc', 'ottawa_on', 'toronto_on', 'mississauga_on'},
+            {
+                'gatineau_qc', 'ottawa_on', 'toronto_on', 'mississauga_on',
+                'laval_qc', 'longueuil_qc',
+            },
             set(jurisdictions),
         )
         self.assertTrue(jurisdictions['gatineau_qc']['address_resolution'])
         self.assertTrue(jurisdictions['ottawa_on']['address_resolution'])
         self.assertTrue(jurisdictions['toronto_on']['address_resolution'])
         self.assertTrue(jurisdictions['mississauga_on']['address_resolution'])
+        self.assertFalse(jurisdictions['laval_qc']['address_resolution'])
+        self.assertFalse(jurisdictions['longueuil_qc']['address_resolution'])
         self.assertEqual(8, len(payload['project_families']))
 
     def test_ottawa_same_size_window(self):
@@ -68,6 +73,23 @@ class ApiSmokeTest(unittest.TestCase):
         r = self.client.post('/v1/check-project-requirements', json={
             'jurisdiction': 'mississauga_on',
             'project': {'family': 'basement', 'action': 'finish_basement'},
+        })
+        self.assertEqual(200, r.status_code)
+        self.assertEqual('REQUIRED', r.json()['determination'])
+
+    def test_laval_same_size_window(self):
+        r = self.client.post('/v1/check-project-requirements', json={
+            'jurisdiction': 'laval_qc',
+            'project': {'family': 'window_door', 'action': 'replace_same_size'},
+            'property': {'piia': False},
+        })
+        self.assertEqual(200, r.status_code)
+        self.assertEqual('LIKELY_NOT_REQUIRED', r.json()['determination'])
+
+    def test_longueuil_window_enlargement(self):
+        r = self.client.post('/v1/check-project-requirements', json={
+            'jurisdiction': 'longueuil_qc',
+            'project': {'family': 'window_door', 'action': 'enlarge_existing_opening'},
         })
         self.assertEqual(200, r.status_code)
         self.assertEqual('REQUIRED', r.json()['determination'])
