@@ -17,6 +17,8 @@ EXPECTED_JURISDICTIONS = {
     "ottawa_on",
     "toronto_on",
     "mississauga_on",
+    "laval_qc",
+    "longueuil_qc",
 }
 
 
@@ -41,26 +43,30 @@ async def main() -> None:
             assert "projectpermit_info" in names
             assert "check_project_requirements" in names
 
+            paid_tool = next(tool for tool in tools.tools if tool.name == "check_project_requirements")
+            schema = getattr(paid_tool, "input_schema", None) or {}
+            properties = schema.get("properties") or {}
+            if "resolve_address" not in properties:
+                raise SystemExit("Paid MCP input schema missing resolve_address")
+
             info = await session.call_tool("projectpermit_info", {})
             assert not info.is_error, info
             info_payload = _json_from_result(info)
             jurisdictions = set(info_payload.get("jurisdictions") or [])
             if not EXPECTED_JURISDICTIONS.issubset(jurisdictions):
-                raise SystemExit(f"Paid MCP info missing expansion jurisdictions: {jurisdictions}")
+                raise SystemExit(f"Paid MCP info missing jurisdictions: {jurisdictions}")
             print(f"free_info_jurisdictions={sorted(jurisdictions)}")
             print("free_info=PASS")
 
             result = await session.call_tool(
                 "check_project_requirements",
                 {
-                    "jurisdiction": "toronto_on",
+                    "jurisdiction": "laval_qc",
                     "project": {
                         "family": "window_door",
                         "action": "replace_same_size",
-                        "single_dwelling_house": True,
-                        "structural_change": False,
-                        "new_exit": False,
                     },
+                    "property": {"piia": False},
                 },
             )
             print(f"paid_without_payment_is_error={result.is_error}")
@@ -73,7 +79,7 @@ async def main() -> None:
             accepts = challenge["accepts"]
             if not any(item.get("network") == "eip155:84532" for item in accepts):
                 raise SystemExit("Base Sepolia payment option missing")
-            print("paid_mcp_four_jurisdictions=PASS")
+            print("paid_mcp_six_jurisdictions=PASS")
             print("paid_mcp_unpaid_smoke=PASS")
 
 
