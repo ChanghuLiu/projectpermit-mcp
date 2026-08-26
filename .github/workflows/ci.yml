@@ -32,6 +32,7 @@ jobs:
       - run: python -c "from projectpermit.mcp_server import build_server; print(type(build_server()).__name__)"
       - run: PROJECTPERMIT_X402_ENABLED=false python -c "from projectpermit.api import app; print(app.title)"
       - run: PYTHONPATH=src python tests/x402_wire_smoke.py
+      - run: PYTHONPATH=src python tests/x402_mcp_v2_receipt_smoke.py
 
   container:
     runs-on: ubuntu-latest
@@ -70,3 +71,15 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: pip install -e '.[mcp]'
       - run: python scripts/paid_mcp_unpaid_smoke.py
+
+  bazaar-discovery:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e .
+      - run: python scripts/bazaar_discovery_smoke.py
