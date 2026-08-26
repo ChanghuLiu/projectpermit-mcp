@@ -30,6 +30,15 @@
     {"source_id":"MIS_ADDRESS","authority":"City of Mississauga","kind":"official_gis","criticality":"critical","url":"https://services6.arcgis.com/hM5ymMLbxIyWTjn2/ArcGIS/rest/services/Address/FeatureServer/0"},
     {"source_id":"MIS_ZONING","authority":"City of Mississauga","kind":"official_gis","criticality":"critical","url":"https://services6.arcgis.com/hM5ymMLbxIyWTjn2/ArcGIS/rest/services/Mississauga_Zoning_Bylaw/FeatureServer/0"},
     {"source_id":"MIS_HERITAGE","authority":"City of Mississauga","kind":"official_gis","criticality":"high","url":"https://services6.arcgis.com/hM5ymMLbxIyWTjn2/ArcGIS/rest/services/City_Heritage_Properties/FeatureServer/5"},
-    {"source_id":"MIS_PROPERTY","authority":"City of Mississauga","kind":"official_gis","criticality":"high","url":"https://services6.arcgis.com/hM5ymMLbxIyWTjn2/ArcGIS/rest/services/Property_Search/FeatureServer/0"}
+    {"source_id":"MIS_PROPERTY","authority":"City of Mississauga","kind":"official_gis","criticality":"high","url":"https://services6.arcgis.com/hM5ymMLbxIyWTjn2/ArcGIS/rest/services/Property_Search/FeatureServer/0"},
+    {"source_id":"LAV_EXT","authority":"Ville de Laval","kind":"official_guidance","criticality":"critical","url":"https://www.laval.ca/reglements-permis/trouver-mon-permis/renovation-residentielle-exterieure/"},
+    {"source_id":"LAV_INT","authority":"Ville de Laval","kind":"official_guidance","criticality":"critical","url":"https://www.laval.ca/Pages/Fr/Citoyens/renovation-ou-reparation.aspx"},
+    {"source_id":"LAV_SHED","authority":"Ville de Laval","kind":"official_guidance","criticality":"high","url":"https://www.laval.ca/reglements-permis/trouver-mon-permis/remise/"},
+    {"source_id":"LAV_BALCON","authority":"Ville de Laval","kind":"official_guidance","criticality":"high","url":"https://www.laval.ca/reglements-permis/trouver-mon-permis/balcon-galerie/"},
+    {"source_id":"LAV_ADD","authority":"Ville de Laval","kind":"official_guidance","criticality":"high","url":"https://www.laval.ca/reglements-permis/trouver-mon-permis/agrandissement-unifamiliale/"},
+    {"source_id":"LON_RENO","authority":"Ville de Longueuil","kind":"official_guidance_pdf","criticality":"critical","url":"https://cms.longueuil.quebec/sites/default/files/medias/documents/2025-07/R%C3%A9novation%20int%C3%A9rieure%20et%20ou%20ext%C3%A9rieure%20r%C3%A9sidentielle%20juillet%202025.pdf"},
+    {"source_id":"LON_WINDOWS","authority":"Ville de Longueuil","kind":"official_guidance_pdf","criticality":"critical","url":"https://cms.longueuil.quebec/sites/default/files/medias/documents/2025-07/Ajout%2C%20modification%20ou%20retrait%20de%20porte%28s%29%20et_ou%20fen%C3%AAtre%28s%29%20juillet%202025.pdf"},
+    {"source_id":"LON_PERMITS","authority":"Ville de Longueuil","kind":"official_permit_portal_guidance","criticality":"high","url":"https://www.longueuil.quebec/fr/services/amenagement-urbanisme/demande-de-permis-en-ligne"},
+    {"source_id":"LON_URBANISM","authority":"Ville de Longueuil","kind":"official_regulation_index","criticality":"high","url":"https://longueuil.quebec/fr/services/amenagement-urbanisme"}
   ]
 }
