@@ -142,8 +142,8 @@ def build_paid_server() -> MCPServer:
             tool_name=TOOL_NAME,
             description=(
                 "Evidence-linked municipal construction permit/planning preflight for "
-                "Gatineau, Ottawa, Toronto, Mississauga, Laval and Longueuil. Returns "
-                "deterministic requirements and official-source evidence."
+                "Gatineau, Ottawa, Toronto, Mississauga, Laval, Longueuil and Vancouver. "
+                "Returns deterministic requirements and official-source evidence."
             ),
             transport="streamable-http",
             input_schema=INPUT_SCHEMA,
@@ -168,6 +168,7 @@ def build_paid_server() -> MCPServer:
                     "renovation",
                     "ontario",
                     "quebec",
+                    "british-columbia",
                     "canada",
                 ],
             ),
