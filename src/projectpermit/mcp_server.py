@@ -1,14 +1,14 @@
 """Standard MCP transport for ProjectPermit.
 
-Payment is deliberately not embedded here. The same deterministic jurisdiction
-router is exposed by FastAPI and the paid MCP transport.
+Payment is deliberately not embedded here. HTTP, standard MCP and paid MCP all
+call the same shared address-aware preflight service.
 """
 from __future__ import annotations
 
 import os
 from typing import Any
 
-from .jurisdiction_router import SUPPORTED_JURISDICTIONS, evaluate_project
+from .preflight_service import run_preflight
 
 
 def build_server():
@@ -35,19 +35,22 @@ def build_server():
         address: str | None = None,
         property: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
+        resolve_address: bool = False,
     ) -> dict[str, Any]:
         """Return evidence-linked permit/planning preflight requirements.
 
         Supported jurisdictions include Gatineau, Ottawa, Toronto and Mississauga.
-        The tool is deterministic and does not perform natural-language scope extraction.
+        Set `resolve_address=true` to enrich the request with first-party municipal
+        address/zoning/heritage context before deterministic rule evaluation.
         """
-        return evaluate_project(
+        return run_preflight(
             {
                 "jurisdiction": jurisdiction,
                 "project": project,
                 "address": address,
                 "property": property or {},
                 "context": context or {},
+                "resolve_address": resolve_address,
             }
         )
 
@@ -55,7 +58,6 @@ def build_server():
 
 
 def main() -> None:
-    # Railway injects PORT. Local development keeps the safer loopback default.
     railway_port = os.getenv("PORT")
     host = os.getenv(
         "PROJECTPERMIT_MCP_HOST",
