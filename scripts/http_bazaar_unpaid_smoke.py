@@ -25,6 +25,7 @@ EXPECTED_JURISDICTIONS = {
     "mississauga_on",
     "laval_qc",
     "longueuil_qc",
+    "vancouver_bc",
 }
 
 
@@ -44,7 +45,7 @@ def main() -> None:
     if resource.get("url") != URL:
         raise SystemExit(f"Unexpected x402 resource URL: {resource}")
     description = str(resource.get("description") or "")
-    for city in ("Gatineau", "Ottawa", "Toronto", "Mississauga", "Laval", "Longueuil"):
+    for city in ("Gatineau", "Ottawa", "Toronto", "Mississauga", "Laval", "Longueuil", "Vancouver"):
         if city not in description:
             raise SystemExit(f"Jurisdiction missing from x402 resource description: {city}: {description}")
 
@@ -80,7 +81,7 @@ def main() -> None:
     if (output.get("example") or {}).get("engine_version") != "phase0-0.1.0":
         raise SystemExit(f"Unexpected Bazaar output example: {output}")
 
-    print("http_bazaar_six_jurisdictions=PASS")
+    print("http_bazaar_seven_jurisdictions=PASS")
     print("http_bazaar_unpaid_smoke=PASS")
 
 
