@@ -12,6 +12,7 @@ from .address import GatineauAddressAdapter, OttawaAddressAdapter, TorontoAddres
 from .http_fetch import fetch_json
 from .jurisdiction_router import evaluate_project
 from .mississauga_address import MississaugaAddressAdapter
+from .vancouver_address import VancouverAddressAdapter
 
 JsonFetcher = Callable[[str], Dict[str, Any]]
 
@@ -20,6 +21,7 @@ SUPPORTED_ADDRESS_JURISDICTIONS = (
     "ottawa_on",
     "toronto_on",
     "mississauga_on",
+    "vancouver_bc",
 )
 
 
@@ -32,6 +34,8 @@ def _resolve_address(jurisdiction: str, address: str, fetcher: JsonFetcher) -> d
         return TorontoAddressAdapter(fetcher).resolve(address)
     if jurisdiction == "mississauga_on":
         return MississaugaAddressAdapter(fetcher).resolve(address)
+    if jurisdiction == "vancouver_bc":
+        return VancouverAddressAdapter(fetcher).resolve(address)
     raise ValueError(f"address resolver not available for jurisdiction: {jurisdiction}")
 
 
