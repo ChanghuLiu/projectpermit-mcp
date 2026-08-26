@@ -30,6 +30,7 @@ ARGS = {
     "jurisdiction": "ottawa_on",
     "project": {"family": "window_door", "action": "replace_same_size"},
     "property": {"heritage": False},
+    "context": {"client_tag": "projectpermit-owner-smoke"},
 }
 
 
@@ -51,9 +52,6 @@ class MCPClientAdapter:
             arguments=params.get("arguments", {}) or {},
             meta=params.get("_meta"),
         )
-        # x402 currently re-normalizes the adapter result and still probes the
-        # pre-v2 attribute names `_meta` and `structuredContent`. Preserve the
-        # MCP SDK v2 `meta` / `structured_content` fields through that step.
         return to_x402_compatible_result(result)
 
     async def list_tools(self) -> Any:
