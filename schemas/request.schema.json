@@ -5,7 +5,7 @@
   "type": "object",
   "required": ["jurisdiction", "project"],
   "properties": {
-    "jurisdiction": {"enum": ["gatineau_qc", "ottawa_on", "toronto_on", "mississauga_on", "laval_qc", "longueuil_qc"]},
+    "jurisdiction": {"enum": ["gatineau_qc", "ottawa_on", "toronto_on", "mississauga_on", "laval_qc", "longueuil_qc", "vancouver_bc"]},
     "address": {"type": "string"},
     "project": {
       "type": "object",
@@ -15,8 +15,10 @@
         "action": {"type": "string"},
         "estimated_cost_cad": {"type": "number", "minimum": 0},
         "structural_change": {"type": "boolean"},
+        "structural_repair": {"type": "boolean"},
         "material_alteration": {"type": "boolean"},
         "modifies_walls": {"type": "boolean"},
+        "moves_interior_walls": {"type": "boolean"},
         "room_dimensions_change": {"type": "boolean"},
         "room_count_change": {"type": "boolean"},
         "new_opening": {"type": "boolean"},
@@ -32,6 +34,8 @@
         "deck_height_mm": {"type": "number", "minimum": 0},
         "deck_area_m2": {"type": "number", "minimum": 0},
         "deck_attached": {"type": "boolean"},
+        "connected_to_building": {"type": "boolean"},
+        "outdoor_patio": {"type": "boolean"},
         "principal_access": {"type": "boolean"},
         "covered": {"type": "boolean"},
         "yard": {"enum": ["front", "side", "rear", "secondary_front", "street_facing", "other"]},
