@@ -1,8 +1,11 @@
 import io
 import json
+import logging
 import unittest
 from contextlib import redirect_stdout
 
+# Import configures municipal HTTP-client loggers before assertions.
+from projectpermit import http_fetch  # noqa: F401
 from projectpermit.telemetry import emit_preflight_event
 
 
@@ -46,11 +49,16 @@ class TelemetryTest(unittest.TestCase):
         self.assertTrue(payload["internal_traffic"])
         self.assertIsNotNone(payload["client_tag_hash"])
 
-        # Privacy contract: raw identifying location/integration values never appear.
         self.assertNotIn("453 W 12TH", rendered)
         self.assertNotIn("-123.114", rendered)
         self.assertNotIn("49.26", rendered)
         self.assertNotIn("projectpermit-ci", rendered)
+
+    def test_municipal_http_request_urls_are_not_info_logged(self):
+        # Address/GIS queries can include civic numbers and coordinates. httpx/httpcore
+        # INFO request logging must stay disabled in production modules.
+        self.assertGreaterEqual(logging.getLogger("httpx").level, logging.WARNING)
+        self.assertGreaterEqual(logging.getLogger("httpcore").level, logging.WARNING)
 
 
 if __name__ == "__main__":
