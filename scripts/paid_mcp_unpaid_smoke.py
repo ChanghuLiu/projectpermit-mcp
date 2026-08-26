@@ -19,6 +19,7 @@ EXPECTED_JURISDICTIONS = {
     "mississauga_on",
     "laval_qc",
     "longueuil_qc",
+    "vancouver_bc",
 }
 
 
@@ -61,12 +62,8 @@ async def main() -> None:
             result = await session.call_tool(
                 "check_project_requirements",
                 {
-                    "jurisdiction": "laval_qc",
-                    "project": {
-                        "family": "window_door",
-                        "action": "replace_same_size",
-                    },
-                    "property": {"piia": False},
+                    "jurisdiction": "vancouver_bc",
+                    "project": {"family": "interior_renovation", "action": "painting"},
                 },
             )
             print(f"paid_without_payment_is_error={result.is_error}")
@@ -79,7 +76,7 @@ async def main() -> None:
             accepts = challenge["accepts"]
             if not any(item.get("network") == "eip155:84532" for item in accepts):
                 raise SystemExit("Base Sepolia payment option missing")
-            print("paid_mcp_six_jurisdictions=PASS")
+            print("paid_mcp_seven_jurisdictions=PASS")
             print("paid_mcp_unpaid_smoke=PASS")
 
 
