@@ -11,7 +11,7 @@ class ApiSmokeTest(unittest.TestCase):
         r = self.client.get('/health')
         self.assertEqual(200, r.status_code)
         self.assertTrue(r.json()['ok'])
-        self.assertEqual('phase1b-0.3.0', r.json()['engine_version'])
+        self.assertEqual('phase1c-0.4.0', r.json()['engine_version'])
 
     def test_free_capabilities(self):
         r = self.client.get('/v1/capabilities')
@@ -21,16 +21,14 @@ class ApiSmokeTest(unittest.TestCase):
         self.assertEqual(
             {
                 'gatineau_qc', 'ottawa_on', 'toronto_on', 'mississauga_on',
-                'laval_qc', 'longueuil_qc',
+                'laval_qc', 'longueuil_qc', 'vancouver_bc',
             },
             set(jurisdictions),
         )
-        self.assertTrue(jurisdictions['gatineau_qc']['address_resolution'])
-        self.assertTrue(jurisdictions['ottawa_on']['address_resolution'])
-        self.assertTrue(jurisdictions['toronto_on']['address_resolution'])
-        self.assertTrue(jurisdictions['mississauga_on']['address_resolution'])
-        self.assertFalse(jurisdictions['laval_qc']['address_resolution'])
-        self.assertFalse(jurisdictions['longueuil_qc']['address_resolution'])
+        for jurisdiction in ('gatineau_qc', 'ottawa_on', 'toronto_on', 'mississauga_on'):
+            self.assertTrue(jurisdictions[jurisdiction]['address_resolution'])
+        for jurisdiction in ('laval_qc', 'longueuil_qc', 'vancouver_bc'):
+            self.assertFalse(jurisdictions[jurisdiction]['address_resolution'])
         self.assertEqual(8, len(payload['project_families']))
 
     def test_ottawa_same_size_window(self):
@@ -93,6 +91,14 @@ class ApiSmokeTest(unittest.TestCase):
         })
         self.assertEqual(200, r.status_code)
         self.assertEqual('REQUIRED', r.json()['determination'])
+
+    def test_vancouver_cosmetic_interior(self):
+        r = self.client.post('/v1/check-project-requirements', json={
+            'jurisdiction': 'vancouver_bc',
+            'project': {'family': 'interior_renovation', 'action': 'painting'},
+        })
+        self.assertEqual(200, r.status_code)
+        self.assertEqual('LIKELY_NOT_REQUIRED', r.json()['determination'])
 
 
 if __name__ == '__main__':
