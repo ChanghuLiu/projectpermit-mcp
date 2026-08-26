@@ -12,6 +12,20 @@ URL = os.getenv(
     "PROJECTPERMIT_PAID_MCP_URL",
     "https://projectpermit-x402-mcp-production.up.railway.app/mcp",
 )
+EXPECTED_JURISDICTIONS = {
+    "gatineau_qc",
+    "ottawa_on",
+    "toronto_on",
+    "mississauga_on",
+}
+
+
+def _json_from_result(result):
+    structured = getattr(result, "structured_content", None)
+    if structured:
+        return structured
+    rendered = "\n".join(getattr(block, "text", "") for block in result.content)
+    return json.loads(rendered)
 
 
 async def main() -> None:
@@ -29,17 +43,24 @@ async def main() -> None:
 
             info = await session.call_tool("projectpermit_info", {})
             assert not info.is_error, info
+            info_payload = _json_from_result(info)
+            jurisdictions = set(info_payload.get("jurisdictions") or [])
+            if not EXPECTED_JURISDICTIONS.issubset(jurisdictions):
+                raise SystemExit(f"Paid MCP info missing expansion jurisdictions: {jurisdictions}")
+            print(f"free_info_jurisdictions={sorted(jurisdictions)}")
             print("free_info=PASS")
 
             result = await session.call_tool(
                 "check_project_requirements",
                 {
-                    "jurisdiction": "ottawa_on",
+                    "jurisdiction": "toronto_on",
                     "project": {
                         "family": "window_door",
                         "action": "replace_same_size",
+                        "single_dwelling_house": True,
+                        "structural_change": False,
+                        "new_exit": False,
                     },
-                    "property": {"heritage": False},
                 },
             )
             print(f"paid_without_payment_is_error={result.is_error}")
@@ -52,6 +73,7 @@ async def main() -> None:
             accepts = challenge["accepts"]
             if not any(item.get("network") == "eip155:84532" for item in accepts):
                 raise SystemExit("Base Sepolia payment option missing")
+            print("paid_mcp_four_jurisdictions=PASS")
             print("paid_mcp_unpaid_smoke=PASS")
 
 
