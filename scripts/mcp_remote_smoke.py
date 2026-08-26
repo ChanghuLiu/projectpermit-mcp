@@ -12,6 +12,7 @@ URL = os.getenv(
     "PROJECTPERMIT_MCP_URL",
     "https://projectpermit-mcp-production.up.railway.app/mcp",
 )
+INTERNAL_CONTEXT = {"client_tag": "projectpermit-ci"}
 
 CASES = [
     ("ottawa_on", {"family": "window_door", "action": "replace_same_size"}, {"heritage": False}, "LIKELY_NOT_REQUIRED"),
@@ -62,7 +63,12 @@ async def main() -> None:
             for jurisdiction, project, property_facts, expected in CASES:
                 result = await session.call_tool(
                     "check_project_requirements",
-                    {"jurisdiction": jurisdiction, "project": project, "property": property_facts},
+                    {
+                        "jurisdiction": jurisdiction,
+                        "project": project,
+                        "property": property_facts,
+                        "context": INTERNAL_CONTEXT,
+                    },
                 )
                 if result.is_error:
                     raise SystemExit(f"MCP tool returned error for {jurisdiction}: {result}")
@@ -75,8 +81,6 @@ async def main() -> None:
                         f"Unexpected determination for {jurisdiction}: expected {expected}, got {actual}: {payload}"
                     )
 
-            # Real first-party municipal GIS smoke. Vancouver City Hall is a stable,
-            # public civic address present in the City's property-address dataset.
             address_result = await session.call_tool(
                 "check_project_requirements",
                 {
@@ -84,6 +88,7 @@ async def main() -> None:
                     "address": "453 W 12TH AVE, Vancouver, BC",
                     "resolve_address": True,
                     "project": {"family": "interior_renovation", "action": "painting"},
+                    "context": INTERNAL_CONTEXT,
                 },
             )
             if address_result.is_error:
