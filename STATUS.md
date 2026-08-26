@@ -1,4 +1,4 @@
-# ProjectPermit Phase 0 Status
+# ProjectPermit Status
 
 Updated: 2026-08-26
 
@@ -6,13 +6,24 @@ Updated: 2026-08-26
 
 **Phase 0 testnet discovery / market-validation release readiness: PASS.**
 
-ProjectPermit is deployed as an evidence-linked, deterministic municipal permit preflight for Gatineau, Quebec and Ottawa, Ontario. The rules engine does not call an LLM and the payment layer is kept outside BuildRequirements.
+**Phase 1A cross-jurisdiction expansion: IN PROGRESS — Toronto + Mississauga deterministic rule coverage is implemented and under public deployment verification.**
 
-## Completed
+ProjectPermit is an evidence-linked deterministic municipal permit preflight engine. The calling Agent normalizes project scope; the server applies municipal rules and returns official-source evidence. The rules engine does not call an LLM and payment remains outside BuildRequirements.
+
+## Jurisdiction coverage
+
+- `gatineau_qc` — Phase 0 rules + address/GIS adapter
+- `ottawa_on` — Phase 0 rules + address/GIS adapter
+- `toronto_on` — Phase 1A deterministic rules; address adapter pending
+- `mississauga_on` — Phase 1A deterministic rules; address adapter pending
+
+All four jurisdictions are routed through the same public HTTP/MCP rule interface. Toronto and Mississauga should be called with `resolve_address=false` until their property/GIS adapters are locked.
+
+## Phase 0 completed
 
 - Product boundary and conservative determination vocabulary locked
 - Gatineau + Ottawa Phase 0 rules implemented
-- 8 project families
+- 8 normalized project families
 - deterministic rules engine with official evidence and stable rule ids
 - rule-version and property-overlay-aware results
 - Ottawa official geocoder/GIS adapter
@@ -33,6 +44,18 @@ ProjectPermit is deployed as an evidence-linked, deterministic municipal permit 
 - GoPlausible Bazaar indexing proven end to end
 - canonical HTTPS Bazaar resource URL proven after settlement
 
+## Phase 1A implemented so far
+
+- Toronto official required/not-required guidance converted to conservative deterministic rules
+- Mississauga official required/not-required guidance converted to conservative deterministic rules
+- explicit handling of ambiguous official thresholds instead of guessing
+- four-jurisdiction dispatcher exported as the package's public evaluator
+- HTTP, free MCP, paid MCP, and x402 discovery schemas advertise all four jurisdictions
+- public request schema expanded with Toronto/Mississauga rule facts
+- source manifest tracks Toronto/Mississauga critical official guidance
+- regression tests added for window/door, basement, deck and accessory-structure cases
+- `docs/MARKET_VALIDATION.md` added with call-volume model, pricing thesis, buyer priorities and expansion gates
+
 ## Live services
 
 - Paid HTTP API: `https://projectpermit-api-v2-production.up.railway.app`
@@ -44,14 +67,15 @@ Paid MCP exposes:
 - `projectpermit_info` — free discovery/status
 - `check_project_requirements` — x402-paid permit preflight
 
-Current test price: **$0.01 USDC per paid tool/API call** on Base Sepolia.
+Current **testnet discovery price**: **$0.01 USDC per paid tool/API call** on Base Sepolia. This is not the intended commercial price.
 
 ## Verification
 
-The repository contains the deterministic golden corpus and automated tests. Current CI verifies:
+CI verifies:
 
 - Python 3.11 and 3.13 core tests
 - deterministic rule/schema/source contracts
+- Toronto/Mississauga regression cases
 - MCP v2 integration
 - x402 wire behavior
 - MCP v2 settlement-receipt metadata compatibility
@@ -62,7 +86,7 @@ The repository contains the deterministic golden corpus and automated tests. Cur
 - facilitator capability matrix
 - read-only Bazaar catalog state, including canonical HTTPS listing
 
-Real buyer-side x402 calls have completed successfully through the public Railway services. Server logs independently confirmed the expected `402 -> 200` HTTP flow and successful facilitator verification/settlement. The deterministic engine returned the expected Ottawa preflight result.
+Real buyer-side x402 calls have completed successfully through the public Railway services. No additional paid calls are needed for ordinary smoke testing.
 
 Final canonical-HTTPS HTTP settlement transaction:
 
@@ -70,41 +94,35 @@ Final canonical-HTTPS HTTP settlement transaction:
 
 ## Bazaar result
 
-The x402.org public testnet facilitator remains a known-good Base Sepolia payment facilitator, but its public endpoint does not expose the Bazaar listing endpoints used by this canary.
-
 For Bazaar discovery, ProjectPermit uses:
 
 `https://facilitator.goplausible.xyz`
 
-The final read-only catalog verification reports:
+The canonical resource is:
 
-- catalog total: **1682**
-- ProjectPermit matches: **2**
-- canonical HTTPS matches: **1**
-- canonical resource: `https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements`
-- method: `POST`
-- price: `10000` USDC atomic units = **$0.01 test USDC**
-- network: `eip155:84532`
-- scheme: `exact`
-- canonical listing `settleCount`: **1**
-- status: **`FOUND_CANONICAL_HTTPS`**
+`https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements`
 
-A stale pre-fix `http://` catalog row also remains in the external facilitator catalog. It is not the canonical ProjectPermit resource and is retained by the facilitator as historical discovery state; the canonical HTTPS row is present and is the release gate.
+The final Phase 0 catalog verification reported `FOUND_CANONICAL_HTTPS`. A stale pre-fix `http://` historical row remains in the external catalog but is not the canonical resource.
+
+## Market decision
+
+Two-city Gatineau/Ottawa coverage is a proving ground, not a sufficient standalone call market. The commercial thesis is now a **cross-jurisdiction B2B/Agent permit-requirements intelligence layer**, with contractor/property/construction software as primary distribution rather than direct homeowner acquisition.
+
+The current working commercial hypothesis is roughly **$0.20-$0.50 per address-aware evidence-linked preflight** or an equivalent volume plan, subject to external willingness-to-pay validation. See `docs/MARKET_VALIDATION.md` for assumptions and scenario math.
 
 ## Known unresolved items
 
-1. **Gatineau PIIA/heritage:** public municipal mapping confirms the concept/layers, but a stable unauthenticated machine endpoint has not yet been locked. Unknown overlay state must never be mapped to `false`.
-2. **Mainnet:** intentionally disabled until testnet discovery and product-value validation produce enough demand evidence.
-3. **External Bazaar stale row:** the pre-fix `http://` discovery row remains alongside the canonical HTTPS row. This is external catalog hygiene, not a blocker for Phase 0.
+1. **Toronto/Mississauga property context:** deterministic rules are implemented, but official address/zoning/heritage adapters are not yet locked.
+2. **Gatineau PIIA/heritage:** public municipal mapping confirms the concept/layers, but a stable unauthenticated machine endpoint has not yet been locked. Unknown overlay state must never be mapped to `false`.
+3. **Mainnet:** intentionally disabled until external demand and willingness-to-pay validation pass.
+4. **External Bazaar stale row:** historical `http://` discovery row remains alongside canonical HTTPS; non-blocking.
 
-## Next phase
+## Next phase gates
 
-Phase 0 is complete for **testnet discovery / market validation**. The next work should focus on demand and market size rather than more payment plumbing:
-
-1. validate that external agents can discover and choose the capability from Bazaar,
-2. measure discovery impressions / calls / paid-call conversion where observable,
-3. expand the highest-value jurisdiction/project families only after demand evidence,
-4. estimate realistic monthly paid API/MCP calls and TAM/SAM/SOM before mainnet pricing,
-5. keep mainnet payments blocked until product-value validation passes.
+1. Finish public verification of Toronto + Mississauga rules.
+2. Add Toronto and Mississauga official address/property adapters where reliable no-cost machine endpoints exist.
+3. Add Laval, Longueuil and Vancouver to reach a visibly cross-jurisdiction validation footprint.
+4. Seek at least 3 external Agent/platform developers, 100 non-owner external calls, one repeated integration with 20+ calls, and one buyer conversation accepting the commercial price range.
+5. Do not expand to 20+ municipalities until there is 1,000 external calls/month, a credible platform path to 10k+ calls/month, or a paying design partner requesting jurisdictions.
 
 No additional paid calls should be made merely for smoke testing unless a regression specifically requires them.
