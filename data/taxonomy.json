@@ -1,0 +1,14 @@
+{
+  "version": "phase0-0.1.0",
+  "families": [
+    {"id": "window_door", "examples": ["replace same-size window", "new window", "enlarge window", "relocate door"]},
+    {"id": "interior_renovation", "examples": ["remove wall", "non-structural cosmetic renovation", "flooring", "painting"]},
+    {"id": "basement", "examples": ["finish basement", "basement cosmetic work", "basement wall/plumbing changes"]},
+    {"id": "dwelling_change", "examples": ["add apartment", "remove dwelling unit"]},
+    {"id": "deck_porch", "examples": ["deck", "porch", "terrace", "exterior stair"]},
+    {"id": "accessory_structure", "examples": ["shed", "gazebo", "pergola", "detached accessory building"]},
+    {"id": "addition", "examples": ["sunroom", "attached garage", "one-storey addition", "two-storey addition"]},
+    {"id": "kitchen_bath_plumbing", "examples": ["replace cabinets", "move sink", "extend plumbing", "bathroom renovation"]}
+  ],
+  "normalization_principle": "The MCP client/agent extracts facts. The ProjectPermit server does not pay for an LLM in Phase 0."
+}
