@@ -55,8 +55,13 @@ def build_server():
 
 
 def main() -> None:
-    host = os.getenv("PROJECTPERMIT_MCP_HOST", "127.0.0.1")
-    port = int(os.getenv("PROJECTPERMIT_MCP_PORT", "8001"))
+    # Railway injects PORT. Local development keeps the safer loopback default.
+    railway_port = os.getenv("PORT")
+    host = os.getenv(
+        "PROJECTPERMIT_MCP_HOST",
+        "0.0.0.0" if railway_port else "127.0.0.1",
+    )
+    port = int(os.getenv("PROJECTPERMIT_MCP_PORT") or railway_port or "8001")
     build_server().run(
         transport="streamable-http",
         host=host,
