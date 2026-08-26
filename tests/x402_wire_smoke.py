@@ -7,6 +7,7 @@ os.environ['PROJECTPERMIT_X402_PAY_TO'] = '0xDAAef0FD525278aAD0bA11066A96c338642
 os.environ['PROJECTPERMIT_X402_FACILITATOR_URL'] = 'https://x402.org/facilitator'
 
 from fastapi.testclient import TestClient
+from x402.http import decode_payment_required_header
 from projectpermit.api import app
 
 client = TestClient(app)
@@ -22,4 +23,22 @@ response = client.post('/v1/check-project-requirements', json={
 assert response.status_code == 402, (response.status_code, response.text)
 header = response.headers.get('payment-required')
 assert header, dict(response.headers)
-print('x402 unpaid wire smoke: 402 + PAYMENT-REQUIRED OK')
+
+challenge = decode_payment_required_header(header).model_dump(by_alias=True, exclude_none=True)
+assert challenge.get('x402Version') == 2, challenge
+assert challenge.get('accepts'), challenge
+assert any(item.get('network') == 'eip155:84532' for item in challenge['accepts']), challenge
+
+bazaar = (challenge.get('extensions') or {}).get('bazaar')
+assert bazaar, challenge
+info = bazaar.get('info') or {}
+input_info = info.get('input') or {}
+assert input_info.get('type') == 'http', input_info
+assert input_info.get('method') == 'POST', input_info
+assert input_info.get('bodyType') == 'json', input_info
+assert (input_info.get('body') or {}).get('jurisdiction') == 'ottawa_on', input_info
+output_info = info.get('output') or {}
+assert output_info.get('type') == 'json', output_info
+assert (output_info.get('example') or {}).get('engine_version') == 'phase0-0.1.0', output_info
+
+print('x402 unpaid wire smoke: 402 + PAYMENT-REQUIRED + HTTP Bazaar metadata OK')
