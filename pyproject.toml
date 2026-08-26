@@ -23,6 +23,7 @@ dev = ["pytest>=8,<9", "jsonschema>=4.23,<5"]
 [project.scripts]
 projectpermit-api = "projectpermit.cli:run_api"
 projectpermit-mcp = "projectpermit.mcp_server:main"
+projectpermit-paid-mcp = "projectpermit.paid_mcp_server:main"
 projectpermit-source-watch = "projectpermit.source_watch:main"
 
 [tool.setuptools]
