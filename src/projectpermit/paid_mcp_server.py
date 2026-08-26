@@ -28,7 +28,7 @@ from x402.mcp import (
 from x402.schemas import ResourceConfig
 from x402.server import x402ResourceServerSync
 
-from .engine import evaluate_project
+from .jurisdiction_router import SUPPORTED_JURISDICTIONS, evaluate_project
 
 
 TOOL_NAME = "check_project_requirements"
@@ -38,8 +38,8 @@ INPUT_SCHEMA: dict[str, Any] = {
     "properties": {
         "jurisdiction": {
             "type": "string",
-            "enum": ["gatineau_qc", "ottawa_on"],
-            "description": "Phase 0 municipality identifier.",
+            "enum": list(SUPPORTED_JURISDICTIONS),
+            "description": "Supported municipality identifier.",
         },
         "project": {
             "type": "object",
@@ -47,7 +47,7 @@ INPUT_SCHEMA: dict[str, Any] = {
         },
         "address": {
             "type": ["string", "null"],
-            "description": "Optional civic address for address-aware preflight.",
+            "description": "Optional civic address for address-aware preflight where a resolver is available.",
         },
         "property": {
             "type": "object",
@@ -87,8 +87,6 @@ def _to_call_tool_result(result: MCPToolResult) -> CallToolResult:
         if item.get("type") == "text":
             content.append(TextContent(type="text", text=str(item.get("text", ""))))
         else:
-            # x402 payment challenges and ProjectPermit responses are text today.
-            # Preserve any future unknown item without crashing the protocol call.
             content.append(TextContent(type="text", text=json.dumps(item, ensure_ascii=False)))
 
     return CallToolResult(
@@ -104,7 +102,7 @@ def build_paid_server() -> MCPServer:
     if not settings["pay_to"]:
         raise RuntimeError("PROJECTPERMIT_X402_PAY_TO is required for paid MCP")
     if not settings["network"].startswith("eip155:"):
-        raise RuntimeError("Phase 0 paid MCP supports EVM eip155:* networks only")
+        raise RuntimeError("ProjectPermit paid MCP supports EVM eip155:* networks only")
 
     server = MCPServer(
         "ProjectPermit x402",
@@ -137,8 +135,8 @@ def build_paid_server() -> MCPServer:
             tool_name=TOOL_NAME,
             description=(
                 "Evidence-linked municipal construction permit/planning preflight for "
-                "Gatineau, Quebec and Ottawa, Ontario. Returns determination, reasons, "
-                "property flags, unresolved questions, and official-source evidence."
+                "Gatineau, Ottawa, Toronto and Mississauga. Returns deterministic "
+                "requirements and official-source evidence."
             ),
             transport="streamable-http",
             input_schema=INPUT_SCHEMA,
@@ -157,14 +155,7 @@ def build_paid_server() -> MCPServer:
                     "authorization, legal advice, or engineering certification."
                 ),
                 service_name="ProjectPermit",
-                tags=[
-                    "building-permit",
-                    "construction",
-                    "renovation",
-                    "ottawa",
-                    "gatineau",
-                    "canada",
-                ],
+                tags=["building-permit", "construction", "renovation", "ontario", "canada"],
             ),
             extensions=extensions,
         ),
@@ -184,9 +175,6 @@ def build_paid_server() -> MCPServer:
             structured_content=result,
         )
 
-    # create_payment_wrapper_sync returns a normal (args, extra) handler wrapper.
-    # The old x402 FastMCP adapter is intentionally not used: MCP SDK v2 renamed
-    # FastMCP to MCPServer, while the core x402 wrapper itself is version-neutral.
     paid_tool = wrapper(execute)
 
     @server.tool()
@@ -197,7 +185,7 @@ def build_paid_server() -> MCPServer:
             "paid_tool": TOOL_NAME,
             "price": settings["price"],
             "network": settings["network"],
-            "jurisdictions": ["gatineau_qc", "ottawa_on"],
+            "jurisdictions": list(SUPPORTED_JURISDICTIONS),
             "disclaimer": "Preflight information only; not municipal authorization.",
         }
 
