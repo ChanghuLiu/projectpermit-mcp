@@ -9,6 +9,7 @@ from .address import (
     OttawaAddressAdapter,
     TorontoAddressAdapter,
 )
+from .mississauga_address import MississaugaAddressAdapter
 from .http_fetch import fetch_json
 from .x402_config import configure_x402
 
@@ -29,7 +30,7 @@ def health():
 @app.get("/v1/capabilities")
 def capabilities():
     """Free machine-readable discovery; no permit determination is performed."""
-    address_resolvers = {"gatineau_qc", "ottawa_on", "toronto_on"}
+    address_resolvers = {"gatineau_qc", "ottawa_on", "toronto_on", "mississauga_on"}
     return {
         "service": "ProjectPermit",
         "engine_version": "phase1a-0.2.0",
@@ -69,6 +70,8 @@ def check_project_requirements(req: PreflightRequest):
                 address_context = GatineauAddressAdapter(fetch_json).geocode(req.address)
             elif req.jurisdiction == "toronto_on":
                 address_context = TorontoAddressAdapter(fetch_json).resolve(req.address)
+            elif req.jurisdiction == "mississauga_on":
+                address_context = MississaugaAddressAdapter(fetch_json).resolve(req.address)
             else:
                 raise HTTPException(status_code=422, detail="address resolver not available for jurisdiction")
         except HTTPException:
