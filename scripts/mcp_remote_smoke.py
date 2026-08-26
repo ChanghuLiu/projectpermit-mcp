@@ -44,6 +44,18 @@ CASES = [
         {},
         "LIKELY_NOT_REQUIRED",
     ),
+    (
+        "laval_qc",
+        {"family": "window_door", "action": "replace_same_size"},
+        {"piia": False},
+        "LIKELY_NOT_REQUIRED",
+    ),
+    (
+        "longueuil_qc",
+        {"family": "window_door", "action": "enlarge_existing_opening"},
+        {},
+        "REQUIRED",
+    ),
 ]
 
 
@@ -91,7 +103,7 @@ async def main() -> None:
                         f"Unexpected determination for {jurisdiction}: expected {expected}, got {actual}: {payload}"
                     )
 
-            print("remote_mcp_four_jurisdictions=PASS")
+            print("remote_mcp_six_jurisdictions=PASS")
             print("remote_mcp_smoke=PASS")
 
 
