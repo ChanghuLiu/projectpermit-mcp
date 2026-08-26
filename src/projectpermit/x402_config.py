@@ -5,12 +5,14 @@ transport and is a no-op unless PROJECTPERMIT_X402_ENABLED=true.
 
 The HTTP route also declares Bazaar discovery metadata. This is intentionally a
 compatibility/discovery twin of the native paid MCP tool: both surfaces execute the
-same deterministic ProjectPermit engine and use the same payment settings.
+same deterministic ProjectPermit jurisdiction router and use the same payment settings.
 """
 from __future__ import annotations
 
 import os
 from typing import Any
+
+from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 
 
 HTTP_PUBLIC_RESOURCE_URL = (
@@ -29,8 +31,8 @@ HTTP_DISCOVERY_INPUT_SCHEMA: dict[str, Any] = {
     "properties": {
         "jurisdiction": {
             "type": "string",
-            "enum": ["gatineau_qc", "ottawa_on"],
-            "description": "Phase 0 municipality identifier.",
+            "enum": list(SUPPORTED_JURISDICTIONS),
+            "description": "Supported municipality identifier.",
         },
         "project": {
             "type": "object",
@@ -38,7 +40,7 @@ HTTP_DISCOVERY_INPUT_SCHEMA: dict[str, Any] = {
         },
         "address": {
             "type": ["string", "null"],
-            "description": "Optional civic address for address-aware preflight.",
+            "description": "Optional civic address for address-aware preflight where a resolver is available.",
         },
         "property": {
             "type": "object",
@@ -50,15 +52,12 @@ HTTP_DISCOVERY_INPUT_SCHEMA: dict[str, Any] = {
         },
         "resolve_address": {
             "type": "boolean",
-            "description": "Resolve the civic address against the supported municipal geocoder/GIS adapter.",
+            "description": "Resolve the civic address against a supported municipal geocoder/GIS adapter. Not every rules jurisdiction has an address adapter yet.",
         },
     },
     "required": ["jurisdiction", "project"],
 }
 
-# Keep the output declaration deliberately stable and minimal. The example shows a
-# representative successful result, while the schema only promises the durable
-# top-level contract needed by an autonomous buyer to understand the capability.
 HTTP_DISCOVERY_OUTPUT_EXAMPLE: dict[str, Any] = {
     "jurisdiction": {"country": "CA", "province": "ON", "municipality": "Ottawa"},
     "determination": "LIKELY_NOT_REQUIRED",
@@ -80,10 +79,12 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
         "determination": {
             "type": "string",
             "enum": [
+                "REQUIRED",
                 "LIKELY_REQUIRED",
                 "LIKELY_NOT_REQUIRED",
                 "ADDITIONAL_REVIEW_REQUIRED",
                 "MUNICIPAL_CONFIRMATION_REQUIRED",
+                "OUT_OF_SCOPE",
             ],
         },
         "requirements": {"type": "array"},
@@ -158,11 +159,9 @@ def configure_x402(app: Any) -> None:
         resource_server.register(network, ExactEvmServerScheme())
     else:
         raise RuntimeError(
-            "Phase 0 x402 transport currently enables EVM exact scheme only; configure an eip155:* network"
+            "ProjectPermit x402 transport currently enables EVM exact scheme only; configure an eip155:* network"
         )
 
-    # Bazaar's HTTP discovery declaration needs the resource-server extension so
-    # middleware can enrich the declaration with the actual request method.
     resource_server.register_extension(bazaar_resource_server_extension)
 
     discovery_extensions = declare_discovery_extension(
@@ -189,8 +188,8 @@ def configure_x402(app: Any) -> None:
             mime_type="application/json",
             description=(
                 "Evidence-linked municipal construction permit/planning preflight for "
-                "Gatineau, Quebec and Ottawa, Ontario. Returns deterministic rule results "
-                "with official-source evidence. Not municipal authorization or legal advice."
+                "Gatineau, Ottawa, Toronto and Mississauga. Returns deterministic rule "
+                "results with official-source evidence. Not municipal authorization or legal advice."
             ),
             extensions={**discovery_extensions},
         )
