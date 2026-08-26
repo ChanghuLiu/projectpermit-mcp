@@ -12,6 +12,7 @@ from .address import GatineauAddressAdapter, OttawaAddressAdapter, TorontoAddres
 from .http_fetch import fetch_json
 from .jurisdiction_router import evaluate_project
 from .mississauga_address import MississaugaAddressAdapter
+from .telemetry import emit_preflight_event
 from .vancouver_address import VancouverAddressAdapter
 
 JsonFetcher = Callable[[str], Dict[str, Any]]
@@ -46,6 +47,9 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
     independently of the rules engine. Resolved non-null municipal property fields
     override caller-supplied values; unknown (`None`) overlays never overwrite a
     caller's explicit value.
+
+    A privacy-minimal usage event is emitted after successful evaluation. The event
+    never contains the civic address, coordinates or raw property identifiers.
     """
     prepared = deepcopy(facts)
     address_context: dict[str, Any] | None = None
@@ -70,4 +74,5 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
     result = evaluate_project(prepared)
     if address_context is not None:
         result["address_context"] = address_context
+    emit_preflight_event(prepared, result)
     return result
