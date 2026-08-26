@@ -37,7 +37,7 @@ async def main() -> None:
                     "property": {"heritage": False},
                 },
             )
-            if result.isError:
+            if result.is_error:
                 raise SystemExit(f"MCP tool returned error: {result}")
 
             rendered = "\n".join(
@@ -45,7 +45,7 @@ async def main() -> None:
             )
             print(rendered)
             if "LIKELY_NOT_REQUIRED" not in rendered:
-                structured = getattr(result, "structuredContent", None)
+                structured = getattr(result, "structured_content", None)
                 print(f"structured={structured}")
                 if not structured or structured.get("determination") != "LIKELY_NOT_REQUIRED":
                     raise SystemExit("Unexpected ProjectPermit determination")
