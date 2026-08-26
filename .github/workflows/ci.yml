@@ -58,3 +58,15 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: pip install -e '.[mcp]'
       - run: python scripts/mcp_remote_smoke.py
+
+  remote-paid-mcp-challenge:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e '.[mcp]'
+      - run: python scripts/paid_mcp_unpaid_smoke.py
