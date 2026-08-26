@@ -1,0 +1,25 @@
+{
+  "manifest_version": 1,
+  "verified_at": "2026-08-26",
+  "sources": [
+    {"source_id":"GAT_GENERAL","authority":"Ville de Gatineau","kind":"official_guidance","criticality":"critical","url":"https://www.gatineau.ca/portail/default.aspx?c=fr-CA&p=guichet_municipal%2Fpermis_certificats_autorisation_urbanisme%2Fai_je_besoin_permis_construire_ou_certificat_autorisation"},
+    {"source_id":"GAT_FAQ","authority":"Ville de Gatineau","kind":"official_guidance","criticality":"high","url":"https://www.gatineau.ca/portail/default.aspx?c=fr-CA&p=guichet_municipal%2Fpermis_certificats_autorisation_urbanisme%2Fdemande_information%2Ffaq"},
+    {"source_id":"GAT_PRINCIPAL","authority":"Ville de Gatineau","kind":"official_guidance","criticality":"high","url":"https://www.gatineau.ca/portail/default.aspx?p=guichet_municipal%2Fpermis_certificats_autorisation_urbanisme%2Fpermis_construire%2Fconstruction_batiment_principal"},
+    {"source_id":"GAT_ACCESSORY","authority":"Ville de Gatineau","kind":"official_guidance","criticality":"high","url":"https://www.gatineau.ca/portail/default.aspx?c=fr-CA&p=guichet_municipal%2Freglements_municipaux%2Fbatiments_accessoires_detaches_habitation"},
+    {"source_id":"GAT_GIS","authority":"Ville de Gatineau","kind":"official_gis","criticality":"high","url":"https://www.gatineau.ca/portail/default.aspx?p=publications_cartes_statistiques_donnees_ouvertes%2Fcartes%2Fcarte_interactive_geoportail_urbanisme"},
+    {"source_id":"GAT_ZONING_DATA","authority":"Ville de Gatineau","kind":"official_open_data","criticality":"high","url":"https://www.gatineau.ca/portail/default.aspx?id=1022937247&p=publications_cartes_statistiques_donnees_ouvertes%2Fdonnees_ouvertes%2Fjeux_donnees%2Fdetails"},
+    {"source_id":"GAT_ARCGIS_PORTAL","authority":"Ville de Gatineau","kind":"official_gis","criticality":"high","url":"https://vportailgis.gatineau.ca/portal/sharing/portals/self"},
+    {"source_id":"OTT_GENERAL","authority":"City of Ottawa","kind":"official_guidance","criticality":"critical","url":"https://ottawa.ca/en/planning-development-and-construction/building-and-renovating/do-i-need-building-permit/building-permit-projects"},
+    {"source_id":"OTT_EXEMPT","authority":"City of Ottawa","kind":"official_guidance","criticality":"critical","url":"https://ottawa.ca/en/planning-development-and-construction/building-and-renovating/do-i-need-building-permit/projects-not-requiring-building-permits"},
+    {"source_id":"OTT_DECK","authority":"City of Ottawa","kind":"official_guidance","criticality":"high","url":"https://ottawa.ca/en/planning-development-and-construction/building-and-renovating/do-i-need-building-permit/decks"},
+    {"source_id":"OTT_ACCESSORY","authority":"City of Ottawa","kind":"official_advisory_pdf","criticality":"high","url":"https://documents.ottawa.ca/sites/default/files/permit_except_acc_structure_advisory_en.pdf"},
+    {"source_id":"OTT_ADU","authority":"City of Ottawa","kind":"official_guidance","criticality":"high","url":"https://ottawa.ca/en/planning-development-and-construction/building-and-renovating/do-i-need-building-permit/adding-apartment-additional-dwelling-units"},
+    {"source_id":"OTT_ZONING_2026","authority":"City of Ottawa","kind":"official_by_law_guidance","criticality":"critical","url":"https://ottawa.ca/en/living-ottawa/laws-licences-and-permits/laws/laws-z/zoning-law-law-no-2026-50"},
+    {"source_id":"OTT_ZONING_APPEALS","authority":"City of Ottawa","kind":"official_transition_update","criticality":"critical","url":"https://ottawa.ca/en/node/3046321"},
+    {"source_id":"OTT_GIS_2026","authority":"City of Ottawa","kind":"official_gis","criticality":"critical","url":"https://maps.ottawa.ca/arcgis/rest/services/Zoning_Bylaw_2026_50/MapServer"},
+    {"source_id":"OTT_GIS_LEGACY","authority":"City of Ottawa","kind":"official_gis","criticality":"high","url":"https://maps.ottawa.ca/arcgis/rest/services/Zoning/MapServer"},
+    {"source_id":"OTT_ADDITION","authority":"City of Ottawa","kind":"official_guidance","criticality":"high","url":"https://ottawa.ca/en/planning-development-and-construction/building-and-renovating/do-i-need-building-permit/addition"},
+    {"source_id":"OTT_BASEMENT","authority":"City of Ottawa","kind":"official_guidance","criticality":"high","url":"https://ottawa.ca/en/planning-development-and-construction/building-and-renovating/do-i-need-building-permit/finishing-basement"},
+    {"source_id":"OTT_GIS_2008","authority":"City of Ottawa","kind":"official_gis","criticality":"critical","url":"https://maps.ottawa.ca/arcgis/rest/services/Zoning_Bylaw_2008_250/MapServer"}
+  ]
+}
