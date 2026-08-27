@@ -25,7 +25,11 @@ def build_server():
             "Municipal construction permit preflight. Normalize the user's proposed "
             "construction scope into structured facts before calling the tool. Results "
             "are evidence-linked preflight information, not municipal authorization. "
-            "This public standard MCP endpoint is a temporary developer-validation preview."
+            "For repeated developer/pilot validation, include a stable non-PII "
+            "context.client_tag when your host can provide one; it is hashed before "
+            "telemetry is logged. Do not put names, emails, phone numbers, addresses, "
+            "account ids, or other personal data in client_tag. This public standard "
+            "MCP endpoint is a temporary developer-validation preview."
         ),
     )
 
@@ -42,7 +46,9 @@ def build_server():
 
         Supports the ProjectPermit jurisdiction router. Set `resolve_address=true`
         to enrich the request with first-party municipal address/zoning/heritage
-        context where a resolver is available.
+        context where a resolver is available. For repeat pilot usage, callers may
+        provide a stable non-PII `context.client_tag`; ProjectPermit hashes it before
+        logging and never needs customer identity in that tag.
         """
         return run_preflight(
             {
