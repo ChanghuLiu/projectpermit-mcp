@@ -23,7 +23,6 @@ import json
 import re
 import urllib.request
 import zipfile
-from collections import defaultdict
 from pathlib import Path
 
 TABLE_ID = "33101176"
@@ -55,19 +54,13 @@ def _find_column(fieldnames: list[str], needle: str) -> str:
 
 
 def _extract_code(label: str) -> str | None:
-    # StatCan NAICS labels conventionally end with a bracketed code, e.g.
-    # 'Residential building construction [2361]'.
     match = re.search(r"\[([0-9A-Za-z-]+)\]\s*$", label or "")
     return match.group(1) if match else None
 
 
 def _is_target_geo(geo: str, city: str, province: str) -> bool:
     text = (geo or "").strip().lower()
-    city_l = city.lower()
-    province_l = province.lower()
-    # Require both city and province and prefer the city at the beginning to
-    # avoid matching a CMA component with a similar name elsewhere in text.
-    return text.startswith(city_l) and province_l in text
+    return text.startswith(city.lower()) and province.lower() in text
 
 
 def _download_rows() -> tuple[list[dict[str, str]], list[str]]:
@@ -85,7 +78,6 @@ def _download_rows() -> tuple[list[dict[str, str]], list[str]]:
         ]
         if not candidates:
             raise RuntimeError("StatCan ZIP contained no data CSV")
-        # Main data CSV is normally the largest CSV in the archive.
         data_name = max(candidates, key=lambda name: zf.getinfo(name).file_size)
         raw = zf.read(data_name).decode("utf-8-sig")
 
@@ -111,6 +103,8 @@ def summarize() -> dict:
         raise RuntimeError(
             "Could not uniquely identify total-employment row; candidates="
             + repr(total_employment_values)
+            + "; actual_values="
+            + repr(employment_values[:100])
         )
     total_employment = total_employment_values[0]
 
@@ -127,9 +121,6 @@ def summarize() -> dict:
         if not geo_candidates:
             raise RuntimeError(f"No StatCan geography matched {city}, {province}")
 
-        # Prefer an exact city/province label when available. If multiple rows
-        # remain (for example a CMA and CSD), require the label containing
-        # 'census subdivision'; otherwise fail rather than silently inflate.
         if len(geo_candidates) == 1:
             chosen_geo = geo_candidates[0]
         else:
