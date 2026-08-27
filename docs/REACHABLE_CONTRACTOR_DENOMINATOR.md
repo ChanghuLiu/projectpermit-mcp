@@ -102,10 +102,46 @@ Statistics Canada's June 2026 companion table for businesses **without employees
 
 - the 4,924 / 10,888 / 14,077 counts are a defensible municipal **employer-location floor**;
 - do not apply a province-wide non-employer ratio to a city and present it as an observed city count;
-- if a provincial non-employer ratio is used later, label it explicitly as sensitivity analysis only;
-- platform-reported `pros` counts must not be added to StatCan business locations because units differ and may overlap.
+- platform-reported `pros` counts must not be added to Statistics Canada business locations because the units are different and may overlap.
 
 Also note that a **business location is not necessarily a unique company/account**. A multi-location company can contribute more than one location, while excluding non-employers moves the denominator in the opposite direction. This dataset is therefore a defensible market-structure proxy, not an exact count of potential paying accounts.
+
+## Provincial non-employer sensitivity — missing-pool scale only
+
+The same reproducible extractor also reads:
+
+- **33-10-1174-01** — businesses with employees, Canada/provinces, June 2026;
+- **33-10-1175-01** — businesses without employees, Canada/provinces, June 2026.
+
+These province-level figures answer only: *how large is the contractor population excluded by an employer-only municipal table?* They do **not** provide a city-level uplift factor.
+
+### Broad renovation-trade layer (2361 + 2381 + 2382 + 2383)
+
+| Province | With employees | Without employees | Without / with ratio | Without-employees share of combined |
+|---|---:|---:|---:|---:|
+| Ontario | 42,308 | 82,601 | **1.952×** | **66.13%** |
+| British Columbia | 21,664 | 38,199 | **1.763×** | **63.81%** |
+| Quebec | 27,320 | 23,399 | **0.856×** | **46.13%** |
+
+### Core permit-sensitive layer (2361 + 2381 + 2382)
+
+| Province | With employees | Without employees | Without / with ratio | Without-employees share of combined |
+|---|---:|---:|---:|---:|
+| Ontario | 33,415 | 57,277 | **1.714×** | 63.16% |
+| British Columbia | 16,528 | 27,440 | **1.660×** | 62.41% |
+| Quebec | 22,036 | 18,155 | **0.824×** | 45.17% |
+
+### Interpretation
+
+The municipal employer-only floor is therefore likely to omit a **material** contractor pool, especially in Ontario and British Columbia. In those provinces, businesses without employees outnumber employer locations by roughly 1.7–2.0× in the relevant broad/core construction layers.
+
+However, ProjectPermit must **not** calculate `city employer locations × provincial ratio` and present the result as an observed municipal SAM. The geographic distribution of non-employer contractors may differ materially from the employer distribution.
+
+The correct statement is:
+
+> The seven-city B-broad **observed employer-location floor is 14,077**. Current provincial evidence shows the omitted without-employees contractor population is large—especially in Ontario and BC—so the actual covered contractor-location universe is plausibly substantially larger, but its exact seven-city count is unknown from the current public StatCan CSD tables.
+
+This strengthens the conclusion that **account count is probably not the main constraint**. The harder commercial unknown remains repeated permit-decision cadence per account.
 
 ## Conversion from business denominator to call denominator
 
