@@ -1,0 +1,19 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.ChanghuLiu/projectpermit",
+  "title": "ProjectPermit",
+  "description": "Evidence-linked municipal permit preflight for 7 Canadian jurisdictions with deterministic rules.",
+  "version": "0.4.0",
+  "repository": {
+    "url": "https://github.com/ChanghuLiu/projectpermit-mcp",
+    "source": "github",
+    "id": "1347590179"
+  },
+  "websiteUrl": "https://github.com/ChanghuLiu/projectpermit-mcp",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://projectpermit-mcp-production.up.railway.app/mcp"
+    }
+  ]
+}
