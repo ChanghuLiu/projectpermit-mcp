@@ -2,9 +2,9 @@
 
 Updated: 2026-08-27
 
-Purpose: keep ProjectPermit focused on the narrow capability that is not already being served well by zoning/buildability products.
+Purpose: keep ProjectPermit focused on the narrow capability that is not already being served well by zoning/buildability or downstream permit-package products.
 
-This document is a product-scope guardrail, not a claim that adjacent products are direct substitutes.
+This document is a product-scope guardrail, not a claim that every adjacent product is a direct substitute.
 
 ## ProjectPermit's intended boundary
 
@@ -22,7 +22,7 @@ Core differentiators:
 - multi-jurisdiction Canadian coverage;
 - API/MCP insertion into an upstream Request / Estimate / Quote / Job workflow.
 
-ProjectPermit should **not** become a general zoning/development-feasibility product unless external integration evidence makes that expansion necessary.
+ProjectPermit should **not** become a general zoning/development-feasibility product or a drawing/package review product unless external integration evidence makes that expansion necessary.
 
 ## FutureLot
 
@@ -89,7 +89,7 @@ Do **not** duplicate:
 - full zoning profile;
 - theoretical maximum GFA;
 - buildable envelope;
-- 19-layer GIS aggregation as a general product;
+- multi-layer GIS aggregation as a general product;
 - permitted-use analysis unrelated to permit applicability;
 - nearby-development discovery;
 - development-charge calculator.
@@ -98,17 +98,94 @@ A potentially complementary integration would consume or share derived property 
 
 The public site exposes an `Email me` CTA but current search results do not reveal the underlying address. Do not guess an email address merely to send outreach.
 
+## LotMore
+
+Current public positioning is more overlapping in the Toronto homeowner/developer funnel:
+
+- Toronto address-first property analysis;
+- zoning rules and buildable envelope;
+- project paths for additions, garden/laneway suites, multiplexes and major-street development;
+- project-level feasibility verdicts and likely approval-route hints;
+- source-linked rules and nearby approval evidence;
+- paid property/project reports;
+- downstream architectural drawings, permit support and construction services.
+
+LotMore publicly frames its flow as:
+
+`address -> property/project feasibility -> approval route -> drawings/permit support -> construction`
+
+This is a stronger overlap with ProjectPermit's project-family surface than a pure zoning lookup, especially for additions and secondary-unit projects.
+
+Boundary implication:
+
+- do not compete with LotMore as a Toronto homeowner destination report;
+- do not build consumer $49/$99 feasibility reports, 3D massing, architect calls, drawings or construction hand-off merely to match its funnel;
+- ProjectPermit must win **earlier and invisibly inside B2B software**, where a Request/Estimate/Quote still needs a permit-applicability routing signal;
+- Toronto consumer-facing feasibility should be considered a relatively crowded segment.
+
+LotMore can still be a future integration/benchmark target if a public or permissioned contact path yields a bounded upstream project-check denominator. Do not infer its volume from the number of public address pages.
+
+## PermitCheck.ca
+
+Current public positioning is **downstream** of ProjectPermit:
+
+- automated pre-submission permit-package validation;
+- uploads drawings/forms/reports and checks completeness, formats, annotations and common rejection causes;
+- current beta check flow includes Toronto, Ottawa and several Ontario municipalities/permit types, with other municipalities rolling out;
+- Toronto product initially emphasizes decks/porches and is expanding into basements, interior alterations and additions;
+- separately exposes zoning checks for selected cities;
+- has an optional human reviewer network for uncertain package-review cases.
+
+Its core question is:
+
+> Is the permit package complete and submission-ready?
+
+ProjectPermit's core question is earlier:
+
+> Does this normalized project scope require a municipal permit in the first place, and what evidence supports that routing decision?
+
+Boundary implication:
+
+Do **not** expand into:
+
+- PDF/drawing ingestion;
+- missing-document detection;
+- drawing annotation/completeness QA;
+- Ontario Building Code plan review;
+- human reviewer networks;
+- submission-package certification.
+
+PermitCheck demonstrates that downstream application QA is becoming its own product category. That strengthens the need for ProjectPermit to remain the upstream applicability layer rather than stretch across the whole permit lifecycle.
+
+## BuildBlox
+
+Current public positioning is much broader housing-delivery intelligence:
+
+- parcel/zoning/servicing intelligence;
+- standardized design matching;
+- feasibility/pre-development packages;
+- BOM/cost/procurement and modular/offsite workflows;
+- active work across several Canadian provinces.
+
+Its Ontario emphasis is not currently a clean match to ProjectPermit's covered GTA/municipal workflow, so it is not a priority E2 target merely because it is Canadian. It is another reason not to turn ProjectPermit into a full housing-development operating system.
+
 ## Why this boundary matters
 
-The adjacent market is becoming crowded around:
+The adjacent market is already becoming crowded across two layers:
 
-`address -> parcel -> zoning -> setbacks -> development potential`
+**Upstream feasibility**
 
-ProjectPermit's defensible wedge should therefore become **narrower, not broader**:
+`address -> parcel -> zoning -> setbacks -> development potential -> approval route`
 
-`scope -> permit applicability -> official evidence -> workflow routing`
+**Downstream submission QA**
 
-That boundary also keeps operating cost low: ProjectPermit can reuse first-party municipal/open-data property facts without having to build a full development-feasibility engine for every city.
+`known permit-positive project -> drawings/forms -> completeness/code/package checks -> submission`
+
+ProjectPermit's defensible gap sits between them and earlier in the commercial workflow:
+
+`Request/Estimate/Quote scope -> permit applicability -> official evidence -> workflow routing`
+
+That boundary also keeps operating cost low: ProjectPermit can use first-party municipal/open-data property facts as supporting context without having to build a full development-feasibility engine or a staffed expert-review operation for every city.
 
 ## Product-scope stop list
 
@@ -120,9 +197,13 @@ Do not build the following merely because an adjacent product has them:
 - unit-yield optimization;
 - general-purpose zoning search;
 - citywide development opportunity maps;
+- consumer feasibility-report funnel;
 - homeowner lead generation;
+- permit drawings;
 - permit submission/expediting;
-- full architectural/code-plan review.
+- PDF/document completeness QA;
+- full architectural/OBC/code-plan review;
+- human reviewer marketplace/network.
 
 Any item above requires new external evidence showing that it is necessary to win or retain a high-volume workflow.
 
@@ -138,12 +219,14 @@ Priority partner test:
 4. Can 5–20 representative de-identified historical cases be benchmarked?
 5. If E3 passes, can repeated external ProjectPermit calls be observed without requiring a staffed manual workflow?
 
-If yes, pursue integration/E3 before adding new zoning features.
+If yes, pursue integration/E3 before adding new zoning or submission features.
 
 ## Current conclusion
 
-Current public evidence does **not** show that FutureLot, Zoned or Toronto Zoning already provides the same deterministic municipal permit-applicability layer across ProjectPermit's Canadian coverage.
+Current public evidence does **not** show that the adjacent products provide the same deterministic municipal permit-applicability layer across ProjectPermit's seven Canadian jurisdictions.
 
-It does show that zoning/buildability intelligence is increasingly mature. ProjectPermit should therefore protect a clean differentiation:
+It does show that both zoning/buildability intelligence and downstream package QA are increasingly mature. Toronto in particular is already crowded as a consumer/developer destination-product market.
 
-> **Permit applicability is the product. Zoning/property intelligence is supporting context, not the product.**
+ProjectPermit should therefore protect a clean B2B/API differentiation:
+
+> **Permit applicability is the product. Zoning/property intelligence is supporting context. Submission-package review is downstream.**
