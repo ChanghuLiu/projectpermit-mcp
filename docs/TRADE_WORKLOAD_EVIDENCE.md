@@ -21,7 +21,38 @@ For corporate-like contractor tokens in the 2024 issued-building-permit dataset:
 
 Interpretation: the earlier `80 calls/account/month` direct-contractor scenario should not be treated as a typical building/renovation-contractor shape. A high-volume direct account would need either substantially more upstream candidate jobs than issued building permits, a sub-trade workflow not represented by this dataset, or multi-jurisdiction/multi-branch volume.
 
-The City FOI release 2024-671 includes building and sub-trade permits (mechanical, electrical, plumbing, HVAC, etc.), but its XLSX currently returns HTTP 403 to automated GitHub runner downloads even with browser-style headers. Do not treat the missing workbook as evidence either way.
+### Vancouver aggregate-label diagnostic
+
+The same 2024 City extract contains **4,907 issued building-permit records**. Aggregate City labels were:
+
+| City label | 2024 issued records |
+|---|---:|
+| `Addition / Alteration` | **2,544** |
+| `New Building` | 1,103 |
+| `Demolition / Deconstruction` | 631 |
+| `Salvage and Abatement` | 583 |
+| `Temporary Building / Structure` | 37 |
+| `Outdoor Uses (No Buildings Proposed)` | 9 |
+
+Permit-category labels include:
+
+| Permit category | 2024 issued records |
+|---|---:|
+| `Renovation - Commercial/ Mixed Use - Lower Complexity` | 1,070 |
+| `Renovation - Residential - Lower Complexity` | **888** |
+| `New Build - Low Density Housing` | 598 |
+| `New Build - Standalone Laneway` | 296 |
+| blank | 2,055 |
+
+All **888** residential-renovation records pair with `Addition / Alteration`, or **74/month**.
+
+This is useful as a **residential-renovation diagnostic**, but the City labels are not granular enough to map those 888 records safely into a specific ProjectPermit family. `Addition / Alteration` can encompass interior renovation, exterior alteration, windows/doors, additions and other work. Therefore:
+
+> **Vancouver contributes 74 residential-renovation issued events/month as a diagnostic only; it contributes zero to the conservative current-family mapped floor until a more granular first-party field/source is available.**
+
+Do not force the 888 records into `interior_renovation` merely because the category contains the word `Renovation`.
+
+The City FOI release 2024-671 includes building and sub-trade permits (mechanical, electrical, plumbing, HVAC, etc.), but its XLSX currently returns HTTP 403 to automated GitHub runner downloads even with browser-style headers. The aggregate building-permit job succeeds independently; the companion FOI probe remains blocked. Do not treat the missing workbook as evidence either way.
 
 ## Toronto 2023–2025 — stable city-level trade permit flow
 
@@ -115,9 +146,11 @@ This is materially smaller than the ~1.7k/month broad MEP trade pool and should 
 
 Toronto Open Data documentation notes that multiple Mechanical and Plumbing permits can be issued with other permit types for the same broader construction project. Permit revisions are therefore workflow events, not unique projects or unique customers.
 
-## Mississauga 2023–2025 — visible sub-trade floor
+## Mississauga 2023–2025 — visible sub-trade and dwelling-change signals
 
 Source: City of Mississauga official `Issued_Building_Permits` ArcGIS FeatureServer. The research script uses server-side grouped statistics on `APP_DETAIL` and `ISSUE_DATE`; it does not request row-level addresses, descriptions, applicant or contractor fields.
+
+### Visible trade-focus floor
 
 Focus categories are Plumbing Only + Heating Only + Mechanical Only + Drain Only + Site Servicing.
 
@@ -136,6 +169,50 @@ Focus categories are Plumbing Only + Heating Only + Mechanical Only + Drain Only
 - Mechanical Only: **0**
 
 Important limitation: most Mississauga records have blank `APP_DETAIL`, and some trade work can be embedded in broader building permits. Therefore 41–59/month is a **visible application-type floor**, not a complete Mississauga mechanical/plumbing universe and not current ProjectPermit SAM.
+
+Do **not** map `PLUMBING ONLY` wholesale into `kitchen_bath_plumbing`: the current family is not equivalent to general plumbing-only permit work.
+
+### Conservative `dwelling_change` signal
+
+Two Mississauga `APP_DETAIL` labels are specific enough to map conservatively to the existing `dwelling_change` family:
+
+- `SECOND UNIT`
+- `ADDITIONAL RESIDENTIAL UNITS`
+
+| Year | SECOND UNIT | ADDITIONAL RESIDENTIAL UNITS | Conservative dwelling_change signal | Avg/month |
+|---:|---:|---:|---:|---:|
+| 2023 | 587 | 134 | **721** | **60.1** |
+| 2024 | 6 | 769 | **775** | **64.6** |
+| 2025 | 0 | 632 | **632** | **52.7** |
+
+This is still downstream issued-permit activity, not an upstream applicability-decision count. It is simply a cleaner current-family mapping than the broad trade categories.
+
+## Toronto + Mississauga conservative current-family-like signal
+
+Combining only Toronto's existing current-family-like diagnostic with Mississauga's clearly mapped `dwelling_change` labels gives:
+
+| Year | Toronto signal | Mississauga clear dwelling_change | Combined visible signal | Avg/month |
+|---:|---:|---:|---:|---:|
+| 2023 | 6,695 | 721 | **7,416** | **618.0** |
+| 2024 | 6,690 | 775 | **7,465** | **622.1** |
+| 2025 | 7,038 | 632 | **7,670** | **639.2** |
+
+This is intentionally **not** extended to Vancouver's 888 residential-renovation records because Vancouver's public labels are too broad for a specific family mapping. Ottawa, Laval, Gatineau and Longueuil are also excluded from this mapped subtotal unless an equivalent clean first-party classification is available.
+
+Interpretation:
+
+> The strongest reproducible current-family-like public signal currently visible across Toronto + Mississauga is only about **618–639 issued workflow events/month**.
+
+That is useful negative discipline for the 10k thesis. It does **not** mean the total seven-city market is only 618–639/month, because public classifications omit/blur many relevant cases and four covered cities are not included. But it does mean we cannot credibly point at broad permit totals and claim the current product already has a 10k/month denominator.
+
+To reach 10k monthly calls with the current family set, ProjectPermit still needs a combination of:
+
+- a materially larger **upstream candidate/issued multiplier** than public issuance counts show;
+- aggregation across multiple covered cities/accounts/platforms;
+- repeated preflight calls before permit necessity is already known;
+- and/or partner evidence that public classification fields substantially undercount current-family candidate work.
+
+None of those multipliers is currently proven.
 
 ## External high-volume example
 
