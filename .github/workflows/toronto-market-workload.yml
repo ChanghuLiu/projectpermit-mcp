@@ -18,10 +18,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Aggregate 2024 Toronto permit types without emitting row data
-        run: python market_research/toronto_trade_permit_volume.py --year 2024 --output toronto_trade_permit_volume_2024.json
+      - name: Aggregate 2023-2025 Toronto permit types without emitting row data
+        run: |
+          for year in 2023 2024 2025; do
+            python market_research/toronto_trade_permit_volume.py \
+              --year "$year" \
+              --output "toronto_trade_permit_volume_${year}.json"
+          done
       - uses: actions/upload-artifact@v4
         with:
-          name: toronto-trade-permit-volume-2024
-          path: toronto_trade_permit_volume_2024.json
+          name: toronto-trade-permit-volume-2023-2025
+          path: toronto_trade_permit_volume_*.json
           if-no-files-found: error
