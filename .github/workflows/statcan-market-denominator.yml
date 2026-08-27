@@ -1,0 +1,27 @@
+name: StatCan Market Denominator
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/statcan_reachable_contractor_denominator.py"
+      - ".github/workflows/statcan-market-denominator.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  denominator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Download official StatCan table and calculate municipal denominators
+        run: python scripts/statcan_reachable_contractor_denominator.py --output reachable_contractor_denominator.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reachable-contractor-denominator
+          path: reachable_contractor_denominator.json
+          if-no-files-found: error
