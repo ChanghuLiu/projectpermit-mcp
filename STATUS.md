@@ -12,9 +12,9 @@ Updated: 2026-08-27
 
 **Phase 1C Vancouver seven-city expansion: PASS.** Vancouver rules plus first-party City address/zoning/heritage resolution are deployed and verified against the public MCP service.
 
-**Distribution-validation instrumentation and partner pilot package: READY.** External outreach is the next real gate; messages are prepared but remain unsent pending explicit approval of sender identity/contact details and outreach.
+**Distribution validation: ACTIVE.** External outreach has started. Replies are lead signals only; E3 historical benchmarks, E4 repeated external usage and E5 economic behavior are the decision gates.
 
-ProjectPermit is now an evidence-linked deterministic municipal permit preflight engine across seven jurisdictions. The calling Agent normalizes project scope; the server applies municipal rules and returns official-source evidence. The rules engine does not call an LLM and payment remains outside BuildRequirements.
+ProjectPermit is an evidence-linked deterministic municipal permit-preflight engine across seven jurisdictions. The calling Agent normalizes project scope; the server applies municipal rules and returns official-source evidence. The rules engine does not call an LLM and payment remains outside BuildRequirements.
 
 ## Jurisdiction coverage
 
@@ -28,30 +28,15 @@ ProjectPermit is now an evidence-linked deterministic municipal permit preflight
 
 All transports call the same `preflight_service` before the jurisdiction router. For supported address jurisdictions, `resolve_address=true` enriches the request with first-party municipal property context. Laval and Longueuil currently use `resolve_address=false`.
 
-## Production verification
-
-The seven-city public MCP test performs deterministic rule checks for all supported jurisdictions and a real address-aware Vancouver call against City open data. The Vancouver production verification resolved:
-
-- matched address: `453 W 12TH AV`
-- zoning: `CD-1 (46)`
-- result: `vancouver_address_aware_preflight=PASS`
-
-No paid smoke transaction is required for routine expansion verification. Real buyer-side HTTP and MCP x402 settlement were already proven earlier.
-
 ## Live services
 
 - Paid HTTP API: `https://projectpermit-api-v2-production.up.railway.app`
 - Free MCP developer-validation preview: `https://projectpermit-mcp-production.up.railway.app/mcp`
 - Paid x402 MCP: `https://projectpermit-x402-mcp-production.up.railway.app/mcp`
 
-Latest seven-city production deployments are successful for all three active services.
-
-Paid MCP exposes:
-
-- `projectpermit_info` — free discovery/status
-- `check_project_requirements` — x402-paid permit preflight
-
 Current **testnet discovery price**: **$0.01 USDC per paid tool/API call** on Base Sepolia. This is not the intended commercial price.
+
+Real buyer-side HTTP and MCP x402 settlement have already been proven. Do not spend additional test USDC merely to re-prove plumbing.
 
 ## Completed infrastructure
 
@@ -60,130 +45,143 @@ Current **testnet discovery price**: **$0.01 USDC per paid tool/API call** on Ba
 - shared address-aware preflight service for HTTP/free MCP/paid MCP
 - official evidence and stable rule ids
 - public FastAPI, standard MCP v2 and x402-native paid MCP
-- Base Sepolia x402 payment profile
-- real buyer-side paid HTTP + paid MCP verification/settlement
+- Base Sepolia x402 payment profile and real buyer-side settlement verification
 - GoPlausible Bazaar canonical HTTPS indexing
 - Docker + GitHub Actions CI
 - privacy-minimal structured usage telemetry
 - internal CI/owner traffic tagging so it cannot be mistaken for demand
-- municipal `httpx/httpcore` request URL logging suppressed to avoid leaking address/query details
+- municipal request-URL logging suppression to avoid leaking address/query details
 - no server-side LLM dependency
 - no paid map/property-data dependency
+- read-only Jobber Request/Quote/Job adapter + tests
+- Jobber E3 historical benchmark template
 
-## Verification policy
+## Outreach state
 
-Real buyer-side x402 plumbing is already proven. **Do not spend additional test USDC for routine expansion smoke tests.** Expansion verification should use free discovery or unpaid 402 challenges.
+Direct emails sent on 2026-08-27:
 
-Final canonical-HTTPS Phase 0 HTTP settlement transaction:
+**Batch A**
+- iPermit
+- Provizual
+- AppWork
+- SyncEzy
 
-`0x2070aa9a55287162876d2d53a1f1ebe865ba912d7dfc66c75173b88967972950`
+**Batch B**
+- Calance
+- Outbuild
+- PermitFlow
+- Pulley
+
+**Platform technical validation**
+- Jobber API support — Marketplace/API eligibility question sent to `api-support@getjobber.com`
+
+Prepared but not submitted because the current route is interactive/form-based:
+- Lula
+- ServiceChannel
+
+Sender identity is now ProjectPermit. No further product work is blocked on replies.
+
+## Validation evidence standard
+
+See `docs/VALIDATION_EVIDENCE_STANDARD.md`.
+
+- **E0:** no usable evidence / routing / auto-reply
+- **E1:** opinion only
+- **E2:** bounded workflow claim with denominator + timeframe + workflow location
+- **E3:** representative anonymized historical cases benchmarked against ProjectPermit
+- **E4:** observed repeated external usage
+- **E5:** economic behavior / paid or resource-committed integration
+
+A positive reply is not market validation. Major coverage, product-boundary, mainnet and pricing decisions should not be made from E0/E1.
 
 ## External usage baseline
 
-A clean post-telemetry baseline was captured before outreach:
+Initial post-telemetry baseline before outreach:
 
 - successful external/non-owner preflight calls: **0**
-- successful internal CI/smoke preflight events observed: **32**
+- successful internal CI/smoke events observed at initial capture: **32**
 - external integrations/client tags: **0**
 
-The zero-external baseline is expected because targeted outreach has not been sent. Internal events are explicitly marked `internal_traffic=true` and are excluded from market validation.
+Post-outreach Railway audit on 2026-08-27:
 
-See `docs/EXTERNAL_USAGE_BASELINE.md` and `scripts/summarize_usage_logs.py`.
+- standard/free MCP successful usage events observed: internal CI/owner-smoke only
+- paid x402 MCP successful usage events: **0**
+- paid HTTP/API-v2 successful usage events: **0**
+- API-v2 has received unpaid `402 Payment Required` probes; these do **not** count as E4
+- countable E4 external successful preflight calls remains **0**
+
+Do not count CI, owner smoke, demos, synthetic loads, unpaid 402 probes, discovery/crawler traffic or replies as E4.
 
 ## Market decision
 
-The commercial thesis is a **cross-jurisdiction B2B/Agent permit-requirements intelligence layer**, not a homeowner-only wizard and not a managed permit-submission service.
+The commercial thesis remains a **cross-jurisdiction B2B/Agent permit-requirements intelligence layer**, not a homeowner-only wizard and not a managed permit-submission service.
 
-The current seven-city footprint is enough to validate distribution. Municipality expansion is intentionally paused until repeated external usage or a design-partner request justifies more maintenance.
+The seven-city footprint is enough to validate distribution. Municipality expansion remains paused until representative E3 cases plus a credible repeated E4 call path justify maintenance.
 
-The working commercial hypothesis remains roughly **$0.20-$0.50 per address-aware evidence-linked preflight** or an equivalent platform volume plan, subject to external willingness-to-pay validation.
+Working commercial hypothesis: roughly **$0.20-$0.50 per address-aware evidence-linked preflight** or an equivalent platform volume plan, subject to E5 validation.
 
-The first commercially meaningful internal checkpoint is roughly **10,000 external preflight calls/month**. Preferred proof shapes include:
+The first commercially meaningful internal checkpoint remains roughly **10,000 external preflight calls/month**. Example proof shapes:
 
-- 5 integrations × ~2,000 calls/month;
-- 20 integrations × ~500 calls/month;
-- one platform workflow × ~10,000 calls/month.
+- 5 integrations × ~2,000 calls/month
+- 20 integrations × ~500 calls/month
+- one platform workflow × ~10,000 calls/month
 
-This is a validation threshold, not a revenue forecast. At 10k monthly calls, gross revenue would be about $2,500 at $0.25/call or $5,000 at $0.50/call before infrastructure, support and municipal-rule maintenance.
+At 10k monthly calls, gross revenue would be about $2,500 at $0.25/call or $5,000 at $0.50/call before infrastructure, support and municipal-rule maintenance.
 
-## Distribution evidence now driving the next phase
+## Objective activity baseline
 
-Current public platform signals include:
+First-party 2024 counts already established for four supported cities:
 
-- U.S. construction: 814,557 employer establishments in 2023 County Business Patterns
-- Canada construction: 159,514 employer + 255,892 non-employer/indeterminate establishments in 2025
-- ServiceTitan: 12,000+ businesses and 40M+ jobs completed annually
-- Procore: 17,850 customers at 2025 year-end
-- AppFolio: 22,096 property-management customers and 9.4M units under management at 2025 year-end
-- Autodesk Construction: used by builders on 2M+ projects
+- Toronto: **36,887** building permits issued (~3,074/month)
+- Ottawa: **7,688** (~641/month)
+- Mississauga: **4,458** (~372/month)
+- Laval: **1,415** construction + improvement permits (~118/month), including **1,111 improvement permits**
 
-These numbers are distribution-surface indicators, not additive TAM.
+Combined clean observed issuance flow: **50,448/year**, about **4,204/month**.
 
-Observed workflow evidence also shows permit work can be repeated and operationally costly. One public iPermit/ServiceTitan contractor testimonial reports roughly **80+ permit jobs/month**. Community reports show multi-jurisdiction contractors dealing with different replacement/new-install permit rules and construction teams maintaining permit tracking outside core systems. These anecdotes justify validation conversations but are not converted into market-size claims.
+Vancouver's first-party issued-building-permits dataset contains 51k+ records since 2017, with roughly half currently categorized as Addition / Alteration. Gatineau annual cumulative extraction and Longueuil distinct-permit extraction remain pending.
 
-See `docs/PAIN_EVIDENCE.md`.
+This is an activity floor, not ProjectPermit call volume. It reinforces that a 10k-calls/month business cannot rely on `one call only after a permit is already known to be required`; the intended wedge must preflight a broader stream of candidate quotes/work orders/scopes.
 
-## External-validation assets completed
+See `docs/MUNICIPAL_ACTIVITY_BASELINE.md`.
 
-- `data/partner_targets.csv` — 20 contact-ready target accounts
-- `docs/TARGET_ACCOUNT_RANKING.md` — ranking by pain proximity, repeat density, integration readiness and distribution leverage
-- `docs/OUTREACH_BATCH_01.md` — tailored first 10 outreach drafts, **prepared but not sent**
-- `docs/PARTNER_OUTREACH.md` — discovery questions and response qualification
-- `docs/DESIGN_PARTNER_TRIAL.md` — 20-case, no-wallet developer pilot
-- `data/design_partner_scope_template.csv` — anonymized pilot scope template
-- `data/partner_feedback.csv` — structured conversation/call-volume/price feedback tracker
-- `scripts/summarize_partner_feedback.py` — evidence/gate summarizer
-- `docs/CALL_VOLUME_THRESHOLDS.md` — bottom-up monthly call model
-- `docs/EXTERNAL_USAGE_BASELINE.md` — zero-external starting baseline
-- `docs/INTEGRATION_QUICKSTART.md` — HTTP/MCP/x402 developer instructions
+## Highest-priority wedge: Jobber
 
-GitHub issue #1, `Validate external distribution before expanding municipalities`, is the canonical validation checklist.
+Jobber is currently the top distribution experiment because Request/Quote/Job objects can expose property address plus structured scope before a job is committed.
 
-## Recommended first conversations
+Preferred workflow:
 
-The first wave intentionally tests different workflow layers rather than only direct permit competitors:
+`Jobber Quote/Job -> address + title/line items -> structured ProjectPermit facts -> preflight -> proposed custom-field writeback`
 
-1. iPermit — full downstream permit workflow
-2. ServiceChannel — facilities work-order intake
-3. Property Meld — property maintenance coordination
-4. Lula — maintenance contractor network / Partner API
-5. HappyCo or AppWork — multifamily maintenance/inspection workflow
-6. Provizual — AHJ/inspection workflow inside Procore
-7. PermitFlow — full permitting platform / upstream-routing hypothesis
-8. SyncEzy or Calance — integration consultancy with multi-customer leverage
+Current sequence:
 
-External messages should not be sent until sender identity/contact details and outreach are explicitly approved.
+1. API/Marketplace eligibility question — **SENT**
+2. read-only adapter + unit tests — **DONE**
+3. 20+ representative historical cases from 1–5 supported-city operators — **NEXT E3 GATE**
+4. repeat-use authorized pilot — **E4 GATE**
+5. Marketplace submission — only after E3/E4 shows repeated volume
+
+Keep mutation disabled until the read-only mapping is benchmarked.
 
 ## Known unresolved items
 
-1. **Laval/Longueuil property adapters:** rule coverage exists; stable no-cost address/zoning/overlay resolution should be evaluated only if usage justifies it.
-2. **Gatineau PIIA/heritage:** public mapping confirms the concepts/layers but a stable unauthenticated machine endpoint is not yet locked. Unknown must never become false.
-3. **Longueuil exemptions:** current simplified material describes permit workflows more clearly than universal exemptions, so conservative outcomes remain intentional.
+1. **Laval/Longueuil property adapters:** evaluate only if usage justifies them.
+2. **Gatineau PIIA/heritage:** stable unauthenticated machine overlay endpoint is not yet locked; unknown must never become false.
+3. **Longueuil exemptions:** conservative outcomes remain intentional where simplified official material does not establish universal exemptions.
 4. **Mainnet:** intentionally disabled until external demand and willingness-to-pay validation pass.
 5. **External Bazaar stale row:** historical `http://` discovery row remains alongside canonical HTTPS; non-blocking.
-6. **Free MCP bypass:** the standard public MCP currently exposes full determinations without payment and should be treated as a temporary developer-validation preview, not permanent commercial packaging.
-7. **Geographic overlap:** the strongest ServiceTitan distribution surface is U.S.-heavy while current rules are Canada-only. U.S. jurisdictions should be added only when a partner attaches credible repeated call volume to specific cities.
+6. **Free MCP bypass:** full determinations are temporarily free for developer validation; this is not permanent commercial packaging.
+7. **Geographic overlap:** strong U.S. platform distribution does not justify U.S. city expansion without E3/E4-backed volume.
 
 ## Next gates
 
-Completed before outreach:
+- obtain **2 independent representative E3 historical benchmarks**
+- reach **1 repeated external workflow with 20+ successful calls**
+- reach **3 external integrations and 100+ non-owner successful calls**
+- identify **one workflow with 500+ candidate calls/month**
+- identify **one partner/integration with 2,000+ candidate calls/month**
+- validate **one credible platform path toward 10,000+ calls/month**
+- obtain an **E5 economic signal** around the $0.20-$0.50 address-aware unit economics or equivalent resource commitment
+- add new jurisdictions only when requested geography is tied to credible volume and preferably E3/E4 evidence
 
-- privacy-minimal telemetry and internal-smoke exclusion — **DONE**
-- municipal request-log privacy guard — **DONE**
-- developer integration quickstart — **DONE**
-- 20-account target list and ranking — **DONE**
-- first 10 tailored outreach drafts — **DONE**
-- 20-case design-partner pilot package — **DONE**
-- call-volume/pricing threshold model — **DONE**
-- external usage baseline — **DONE**
-
-The next actual market gates are:
-
-1. obtain explicit approval for sender identity/contact details and external outreach;
-2. run the first 8-10 workflow-diverse conversations;
-3. obtain at least 2 organizations willing to provide anonymized real scopes or one integration with 20+ calls;
-4. reach 3 external integrations and 100+ non-owner successful preflight calls;
-5. identify one partner/integration with 2,000+ candidate calls/month;
-6. validate one credible path to 10,000+ calls/month;
-7. get at least one buyer/partner reaction that `$0.20-$0.50` address-aware unit economics are acceptable;
-8. add new jurisdictions only when partner-requested volume justifies the maintenance burden.
+GitHub issue #1, `Validate external distribution before expanding municipalities`, is the canonical validation checklist.
