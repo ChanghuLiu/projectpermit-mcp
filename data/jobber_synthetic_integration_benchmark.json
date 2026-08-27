@@ -1,0 +1,148 @@
+{
+  "benchmark": "Jobber synthetic/de-identified integration benchmark",
+  "captured_at": "2026-08-27",
+  "purpose": "Internal adapter and rules integration evidence only. This is not E3 market validation and does not use any existing Jobber customer account.",
+  "address_resolution": "disabled in this benchmark to keep CI deterministic and network-free; civic address extraction is still exercised by the adapter",
+  "cases": [
+    {
+      "id": "jobber-syn-001",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-001", "title": "Replace same-size front window", "property": {"address": {"street1": "101 Example St", "city": "Gatineau", "province": "QC", "postalCode": "J8X 1A1", "country": "CA"}}, "lineItems": {"nodes": [{"name": "Window replacement", "description": "Same opening, no wall changes"}]}},
+      "project": {"family": "window_door", "action": "replace_same_size", "estimated_cost_cad": 1800, "structural_change": false}
+    },
+    {
+      "id": "jobber-syn-002",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-002", "title": "Paint and flooring refresh", "property": {"address": "102 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Interior refresh", "description": "Painting and flooring only"}]}},
+      "project": {"family": "interior_renovation", "action": "painting", "estimated_cost_cad": 9000, "structural_change": false}
+    },
+    {
+      "id": "jobber-syn-003",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-003", "title": "Large interior renovation", "property": {"address": "103 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Renovation", "description": "Non-structural renovation budget over threshold"}]}},
+      "project": {"family": "interior_renovation", "action": "renovate", "estimated_cost_cad": 40000, "structural_change": false}
+    },
+    {
+      "id": "jobber-syn-004",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
+      "payload": {"__typename": "Job", "id": "syn-j-004", "title": "Finish basement", "property": {"address": "104 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Basement finish", "description": "Scope cost not yet finalized"}]}},
+      "project": {"family": "basement", "action": "finish_basement", "structural_change": false}
+    },
+    {
+      "id": "jobber-syn-005",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-005", "title": "Bathroom fixture refresh", "property": {"address": "105 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Bathroom refresh", "description": "Replace finishes and existing fixtures"}]}},
+      "project": {"family": "kitchen_bath_plumbing", "action": "fixture_refresh", "estimated_cost_cad": 12000, "structural_change": false}
+    },
+    {
+      "id": "jobber-syn-006",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Request", "id": "syn-r-006", "title": "Add dwelling unit", "property": {"address": "106 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Dwelling conversion", "description": "Create an additional dwelling unit"}]}},
+      "project": {"family": "dwelling_change", "action": "add_dwelling", "dwelling_unit_change": true}
+    },
+    {
+      "id": "jobber-syn-007",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-007", "title": "Residential rear deck", "property": {"address": "107 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Deck", "description": "Rear residential deck"}]}},
+      "project": {"family": "deck_porch", "action": "build_deck"}
+    },
+    {
+      "id": "jobber-syn-008",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-008", "title": "Permanent detached shed", "property": {"address": "108 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Shed", "description": "Permanent detached accessory structure"}]}},
+      "project": {"family": "accessory_structure", "accessory_structure_kind": "shed", "accessory_permanent": true}
+    },
+    {
+      "id": "jobber-syn-009",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-009", "title": "Rear room addition", "property": {"address": "109 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Addition", "description": "Increase existing floor area"}]}},
+      "project": {"family": "addition", "floor_area_increase": true}
+    },
+    {
+      "id": "jobber-syn-010",
+      "jurisdiction": "ottawa_on",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-010", "title": "Attached sunroom addition", "property": {"address": "110 Example Ave, Ottawa, ON"}, "lineItems": {"nodes": [{"name": "Sunroom", "description": "New attached floor area"}]}},
+      "project": {"family": "addition", "floor_area_increase": true}
+    },
+    {
+      "id": "jobber-syn-011",
+      "jurisdiction": "toronto_on",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-011", "title": "House window replacement", "property": {"address": "111 Example Rd, Toronto, ON"}, "lineItems": {"nodes": [{"name": "Window", "description": "Same-size opening in a single dwelling house"}]}},
+      "project": {"family": "window_door", "action": "replace_same_size", "single_dwelling_house": true, "structural_change": false, "new_exit": false}
+    },
+    {
+      "id": "jobber-syn-012",
+      "jurisdiction": "toronto_on",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-012", "title": "Commercial same-size window", "property": {"address": "112 Example Rd, Toronto, ON"}, "lineItems": {"nodes": [{"name": "Window", "description": "Same-size replacement, non-house building"}]}},
+      "project": {"family": "window_door", "action": "replace_same_size", "single_dwelling_house": false}
+    },
+    {
+      "id": "jobber-syn-013",
+      "jurisdiction": "toronto_on",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"__typename": "Job", "id": "syn-j-013", "title": "Clean basement finish", "property": {"address": "113 Example Rd, Toronto, ON"}, "lineItems": {"nodes": [{"name": "Basement finish", "description": "No structural, material, dwelling or plumbing changes"}]}},
+      "project": {"family": "basement", "action": "finish_basement", "structural_change": false, "material_alteration": false, "dwelling_unit_change": false, "new_plumbing": false}
+    },
+    {
+      "id": "jobber-syn-014",
+      "jurisdiction": "toronto_on",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-014", "title": "Basement finish with new plumbing", "property": {"address": "114 Example Rd, Toronto, ON"}, "lineItems": {"nodes": [{"name": "Basement bathroom", "description": "New plumbing rough-in"}]}},
+      "project": {"family": "basement", "action": "finish_basement", "new_plumbing": true}
+    },
+    {
+      "id": "jobber-syn-015",
+      "jurisdiction": "toronto_on",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-015", "title": "Raised deck", "property": {"address": "115 Example Rd, Toronto, ON"}, "lineItems": {"nodes": [{"name": "Deck", "description": "Deck height 601 mm"}]}},
+      "project": {"family": "deck_porch", "deck_height_mm": 601}
+    },
+    {
+      "id": "jobber-syn-016",
+      "jurisdiction": "mississauga_on",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-016", "title": "Same-size window replacement", "property": {"address": "116 Example Dr, Mississauga, ON"}, "lineItems": {"nodes": [{"name": "Window", "description": "Replace in same opening"}]}},
+      "project": {"family": "window_door", "action": "replace_same_size"}
+    },
+    {
+      "id": "jobber-syn-017",
+      "jurisdiction": "mississauga_on",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Job", "id": "syn-j-017", "title": "Finish basement", "property": {"address": "117 Example Dr, Mississauga, ON"}, "lineItems": {"nodes": [{"name": "Basement", "description": "Finish existing basement"}]}},
+      "project": {"family": "basement", "action": "finish_basement"}
+    },
+    {
+      "id": "jobber-syn-018",
+      "jurisdiction": "mississauga_on",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-018", "title": "Deck near published threshold", "property": {"address": "118 Example Dr, Mississauga, ON"}, "lineItems": {"nodes": [{"name": "Deck", "description": "Deck height 605 mm"}]}},
+      "project": {"family": "deck_porch", "deck_height_mm": 605}
+    },
+    {
+      "id": "jobber-syn-019",
+      "jurisdiction": "laval_qc",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Quote", "id": "syn-q-019", "title": "18 square metre shed", "property": {"address": "119 Rue Exemple, Laval, QC"}, "lineItems": {"nodes": [{"name": "Shed", "description": "Detached accessory shed, 18 m2"}]}},
+      "project": {"family": "accessory_structure", "accessory_structure_kind": "shed", "accessory_area_m2": 18}
+    },
+    {
+      "id": "jobber-syn-020",
+      "jurisdiction": "vancouver_bc",
+      "expected_determination": "REQUIRED",
+      "payload": {"__typename": "Request", "id": "syn-r-020", "title": "Create secondary suite", "property": {"address": "120 Example St, Vancouver, BC"}, "lineItems": {"nodes": [{"name": "Secondary suite", "description": "Create additional dwelling unit"}]}},
+      "project": {"family": "dwelling_change", "action": "add_secondary_suite", "dwelling_unit_change": true}
+    }
+  ]
+}
