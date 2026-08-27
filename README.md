@@ -36,12 +36,20 @@ The result is a preflight information package, **not municipal authorization, le
 
 The business target is not a homeowner-only `Do I need a permit?` wizard and not a managed permit-submission service. ProjectPermit is intended to become a **cross-jurisdiction permit-requirements intelligence layer** embedded in contractor, property-management, construction/design, permitting, and real-estate software/Agent workflows.
 
-Seven jurisdictions are now enough to validate distribution. Additional city expansion is intentionally paused until repeated external usage, a credible high-volume integration, or a design partner requests more coverage.
+Seven jurisdictions are now enough to validate distribution. Additional city expansion is intentionally paused until repeated external usage, a credible high-volume integration, or a design partner requests more coverage with measurable call volume.
+
+The first commercially meaningful internal checkpoint is roughly **10,000 monthly external preflight calls**. A preferred proof shape is approximately **5 integrations × 2,000 calls/month**, or one platform workflow capable of the same volume. This is a validation target, not a forecast.
 
 Read:
 
 - `docs/MARKET_VALIDATION.md` — market background, pricing thesis and original call-volume model
-- `docs/DISTRIBUTION_VALIDATION.md` — 2026 platform evidence, competition, ServiceTitan workflow scenarios and 30-day validation plan
+- `docs/DISTRIBUTION_VALIDATION.md` — 2026 platform evidence, competition and 30-day validation plan
+- `docs/CALL_VOLUME_THRESHOLDS.md` — bottom-up monthly-call and revenue thresholds
+- `docs/PAIN_EVIDENCE.md` — observed field/community pain evidence separated from assumptions
+- `docs/TARGET_ACCOUNT_RANKING.md` — ranked design-partner targets by pain and distribution leverage
+- `docs/OUTREACH_BATCH_01.md` — tailored first outreach batch, prepared but not sent
+- `docs/DESIGN_PARTNER_TRIAL.md` — low-friction 20-case pilot protocol
+- `docs/EXTERNAL_USAGE_BASELINE.md` — clean external-usage starting baseline
 - `docs/INTEGRATION_QUICKSTART.md` — copy-paste developer integration examples
 
 ## Architecture
@@ -52,7 +60,7 @@ All transports call the same shared address-aware preflight pipeline:
 
 Resolved non-null municipal property facts can enrich a request before rule evaluation. Unknown overlays remain unknown and never silently overwrite an explicit caller value.
 
-Successful preflight calls also emit privacy-minimal structured usage telemetry for market validation. The telemetry excludes civic address, coordinates, property identifiers, payment credentials, IP/user-agent data and raw client tags. Internal CI/owner smoke traffic is explicitly tagged so it can be excluded from external call counts.
+Successful preflight calls also emit privacy-minimal structured usage telemetry for market validation. The telemetry excludes civic address, coordinates, property identifiers, payment credentials, IP/user-agent data and raw client tags. Internal CI/owner smoke traffic is explicitly tagged so it can be excluded from external call counts. Municipal HTTP request URL logging is suppressed so address/query details are not leaked indirectly through `httpx` INFO logs.
 
 ## Quick start
 
@@ -100,6 +108,24 @@ Example:
 
 For an address-aware jurisdiction, set `resolve_address=true` and supply `address`; the same behavior is available through standard MCP and paid MCP.
 
+## Developer-validation workflow
+
+The standard MCP endpoint is temporarily free so a design partner can test workflow fit without a wallet or billing setup. A recommended pilot uses **20 anonymized real scopes**, a stable non-PII `context.client_tag`, and measures whether the result actually changes the next workflow step.
+
+Partner evidence is tracked in:
+
+- `data/partner_targets.csv` — 20 candidate design-partner accounts
+- `data/partner_feedback.csv` — structured conversation/pilot/call-volume outcomes
+- `data/design_partner_scope_template.csv` — anonymized pilot-case template
+
+Summarize validation evidence with:
+
+```bash
+python scripts/summarize_partner_feedback.py
+```
+
+Unknown interview values remain unknown rather than being silently converted to zero. The commercial gates therefore depend on recorded external evidence, not optimistic inference.
+
 ## Repository map
 
 - `src/projectpermit/engine.py` — original Gatineau/Ottawa deterministic rules
@@ -112,11 +138,15 @@ For an address-aware jurisdiction, set `resolve_address=true` and supply `addres
 - `src/projectpermit/mississauga_address.py` — Mississauga address/property adapter
 - `src/projectpermit/vancouver_address.py` — Vancouver first-party open-data adapter
 - `src/projectpermit/telemetry.py` — privacy-minimal usage events
+- `src/projectpermit/http_fetch.py` — municipal HTTP fetch with request-URL log suppression
 - `src/projectpermit/api.py` — HTTP API
 - `src/projectpermit/mcp_server.py` — standard MCP v2 developer preview
 - `src/projectpermit/paid_mcp_server.py` — x402-native paid MCP v2 server
 - `src/projectpermit/mcp_v2_x402_compat.py` — MCP SDK v2 / x402 result compatibility shim
 - `data/source_manifest.json` — official source registry/freshness metadata
+- `data/partner_targets.csv` — first 20 design-partner targets
+- `data/partner_feedback.csv` — structured external-validation tracker
+- `data/design_partner_scope_template.csv` — anonymized 20-case pilot template
 - `schemas/` — public request/response schemas
 - `scripts/mcp_remote_smoke.py` — seven-city + Vancouver address-aware public MCP smoke
 - `scripts/paid_mcp_unpaid_smoke.py` — no-cost remote payment-challenge test
@@ -124,10 +154,18 @@ For an address-aware jurisdiction, set `resolve_address=true` and supply `addres
 - `scripts/facilitator_capability_probe.py` — no-cost facilitator capability matrix
 - `scripts/projectpermit_bazaar_lookup.py` — read-only Bazaar catalog lookup
 - `scripts/summarize_usage_logs.py` — external/internal usage-log summarizer
+- `scripts/summarize_partner_feedback.py` — partner conversation/call-volume gate summarizer
 - `docs/PHASE0_SPEC.md` — original product/engineering scope
 - `docs/PHASE0_RELEASE_READINESS.md` — completed Phase 0 release gate
 - `docs/MARKET_VALIDATION.md` — market background and original business gates
-- `docs/DISTRIBUTION_VALIDATION.md` — platform distribution/call-volume validation plan
+- `docs/DISTRIBUTION_VALIDATION.md` — platform distribution validation plan
+- `docs/CALL_VOLUME_THRESHOLDS.md` — monthly API-call economics and go/no-go thresholds
+- `docs/PAIN_EVIDENCE.md` — observed workflow pain evidence
+- `docs/TARGET_ACCOUNT_RANKING.md` — account prioritization model
+- `docs/PARTNER_OUTREACH.md` — outreach/discovery playbook
+- `docs/OUTREACH_BATCH_01.md` — first tailored outreach batch
+- `docs/DESIGN_PARTNER_TRIAL.md` — design-partner pilot package
+- `docs/EXTERNAL_USAGE_BASELINE.md` — telemetry baseline before outreach
 - `docs/INTEGRATION_QUICKSTART.md` — developer quickstart
 - `docs/X402_ARCHITECTURE.md` — payment/discovery design
 
@@ -157,6 +195,8 @@ Current CI covers:
 - deterministic jurisdiction-rule and schema tests
 - address-adapter and shared-preflight regressions
 - telemetry privacy contract
+- municipal request-log privacy guard
+- partner-validation metric summarizer tests
 - official source-manifest contracts
 - MCP v2 integration
 - x402 wire behavior
