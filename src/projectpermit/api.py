@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from .capabilities import PROJECT_FAMILIES
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
@@ -20,6 +20,17 @@ class PreflightRequest(BaseModel):
     property: Dict[str, Any] = Field(default_factory=dict)
     context: Dict[str, Any] = Field(default_factory=dict)
     resolve_address: bool = False
+
+
+class PreviewRequest(BaseModel):
+    """Free validation preview deliberately excludes raw civic address resolution."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    jurisdiction: str
+    project: Dict[str, Any]
+    property: Dict[str, Any] = Field(default_factory=dict)
+    context: Dict[str, Any] = Field(default_factory=dict)
 
 
 @app.get("/health")
@@ -43,9 +54,26 @@ def capabilities():
             for jurisdiction in SUPPORTED_JURISDICTIONS
         ],
         "project_families": list(PROJECT_FAMILIES),
+        "free_preview_resource": "/v1/preview-project-requirements",
+        "free_preview_address_resolution": False,
         "paid_resource": "/v1/check-project-requirements",
         "disclaimer": "Preflight information only; not municipal authorization or legal advice.",
     }
+
+
+@app.post("/v1/preview-project-requirements")
+def preview_project_requirements(req: PreviewRequest):
+    """Free structured-facts preview; never performs civic-address/GIS resolution."""
+    try:
+        facts = req.model_dump()
+        facts["address"] = None
+        facts["resolve_address"] = False
+        facts["context"] = {**facts.get("context", {}), "_transport": "http_preview"}
+        return run_preflight(facts)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=f"preview preflight failed: {exc}") from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="preview evaluation failed") from exc
 
 
 @app.post("/v1/check-project-requirements")

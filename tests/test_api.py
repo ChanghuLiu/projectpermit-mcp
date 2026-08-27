@@ -32,6 +32,27 @@ class ApiSmokeTest(unittest.TestCase):
         for jurisdiction in ('laval_qc', 'longueuil_qc'):
             self.assertFalse(jurisdictions[jurisdiction]['address_resolution'])
         self.assertEqual(8, len(payload['project_families']))
+        self.assertEqual('/v1/preview-project-requirements', payload['free_preview_resource'])
+        self.assertFalse(payload['free_preview_address_resolution'])
+
+    def test_free_preview_returns_deterministic_result(self):
+        r = self.client.post('/v1/preview-project-requirements', json={
+            'jurisdiction': 'ottawa_on',
+            'project': {'family': 'window_door', 'action': 'replace_same_size'},
+            'property': {'heritage': False},
+            'context': {'client_tag': 'unit-test-preview'},
+        })
+        self.assertEqual(200, r.status_code)
+        self.assertEqual('LIKELY_NOT_REQUIRED', r.json()['determination'])
+
+    def test_free_preview_rejects_raw_address_and_address_resolution_fields(self):
+        r = self.client.post('/v1/preview-project-requirements', json={
+            'jurisdiction': 'ottawa_on',
+            'project': {'family': 'window_door', 'action': 'replace_same_size'},
+            'address': '123 Example St',
+            'resolve_address': True,
+        })
+        self.assertEqual(422, r.status_code)
 
     def test_ottawa_same_size_window(self):
         r = self.client.post('/v1/check-project-requirements', json={
