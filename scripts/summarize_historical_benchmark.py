@@ -20,17 +20,18 @@ YES = {"1", "true", "yes", "y"}
 NO = {"0", "false", "no", "n"}
 BIASED_SAMPLING = {
     "curated",
-    "hand-picked",
+    "hand_picked",
     "handpicked",
     "selected",
     "selected_successes",
     "success_examples",
 }
-VALID_DETERMINATIONS = {
+HISTORICAL_DETERMINATIONS = {
     "REQUIRED",
     "LIKELY_NOT_REQUIRED",
     "MUNICIPAL_CONFIRMATION_REQUIRED",
 }
+PROJECTPERMIT_DETERMINATIONS = HISTORICAL_DETERMINATIONS | {"OUT_OF_SCOPE"}
 
 
 def _text(value: Any) -> str:
@@ -107,9 +108,9 @@ def _case_errors(row: Mapping[str, Any]) -> list[str]:
 
     historical = _text(row.get("historical_determination")).upper()
     projectpermit = _text(row.get("projectpermit_determination")).upper()
-    if historical and historical not in VALID_DETERMINATIONS:
+    if historical and historical not in HISTORICAL_DETERMINATIONS:
         errors.append("invalid:historical_determination")
-    if projectpermit and projectpermit not in VALID_DETERMINATIONS:
+    if projectpermit and projectpermit not in PROJECTPERMIT_DETERMINATIONS:
         errors.append("invalid:projectpermit_determination")
 
     if _bool(row.get("agreement")) is None:
@@ -117,8 +118,8 @@ def _case_errors(row: Mapping[str, Any]) -> list[str]:
     if _bool(row.get("material_disagreement")) is None:
         errors.append("invalid:material_disagreement")
 
-    sampling = _lower(row.get("sampling_method")).replace(" ", "_")
-    if sampling in {value.replace("-", "_") for value in BIASED_SAMPLING}:
+    sampling = _lower(row.get("sampling_method")).replace("-", "_").replace(" ", "_")
+    if sampling in BIASED_SAMPLING:
         errors.append("biased_sampling_method")
 
     return errors
@@ -144,6 +145,7 @@ def summarize(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
         material_disagreements = 0
         false_likely_not_required = 0
         confirm_outputs = 0
+        out_of_scope_outputs = 0
 
         for row in usable_rows:
             errors = _case_errors(row)
@@ -165,6 +167,8 @@ def summarize(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
                 false_likely_not_required += 1
             if projectpermit == "MUNICIPAL_CONFIRMATION_REQUIRED":
                 confirm_outputs += 1
+            if projectpermit == "OUT_OF_SCOPE":
+                out_of_scope_outputs += 1
 
         sampling_methods = sorted({_text(row.get("sampling_method")) for row in usable_rows if _text(row.get("sampling_method"))})
         sample_windows = sorted(
@@ -198,6 +202,7 @@ def summarize(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
                 "material_disagreements": material_disagreements,
                 "false_likely_not_required": false_likely_not_required,
                 "municipal_confirmation_outputs": confirm_outputs,
+                "out_of_scope_outputs": out_of_scope_outputs,
                 "sampling_methods": sampling_methods,
                 "sample_windows": [list(window) for window in sample_windows],
                 "duplicate_case_ids": duplicate_case_ids,
@@ -211,7 +216,7 @@ def summarize(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
         "rows_recorded": len(materialized),
         "partner_benchmarks": partner_benchmarks,
         "qualified_partner_benchmarks": qualified_count,
-        "note": "E3 qualification here audits sample reproducibility/representativeness only; it does not imply E4 usage or E5 economic evidence.",
+        "note": "E3 qualification audits representative/reproducible historical evidence. OUT_OF_SCOPE cases remain in the sample as negative evidence; E3 still does not imply E4 usage or E5 economic evidence.",
     }
 
 
