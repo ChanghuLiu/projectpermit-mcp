@@ -90,9 +90,14 @@ def evaluate_rows(rows: Iterable[Mapping[str, Any]]) -> list[dict[str, str]]:
             raise ValueError(f"{case_id}: ProjectPermit returned no determination")
 
         historical = row.get("historical_determination", "").upper()
+        agreement = bool(historical and historical == determination)
         row["projectpermit_determination"] = determination
         row["projectpermit_confidence"] = confidence
-        row["agreement"] = "yes" if historical and historical == determination else "no"
+        row["agreement"] = "yes" if agreement else "no"
+        # Exact agreement cannot be a material disagreement. Any disagreement must
+        # be reviewed by a human after each run; clear stale/pre-filled values so a
+        # re-run cannot accidentally preserve an old materiality judgment.
+        row["material_disagreement"] = "no" if agreement else ""
         row["false_likely_not_required"] = (
             "yes" if historical == "REQUIRED" and determination == "LIKELY_NOT_REQUIRED" else "no"
         )
@@ -118,6 +123,7 @@ def write_rows(path: Path, rows: list[dict[str, str]], fieldnames: list[str]) ->
         "projectpermit_determination",
         "projectpermit_confidence",
         "agreement",
+        "material_disagreement",
         "false_likely_not_required",
         "unsupported_family",
         "unsupported_jurisdiction",
