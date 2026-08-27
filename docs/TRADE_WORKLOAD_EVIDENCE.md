@@ -23,13 +23,25 @@ Interpretation: the earlier `80 calls/account/month` direct-contractor scenario 
 
 The City FOI release 2024-671 includes building and sub-trade permits (mechanical, electrical, plumbing, HVAC, etc.), but its XLSX currently returns HTTP 403 to automated GitHub runner downloads even with browser-style headers. Do not treat the missing workbook as evidence either way.
 
-## Toronto 2024 — city-level trade permit flow
+## Toronto 2023–2025 — stable city-level trade permit flow
 
 Source: City of Toronto Open Data, `Building Permits - Active Permits` + `Building Permits - Cleared Permits`.
 
-A reproducible market-research script streams both official CSV resources, reads only permit number/revision/type/issued-date, filters to 2024 issued records, and deduplicates across Active/Cleared by permit number + revision.
+A reproducible market-research script streams both official CSV resources, reads only permit number/revision/type/issued-date, filters to the selected issue year, and deduplicates across Active/Cleared by permit number + revision.
 
-Observed 2024 unique issued permit revisions: **37,451**.
+### Three-year stability
+
+| Year | Unique issued permit revisions | Mechanical | Plumbing | Drain & Site Service | Three trade categories combined | Avg combined / month | Combined share |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 2023 | 37,752 | 7,442 | 8,365 | 4,278 | **20,085** | **1,673.8** | **53.20%** |
+| 2024 | 37,451 | 7,435 | 7,939 | 4,639 | **20,013** | **1,667.8** | **53.44%** |
+| 2025 | 38,304 | 7,323 | 8,646 | 4,764 | **20,733** | **1,727.8** | **54.13%** |
+
+The combined Mechanical + Plumbing + Drain/Site flow remains tightly clustered around **20k–20.7k issued permit revisions/year**, or roughly **1.67k–1.73k/month**, across all three years.
+
+This makes the 2024 observation a structural workflow-volume signal rather than a one-year spike.
+
+### 2024 detail
 
 | Permit type | 2024 issued revisions | Avg/month |
 |---|---:|---:|
@@ -41,11 +53,9 @@ Observed 2024 unique issued permit revisions: **37,451**.
 | Small Residential Projects | 7,529 | 627.4 |
 | New Houses | 2,063 | 171.9 |
 
-The three trade categories alone represent about **53.4%** of Toronto's 2024 unique issued permit revisions in this combined dataset.
+Toronto Open Data documentation notes that multiple Mechanical and Plumbing permits can be issued with other permit types for the same broader construction project. Therefore permit revisions are workflow events, not unique projects or unique customers.
 
-Toronto Open Data documentation also notes that multiple Mechanical and Plumbing permits can be issued with other permit types for the same broader construction project. Therefore permit revisions are workflow events, not unique projects or unique customers.
-
-Interpretation: Toronto provides strong evidence that trade-permit workflow volume is large at the **city/platform level**, even though Vancouver building-permit data suggests ordinary direct contractor cadence is much lower than 80/month.
+Interpretation: Toronto provides strong evidence that trade-permit workflow volume is large and persistent at the **city/platform level**, even though Vancouver building-permit data suggests ordinary direct contractor cadence is much lower than 80/month.
 
 ## External high-volume example
 
@@ -58,14 +68,15 @@ This proves that high-volume permit-operations customers exist, but it is one U.
 The evidence now supports three different customer shapes:
 
 1. **Ordinary direct building/renovation contractor** — likely low-to-moderate permit cadence; useful for E3/E4 learning but weak as the primary 10k-call distribution engine.
-2. **High-volume HVAC/plumbing/mechanical or multi-branch contractor** — plausible, but requires explicit cadence evidence before assuming 80+/month.
-3. **Platform / permit-operations / multi-account integration** — currently the most credible path to 500, 2,000 and 10,000+ repeated monthly calls because it aggregates many contractor workflows.
+2. **High-volume HVAC/plumbing/mechanical or multi-branch contractor** — plausible, and the iPermit example proves such outliers exist, but explicit Canadian cadence evidence is still required before assuming 80+/month.
+3. **Platform / permit-operations / multi-account integration** — currently the most credible path to 500, 2,000 and 10,000+ repeated monthly calls because it aggregates many contractor workflows. Toronto alone shows roughly 1.7k monthly trade-permit workflow events after issuance; an upstream platform sees a broader candidate pool than issued permits, but that multiplier remains unmeasured.
 
 Accordingly:
 
 - keep `125 × 80/month` only as an **aggressive direct-account scenario**, not a base case;
 - keep `20 integrations × 500/month`, `5 × 2,000/month`, and a platform workflow as primary distribution shapes;
 - prioritize E2/E3/E4 evidence from integrations, permit-operations vendors, consultants, and high-volume HVAC/plumbing operators over ordinary one-city general contractors;
+- use Toronto/Ontario first for workflow validation because both contractor employer density and observed trade-permit event density are highest among the currently studied covered geographies;
 - do not expand municipalities merely to increase denominator size until a partner/workflow identifies the missing geography.
 
 ## Next measurement
@@ -82,3 +93,5 @@ For a partner benchmark, measure:
 - address-aware share;
 - repeated calls per account/integration;
 - realized willingness to pay.
+
+A partner exposing **500+ bounded candidate events/month** in covered geographies now matters more than collecting additional broad market-size estimates.
