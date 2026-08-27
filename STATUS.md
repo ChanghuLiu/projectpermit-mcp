@@ -54,7 +54,11 @@ Real buyer-side HTTP and MCP x402 settlement have already been proven. Do not sp
 - no server-side LLM dependency
 - no paid map/property-data dependency
 - read-only Jobber Request/Quote/Job adapter + tests
+- read-only Jobber GraphQL transport + tests
+- Jobber no-mutation account probe
+- Jobber developer/test-account bootstrap instructions
 - Jobber E3 historical benchmark template
+- Vancouver 10-case public permit-positive false-negative backtest
 
 ## Outreach state
 
@@ -153,15 +157,29 @@ Preferred workflow:
 
 `Jobber Quote/Job -> address + title/line items -> structured ProjectPermit facts -> preflight -> proposed custom-field writeback`
 
-Current sequence:
+### Current Jobber state
 
-1. API/Marketplace eligibility question — **SENT**
-2. read-only adapter + unit tests — **DONE**
-3. 20+ representative historical cases from 1–5 supported-city operators — **NEXT E3 GATE**
-4. repeat-use authorized pilot — **E4 GATE**
-5. Marketplace submission — only after E3/E4 shows repeated volume
+- API/Marketplace eligibility question — **SENT; not a sandbox blocker**
+- read-only adapter + unit tests — **DONE**
+- read-only GraphQL client that rejects mutation/subscription — **DONE**
+- one-command account probe — **DONE**
+- developer/test-account bootstrap path — **DOCUMENTED**
+- external existing-customer Jobber testing — **ON HOLD until coordinated with a Jobber developer representative**
 
-Keep mutation disabled until the read-only mapping is benchmarked.
+Jobber's current testing guidance says that an app intended for Marketplace publication should not engage existing Jobber customers for testing before coordinating with a Jobber developer representative. The separate rule allowing a Draft custom integration to connect to up to five paying accounts does not override that testing guidance.
+
+### Current sequence
+
+1. create/use a Jobber developer testing account + Developer Center Draft app + GraphiQL testing token — **CURRENT MANUAL SANDBOX STEP**
+2. run the read-only account probe and verify exact live Request/Quote/Job/Property/line-item fields — **NEXT TECHNICAL GATE**
+3. run a 20+ synthetic/de-identified sandbox integration benchmark — **integration evidence only, not E3**
+4. after Jobber customer-testing coordination, obtain 20+ representative historical Canadian cases from independent operators — **E3 GATE**
+5. only then run an authorized repeat-use pilot — **E4 GATE**
+6. Marketplace investment only after E3/E4 shows repeated permit-sensitive volume
+
+Keep mutation disabled until the read-only mapping is benchmarked and external testing is authorized appropriately.
+
+See `docs/JOBBER_DEVELOPER_BOOTSTRAP.md`, `docs/JOBBER_DISTRIBUTION_WEDGE.md`, and `docs/JOBBER_OPERATOR_VALIDATION.md`.
 
 ## Known unresolved items
 
@@ -175,7 +193,9 @@ Keep mutation disabled until the read-only mapping is benchmarked.
 
 ## Next gates
 
-- obtain **2 independent representative E3 historical benchmarks**
+- complete the Jobber internal developer/test-account schema probe
+- complete a 20+ synthetic/de-identified Jobber integration benchmark without mutation
+- obtain **2 independent representative E3 historical benchmarks** after the relevant platform/customer-testing route is cleared
 - reach **1 repeated external workflow with 20+ successful calls**
 - reach **3 external integrations and 100+ non-owner successful calls**
 - identify **one workflow with 500+ candidate calls/month**
