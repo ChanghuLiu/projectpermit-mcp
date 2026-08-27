@@ -97,7 +97,7 @@ def summarize() -> dict:
     employment_values = sorted({(row.get(employment_col) or "").strip() for row in rows})
     total_employment_values = [
         value for value in employment_values
-        if "total" in value.lower() and ("employment" in value.lower() or "size" in value.lower())
+        if value.strip().lower() == "total, with employees"
     ]
     if len(total_employment_values) != 1:
         raise RuntimeError(
