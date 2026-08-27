@@ -37,7 +37,7 @@ def row(**overrides: str) -> dict[str, str]:
         "address_resolution_needed": "no",
         "historical_determination": "LIKELY_NOT_REQUIRED",
         "historical_decision_source": "municipal_research",
-        "material_disagreement": "no",
+        "material_disagreement": "",
     }
     base.update(overrides)
     return base
@@ -48,9 +48,19 @@ class PartnerE3RunnerTest(unittest.TestCase):
         result = module.evaluate_rows([row()])[0]
         self.assertEqual("LIKELY_NOT_REQUIRED", result["projectpermit_determination"])
         self.assertEqual("yes", result["agreement"])
+        self.assertEqual("no", result["material_disagreement"])
         self.assertEqual("no", result["false_likely_not_required"])
         self.assertEqual("no", result["unsupported_jurisdiction"])
         self.assertEqual("no", result["unsupported_family"])
+
+    def test_disagreement_requires_fresh_human_materiality_review(self):
+        result = module.evaluate_rows(
+            [row(historical_determination="REQUIRED", material_disagreement="no")]
+        )[0]
+        self.assertEqual("LIKELY_NOT_REQUIRED", result["projectpermit_determination"])
+        self.assertEqual("no", result["agreement"])
+        self.assertEqual("", result["material_disagreement"])
+        self.assertEqual("yes", result["false_likely_not_required"])
 
     def test_out_of_scope_is_kept_as_negative_evidence(self):
         result = module.evaluate_rows(
@@ -63,6 +73,7 @@ class PartnerE3RunnerTest(unittest.TestCase):
         )[0]
         self.assertEqual("OUT_OF_SCOPE", result["projectpermit_determination"])
         self.assertEqual("no", result["agreement"])
+        self.assertEqual("", result["material_disagreement"])
         self.assertEqual("yes", result["unsupported_jurisdiction"])
         self.assertEqual("no", result["false_likely_not_required"])
 
