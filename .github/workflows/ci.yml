@@ -7,12 +7,16 @@ on:
       - 'README.md'
       - 'STATUS.md'
       - 'submission/**'
+      - 'scripts/statcan_reachable_contractor_denominator.py'
+      - '.github/workflows/statcan-market-denominator.yml'
   pull_request:
     paths-ignore:
       - 'docs/**'
       - 'README.md'
       - 'STATUS.md'
       - 'submission/**'
+      - 'scripts/statcan_reachable_contractor_denominator.py'
+      - '.github/workflows/statcan-market-denominator.yml'
 
 jobs:
   core:
