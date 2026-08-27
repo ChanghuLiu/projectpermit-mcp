@@ -1,0 +1,2 @@
+case_id,partner,source_period,jurisdiction,municipality,civic_address_optional,project_family,scope_summary,historical_result,historical_result_source,projectpermit_result,agreement,material_disagreement,address_aware_needed,notes
+example-001,,2026-08,,,,window_door,"Replace one exterior window with same-size unit",,,,,,,,
