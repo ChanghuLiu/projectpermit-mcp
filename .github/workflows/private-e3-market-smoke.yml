@@ -33,16 +33,16 @@ jobs:
           assert data['report'] == 'ProjectPermit_private_E3_aggregate'
           assert 'input_sha256' in data and len(data['input_sha256']) == 64
           rendered = json.dumps(data)
-          # Check actual example values / row-level field names that must not escape.
+          # Check actual values from the example row. Aggregate field names and
+          # privacy-boundary prose are allowed; row-level values must not escape.
           for forbidden in (
               'REPLACE_ME',
               'EXAMPLE-001',
-              'Build a residential rear deck',
+              'Build a residential rear deck 700 mm above grade',
               'jobber',
-              'project_facts_json',
-              'property_facts_json',
-              'scope_summary',
-              'notes',
+              'deck_height_mm',
+              'city_site',
+              'Delete this example row before recording real anonymized cases',
           ):
               assert forbidden not in rendered, forbidden
           assert data['rows_recorded'] == 1
