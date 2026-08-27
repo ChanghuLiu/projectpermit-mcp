@@ -57,8 +57,13 @@ Real buyer-side HTTP and MCP x402 settlement have already been proven. Do not sp
 - read-only Jobber GraphQL transport + tests
 - Jobber no-mutation account probe
 - Jobber developer/test-account bootstrap instructions
+- **20-case synthetic/de-identified Jobber integration benchmark across all 8 project families**
+- runnable Jobber synthetic benchmark summary command
 - Jobber E3 historical benchmark template
 - Vancouver 10-case public permit-positive false-negative backtest
+- Gatineau URBAIN first-party competitive-boundary analysis
+
+Latest CI on `main` after these additions: **PASS**.
 
 ## Outreach state
 
@@ -98,6 +103,8 @@ See `docs/VALIDATION_EVIDENCE_STANDARD.md`.
 
 A positive reply is not market validation. Major coverage, product-boundary, mainnet and pricing decisions should not be made from E0/E1.
 
+Synthetic/de-identified integration benchmarks and public municipal permit-positive backtests are technical evidence only. They do **not** count as E3/E4.
+
 ## External usage baseline
 
 Initial post-telemetry baseline before outreach:
@@ -132,6 +139,25 @@ The first commercially meaningful internal checkpoint remains roughly **10,000 e
 
 At 10k monthly calls, gross revenue would be about $2,500 at $0.25/call or $5,000 at $0.50/call before infrastructure, support and municipal-rule maintenance.
 
+## First-party municipal assistant risk: Gatineau URBAIN
+
+Ville de Gatineau now operates **URBAIN**, a first-party address-aware/project-aware urban-planning assistant. The City says it uses structured questions, applies regulations according to project location, indicates whether a permit is required, provides applicable standards and routes complex cases to municipal staff. Further modules are planned through 2027.
+
+This is a direct substitution risk for a **single-city homeowner permit checker** and a strong reason not to move ProjectPermit toward that product shape.
+
+It does **not** currently establish a public machine-to-machine developer API. The correct finding is only that no public developer/API surface was identified in the official material reviewed so far; do not claim one does not exist.
+
+ProjectPermit differentiation must remain:
+
+- cross-jurisdiction normalization;
+- embedded contractor/platform workflow;
+- API/MCP delivery;
+- common evidence/rule schema;
+- repeat portfolio volume;
+- fail-safe uncertainty rather than municipal-authority claims.
+
+See `docs/GATINEAU_URBAIN_COMPETITIVE_BOUNDARY.md`.
+
 ## Objective activity baseline
 
 First-party 2024 counts already established for four supported cities:
@@ -164,6 +190,7 @@ Preferred workflow:
 - read-only GraphQL client that rejects mutation/subscription — **DONE**
 - one-command account probe — **DONE**
 - developer/test-account bootstrap path — **DOCUMENTED**
+- 20-case synthetic/de-identified integration benchmark — **DONE; all 8 project families**
 - external existing-customer Jobber testing — **ON HOLD until coordinated with a Jobber developer representative**
 
 Jobber's current testing guidance says that an app intended for Marketplace publication should not engage existing Jobber customers for testing before coordinating with a Jobber developer representative. The separate rule allowing a Draft custom integration to connect to up to five paying accounts does not override that testing guidance.
@@ -172,7 +199,7 @@ Jobber's current testing guidance says that an app intended for Marketplace publ
 
 1. create/use a Jobber developer testing account + Developer Center Draft app + GraphiQL testing token — **CURRENT MANUAL SANDBOX STEP**
 2. run the read-only account probe and verify exact live Request/Quote/Job/Property/line-item fields — **NEXT TECHNICAL GATE**
-3. run a 20+ synthetic/de-identified sandbox integration benchmark — **integration evidence only, not E3**
+3. bind the verified live schema into the query layer and rerun the existing 20-case integration contract — **NEXT AFTER SCHEMA**
 4. after Jobber customer-testing coordination, obtain 20+ representative historical Canadian cases from independent operators — **E3 GATE**
 5. only then run an authorized repeat-use pilot — **E4 GATE**
 6. Marketplace investment only after E3/E4 shows repeated permit-sensitive volume
@@ -184,17 +211,18 @@ See `docs/JOBBER_DEVELOPER_BOOTSTRAP.md`, `docs/JOBBER_DISTRIBUTION_WEDGE.md`, a
 ## Known unresolved items
 
 1. **Laval/Longueuil property adapters:** evaluate only if usage justifies them.
-2. **Gatineau PIIA/heritage:** stable unauthenticated machine overlay endpoint is not yet locked; unknown must never become false.
+2. **Gatineau PIIA/heritage:** stable unauthenticated machine overlay endpoint is not yet locked; unknown must never become false. URBAIN increases the case for not investing here before external API volume exists.
 3. **Longueuil exemptions:** conservative outcomes remain intentional where simplified official material does not establish universal exemptions.
 4. **Mainnet:** intentionally disabled until external demand and willingness-to-pay validation pass.
 5. **External Bazaar stale row:** historical `http://` discovery row remains alongside canonical HTTPS; non-blocking.
 6. **Free MCP bypass:** full determinations are temporarily free for developer validation; this is not permanent commercial packaging.
 7. **Geographic overlap:** strong U.S. platform distribution does not justify U.S. city expansion without E3/E4-backed volume.
+8. **Municipal first-party substitution:** check each new city for an official address-aware permit assistant before adding homeowner-oriented product work.
 
 ## Next gates
 
-- complete the Jobber internal developer/test-account schema probe
-- complete a 20+ synthetic/de-identified Jobber integration benchmark without mutation
+- complete the Jobber internal developer/test-account account + live-schema probe
+- bind verified live Jobber Request/Quote/Job fields without enabling mutations
 - obtain **2 independent representative E3 historical benchmarks** after the relevant platform/customer-testing route is cleared
 - reach **1 repeated external workflow with 20+ successful calls**
 - reach **3 external integrations and 100+ non-owner successful calls**
