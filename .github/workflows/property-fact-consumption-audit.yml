@@ -1,0 +1,31 @@
+name: Property Fact Consumption Audit
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'market_research/property_fact_consumption_audit.py'
+      - 'src/projectpermit/engine.py'
+      - 'src/projectpermit/expansion_rules.py'
+      - 'src/projectpermit/quebec_expansion_rules.py'
+      - 'src/projectpermit/vancouver_rules.py'
+      - '.github/workflows/property-fact-consumption-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  property-consumption:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Audit property facts consumed by deterministic rules
+        run: python market_research/property_fact_consumption_audit.py --output property_fact_consumption_audit.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: property-fact-consumption-audit
+          path: property_fact_consumption_audit.json
+          if-no-files-found: error
