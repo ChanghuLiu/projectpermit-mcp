@@ -2,7 +2,7 @@
 
 Updated: 2026-08-27
 
-Purpose: separate **single-contractor cadence** from **city/platform trade-permit volume** when evaluating ProjectPermit's path to repeated API calls.
+Purpose: separate **single-contractor cadence**, **city/platform trade-permit volume**, and **work that can be plausibly related to ProjectPermit's current eight project families** when evaluating the path to repeated API calls.
 
 This is market-structure evidence only. It is not E3, E4 or E5 validation and it does not measure ProjectPermit preflight incidence.
 
@@ -27,9 +27,9 @@ The City FOI release 2024-671 includes building and sub-trade permits (mechanica
 
 Source: City of Toronto Open Data, `Building Permits - Active Permits` + `Building Permits - Cleared Permits`.
 
-A reproducible market-research script streams both official CSV resources, reads only permit number/revision/type/issued-date, filters to the selected issue year, and deduplicates across Active/Cleared by permit number + revision.
+A reproducible market-research script streams both official CSV resources, reads only permit number/revision/type/work/issued-date, filters to the selected issue year, and deduplicates across Active/Cleared by permit number + revision. It does not emit addresses, project descriptions, applicants, contractors or row-level records.
 
-### Three-year stability
+### Three-year trade-flow stability
 
 | Year | Unique issued permit revisions | Mechanical | Plumbing | Drain & Site Service | Three trade categories combined | Avg combined / month | Combined share |
 |---:|---:|---:|---:|---:|---:|---:|---:|
@@ -39,9 +39,69 @@ A reproducible market-research script streams both official CSV resources, reads
 
 The combined Mechanical + Plumbing + Drain/Site flow remains tightly clustered around **20k–20.7k issued permit revisions/year**, or roughly **1.67k–1.73k/month**, across all three years.
 
-This makes the 2024 observation a structural workflow-volume signal rather than a one-year spike.
+This is evidence that a Toronto trade-permit workflow has persistent city/platform-level density. It is **not evidence that ProjectPermit's current eight families can serve 1.7k events/month**.
 
-### 2024 detail
+### Why the 1.7k/month number is not current-product SAM
+
+The City `WORK` field exposes the key limitation. In 2024, the largest work labels were:
+
+- `Building Permit Related(PS)`: **7,547**
+- `Building Permit Related(MS)`: **7,214**
+- `Interior Alterations`: **4,834**
+- `Multiple Projects`: **2,844**
+- `Building Permit Related (DR)`: **2,468**
+- `New Building`: **2,235**
+- `Back Water Valve (Sewer only)`: **1,885**
+
+The overwhelming majority of Mechanical/Plumbing/Drain volume is therefore represented by broad `Building Permit Related(...)` labels that do **not** expose enough scope detail to map safely into ProjectPermit's existing families.
+
+ProjectPermit currently has no dedicated general HVAC/electrical/mechanical-service family. `kitchen_bath_plumbing` also must not be treated as equivalent to the entire Toronto Plumbing or Drain permit universe.
+
+Therefore:
+
+> **~1.7k trade revisions/month = workflow-density evidence only, not current addressable call volume.**
+
+Do not use the 20k/year trade series as current ProjectPermit SAM, a paid-call denominator, or evidence supporting an HVAC/electrical expansion.
+
+### Current-family-like WORK-label diagnostic
+
+For a diagnostic only, the research script matches City `WORK` labels that visibly resemble the current project families and leaves ambiguous labels unmapped.
+
+| Year | Non-exclusive current-family-like matched WORK events | Avg/month |
+|---:|---:|---:|
+| 2023 | **6,695** | **557.9** |
+| 2024 | **6,690** | **557.5** |
+| 2025 | **7,038** | **586.5** |
+
+2024 diagnostic components were:
+
+| Current family signal | Matched issued revisions |
+|---|---:|
+| interior_renovation | **4,876** |
+| accessory_structure | **542** |
+| addition | **523** |
+| dwelling_change | **377** |
+| deck_porch | **335** |
+| basement | **34** |
+| window_door | **3** |
+| kitchen_bath_plumbing | **0** |
+
+Important limitations:
+
+- the matched count is **non-exclusive diagnostic signal**, not SAM or unique projects;
+- `Interior Alterations` dominates the total and is itself much broader than a guaranteed ProjectPermit candidate event;
+- keyword/work-label matching can both over-map and under-map edge cases;
+- `kitchen_bath_plumbing = 0` only means the City `WORK` labels do not expose kitchen/bath wording in this series; it does **not** prove zero market for that family;
+- current-family-like issued events are downstream permit-positive outcomes, not upstream Requests/Quotes where applicability is still uncertain;
+- the result gives no candidate/issued multiplier, no address-aware share and no willingness-to-pay evidence.
+
+The most defensible interpretation is therefore:
+
+> Toronto has a stable **~560–587/month issued-workflow diagnostic** visibly resembling current ProjectPermit families, but even this number is not yet a callable preflight denominator.
+
+This is materially smaller than the ~1.7k/month broad MEP trade pool and should be used whenever discussing **current-product fit**.
+
+### 2024 permit-type detail
 
 | Permit type | 2024 issued revisions | Avg/month |
 |---|---:|---:|
@@ -53,9 +113,7 @@ This makes the 2024 observation a structural workflow-volume signal rather than 
 | Small Residential Projects | 7,529 | 627.4 |
 | New Houses | 2,063 | 171.9 |
 
-Toronto Open Data documentation notes that multiple Mechanical and Plumbing permits can be issued with other permit types for the same broader construction project. Therefore permit revisions are workflow events, not unique projects or unique customers.
-
-Interpretation: Toronto provides strong evidence that trade-permit workflow volume is large and persistent at the **city/platform level**, even though Vancouver building-permit data suggests ordinary direct contractor cadence is much lower than 80/month.
+Toronto Open Data documentation notes that multiple Mechanical and Plumbing permits can be issued with other permit types for the same broader construction project. Permit revisions are therefore workflow events, not unique projects or unique customers.
 
 ## Mississauga 2023–2025 — visible sub-trade floor
 
@@ -77,46 +135,46 @@ Focus categories are Plumbing Only + Heating Only + Mechanical Only + Drain Only
 - Drain Only: **2**
 - Mechanical Only: **0**
 
-Important limitation: most Mississauga records have blank `APP_DETAIL`, and some trade work can be embedded in broader building permits. Therefore 41–59/month is a **visible application-type floor**, not a complete Mississauga mechanical/plumbing universe.
-
-Even with that limitation, the comparison reinforces that the cleanest measured high-density trade-event pool is Toronto rather than an even distribution across covered Ontario municipalities.
+Important limitation: most Mississauga records have blank `APP_DETAIL`, and some trade work can be embedded in broader building permits. Therefore 41–59/month is a **visible application-type floor**, not a complete Mississauga mechanical/plumbing universe and not current ProjectPermit SAM.
 
 ## External high-volume example
 
 ServiceTitan Marketplace's iPermit listing includes a testimonial from ACTION Air Conditioning / Heating / Solar stating that it sends about **80 or more jobs per month** to iPermit. iPermit also states that it has pulled more than 1 million permits over its history.
 
-This proves that high-volume permit-operations customers exist, but it is one U.S. testimonial and must not be generalized into a Canadian contractor distribution without representative evidence.
+This proves that high-volume permit-operations customers exist, but it is one U.S. testimonial and must not be generalized into a Canadian contractor distribution without representative evidence. It also concerns a high-frequency trade mix that ProjectPermit's current project families do not fully cover.
 
 ## Commercial implication
 
-The evidence now supports three different customer shapes:
+The evidence supports three different customer shapes, but current-family coverage must be kept separate from broad trade volume:
 
 1. **Ordinary direct building/renovation contractor** — likely low-to-moderate permit cadence; useful for E3/E4 learning but weak as the primary 10k-call distribution engine.
-2. **High-volume HVAC/plumbing/mechanical or multi-branch contractor** — plausible, and the iPermit example proves such outliers exist, but explicit Canadian cadence evidence is still required before assuming 80+/month.
-3. **Platform / permit-operations / multi-account integration** — currently the most credible path to 500, 2,000 and 10,000+ repeated monthly calls because it aggregates many contractor workflows. Toronto alone shows roughly 1.7k monthly trade-permit workflow events after issuance; an upstream platform sees a broader candidate pool than issued permits, but that multiplier remains unmeasured.
+2. **High-volume HVAC/plumbing/mechanical or multi-branch contractor** — such operators exist, but much of that trade volume is outside or ambiguous relative to ProjectPermit's current eight families. Do not count it as serviceable without explicit partner demand and scope expansion evidence.
+3. **Platform / multi-account integration** — still the most credible path to aggregation, but a platform's total trade volume is irrelevant unless a bounded subset maps to current families **and** reaches the workflow before permit necessity is already known.
 
 Accordingly:
 
 - keep `125 × 80/month` only as an **aggressive direct-account scenario**, not a base case;
-- keep `20 integrations × 500/month`, `5 × 2,000/month`, and a platform workflow as primary distribution shapes;
-- prioritize E2/E3/E4 evidence from integrations, permit-operations vendors, consultants, and high-volume HVAC/plumbing operators over ordinary one-city general contractors;
-- make **Toronto/GTA estimate/quote workflows** the first bounded-volume validation target; Toronto's measured issued trade-event density is much higher than the visible Mississauga sub-trade floor;
+- keep `20 integrations × 500/month`, `5 × 2,000/month`, and a platform workflow as arithmetic distribution shapes, but require family-fit evidence before calling them reachable;
+- prioritize E2/E3/E4 evidence from upstream Request/on-site-assessment/Estimate/Quote workflows rather than downstream permit-filing intake;
+- make **Toronto/GTA current-family estimate/quote workflows** the first bounded-volume validation target;
 - do not fabricate an Ottawa trade denominator: its public construction/demolition/pool dataset is not equivalent to Toronto's Mechanical/Plumbing permit-type series;
+- do not add HVAC/electrical/mechanical families merely because broad trade volume is high;
 - do not expand municipalities merely to increase denominator size until a partner/workflow identifies the missing geography.
 
 ## Next measurement
 
-The key unresolved metric is still:
+The key unresolved metric is now more specific:
 
-`candidate permit-applicability decisions / issued permit`
+`current-family candidate Requests/Assessments/Quotes with unresolved permit applicability / month`
 
 For a partner benchmark, measure:
 
-- candidate Requests/Quotes/Jobs per month;
-- how many trigger permit-applicability research before a permit is known to be required;
-- how many become issued permits;
+- candidate Requests/Assessments/Quotes/Jobs per month;
+- how many map to one of the current eight project families;
+- how many still require permit-applicability research before permit necessity is known;
+- how many later become issued permits;
 - address-aware share;
 - repeated calls per account/integration;
 - realized willingness to pay.
 
-A partner exposing **500+ bounded candidate events/month** in covered geographies now matters more than collecting additional broad market-size estimates.
+A partner exposing **500+ bounded current-family candidate events/month** in covered geographies would be materially stronger evidence than another broad trade-volume estimate.
