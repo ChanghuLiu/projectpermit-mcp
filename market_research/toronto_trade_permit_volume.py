@@ -1,10 +1,10 @@
-"""Aggregate Toronto 2024 issued permit volume by permit type.
+"""Aggregate Toronto issued permit volume by permit type and work type.
 
 This is market-structure research only. It streams the City of Toronto Active and
-Cleared building-permit CSV resources, keeps only a minimal permit key/type/date
+Cleared building-permit CSV resources, keeps only a minimal permit key/type/work/date
 projection in memory, deduplicates by permit number + revision, and emits only
-aggregate counts. No addresses, applicant names, or other row-level data are
-written to output.
+aggregate counts. No addresses, descriptions, applicant names, or other row-level
+data are written to output.
 """
 from __future__ import annotations
 
@@ -58,13 +58,17 @@ def _year(value: str) -> int | None:
     return None
 
 
-def _stream_source(url: str, source_name: str, target_year: int) -> tuple[int, dict[tuple[str, str], str], dict]:
+def _stream_source(
+    url: str,
+    source_name: str,
+    target_year: int,
+) -> tuple[int, dict[tuple[str, str], tuple[str, str]], dict]:
     request = urllib.request.Request(
         url,
         headers={"User-Agent": "ProjectPermit public-market-research/1.0"},
     )
     source_rows = 0
-    selected: dict[tuple[str, str], str] = {}
+    selected: dict[tuple[str, str], tuple[str, str]] = {}
 
     with urllib.request.urlopen(request, timeout=180) as response:
         reader = csv.DictReader(io.TextIOWrapper(response, encoding="utf-8-sig", newline=""))
@@ -74,6 +78,7 @@ def _stream_source(url: str, source_name: str, target_year: int) -> tuple[int, d
         permit_col = _find_column(fieldnames, ("PERMIT_NUM", "PERMIT NUMBER", "PERMITNUM"))
         revision_col = _find_column(fieldnames, ("REVISION_NUM", "REVISION NUMBER", "REVISIONNUM"))
         type_col = _find_column(fieldnames, ("PERMIT_TYPE", "PERMIT TYPE", "PERMITTYPE"))
+        work_col = _find_column(fieldnames, ("WORK", "WORK TYPE", "WORKTYPE"))
         issued_col = _find_column(fieldnames, ("ISSUED_DATE", "ISSUED DATE", "ISSUEDDATE"))
 
         for row in reader:
@@ -85,12 +90,14 @@ def _stream_source(url: str, source_name: str, target_year: int) -> tuple[int, d
             if not permit:
                 continue
             permit_type = (row.get(type_col) or "").strip() or "(blank)"
-            selected[(permit, revision)] = permit_type
+            work_type = (row.get(work_col) or "").strip() or "(blank)"
+            selected[(permit, revision)] = (permit_type, work_type)
 
     schema = {
         "permit_column": permit_col,
         "revision_column": revision_col,
         "permit_type_column": type_col,
+        "work_column": work_col,
         "issued_date_column": issued_col,
     }
     return source_rows, selected, schema
@@ -109,8 +116,22 @@ def main() -> None:
     overlap = set(active) & set(cleared)
     combined.update(active)
 
-    counts = Counter(combined.values())
-    ordered_counts = dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
+    permit_type_counts = Counter(permit_type for permit_type, _ in combined.values())
+    work_type_counts = Counter(work_type for _, work_type in combined.values())
+    pair_counts = Counter(combined.values())
+
+    ordered_permit_counts = dict(
+        sorted(permit_type_counts.items(), key=lambda item: (-item[1], item[0]))
+    )
+    ordered_work_counts = dict(
+        sorted(work_type_counts.items(), key=lambda item: (-item[1], item[0]))
+    )
+    ordered_pair_counts = [
+        {"permit_type": permit_type, "work": work_type, "count": count}
+        for (permit_type, work_type), count in sorted(
+            pair_counts.items(), key=lambda item: (-item[1], item[0][0], item[0][1])
+        )
+    ]
 
     focus_tokens = {
         "mechanical": ("mechanical",),
@@ -123,20 +144,51 @@ def main() -> None:
     for label, tokens in focus_tokens.items():
         focus_counts[label] = sum(
             count
-            for permit_type, count in counts.items()
+            for permit_type, count in permit_type_counts.items()
             if any(token in permit_type.lower() for token in tokens)
         )
+
+    # Conservative current-family signals based only on City-provided WORK labels.
+    # These are not claimed to be complete mappings: ambiguous labels stay unmapped.
+    family_work_tokens = {
+        "addition": ("addition",),
+        "interior_renovation": ("interior", "alteration", "renovation"),
+        "basement": ("basement",),
+        "deck_porch": ("deck", "porch"),
+        "accessory_structure": ("garage", "shed", "accessory"),
+        "window_door": ("window", "door"),
+        "dwelling_change": ("conversion", "convert", "second suite", "secondary suite", "additional residential"),
+        "kitchen_bath_plumbing": ("plumbing", "kitchen", "bathroom", "washroom"),
+    }
+    current_family_work_signal = {}
+    matched_work_types: set[str] = set()
+    for family, tokens in family_work_tokens.items():
+        matched = {
+            work_type: count
+            for work_type, count in work_type_counts.items()
+            if any(token in work_type.lower() for token in tokens)
+        }
+        current_family_work_signal[family] = {
+            "count": sum(matched.values()),
+            "work_types": dict(sorted(matched.items(), key=lambda item: (-item[1], item[0]))),
+        }
+        matched_work_types.update(matched)
+
+    unmapped_work_count = sum(
+        count for work_type, count in work_type_counts.items() if work_type not in matched_work_types
+    )
 
     result = {
         "source": "City of Toronto Open Data — Building Permits Active + Cleared",
         "reference_year": args.year,
         "evidence_boundary": (
             "City-level issued-permit workload only. This does not identify contractor accounts, "
-            "does not measure ProjectPermit preflight incidence, and is not E3/E4/E5 evidence."
+            "does not measure ProjectPermit preflight incidence, and is not E3/E4/E5 evidence. "
+            "Current-family work-label matching is a conservative/diagnostic signal, not SAM."
         ),
         "privacy_boundary": (
-            "Only permit number/revision/type/issued-date are read for deduplication and aggregation; "
-            "no address/applicant/contractor fields are emitted."
+            "Only permit number/revision/type/work/issued-date are read for deduplication and aggregate counts; "
+            "no addresses, descriptions, applicants, contractors, or row-level records are emitted."
         ),
         "source_rows": {"active": active_rows, "cleared": cleared_rows},
         "schema": {"active": active_schema, "cleared": cleared_schema},
@@ -146,8 +198,18 @@ def main() -> None:
         },
         "cross_source_overlap_records": len(overlap),
         "unique_issued_permit_revisions": len(combined),
-        "permit_type_counts": ordered_counts,
+        "permit_type_counts": ordered_permit_counts,
+        "work_type_counts": ordered_work_counts,
+        "permit_type_work_counts": ordered_pair_counts,
         "trade_focus_counts": focus_counts,
+        "current_family_work_signal": current_family_work_signal,
+        "current_family_matched_work_count_nonexclusive": sum(
+            item["count"] for item in current_family_work_signal.values()
+        ),
+        "unmapped_unique_work_labels_count": sum(
+            1 for work_type in work_type_counts if work_type not in matched_work_types
+        ),
+        "unmapped_work_count": unmapped_work_count,
     }
 
     rendered = json.dumps(result, indent=2, ensure_ascii=False)
