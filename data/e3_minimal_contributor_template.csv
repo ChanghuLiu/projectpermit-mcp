@@ -1,0 +1,4 @@
+case_id,municipality,scope_summary,final_permit_outcome,outcome_source
+CASE-001,Toronto,"Rear two-storey addition",required,permit_issued
+CASE-002,Ottawa,"Replace kitchen cabinets without moving plumbing",not_required,municipal_confirmation
+CASE-003,Mississauga,"Finish basement and add a second dwelling unit",required,permit_issued
