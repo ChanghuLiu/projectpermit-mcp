@@ -6,21 +6,29 @@ Status: **READY FOR OWNER APPROVAL — NOTHING SENT**
 
 This file defines the exact first external action so approval can be narrow and unambiguous. No email, marketplace form, phone call or partner application has been sent/submitted.
 
-## Proposed Batch A — five direct written contacts
+## Proposed Batch A — five written contacts
 
-These five are selected because they test different workflow hypotheses and have a direct public written contact route. Start with five rather than twenty so messaging can be corrected after the first replies.
+These five are selected because they test different workflow hypotheses and have a current official written contact route. Start with five rather than twenty so messaging can be corrected after the first replies.
 
-| Order | Company | Workflow hypothesis | Public route | Subject |
+| Order | Company | Workflow hypothesis | Current official route | Subject |
 |---:|---|---|---|---|
 | 1 | iPermit | Is low-cost triage useful before full permit expediting? | `STSupport@iPermitUSA.com` | `Upstream permit preflight before an iPermit order?` |
-| 2 | Property Meld | Does permit research belong before maintenance dispatch/approval? | `support@propertymeld.com` | `Permit preflight inside property-maintenance work orders` |
+| 2 | Property Meld | Does permit research belong before maintenance dispatch/approval? | Official `Book a Demo` form | `Permit preflight inside property-maintenance work orders` |
 | 3 | Provizual | Is permit applicability already known before AHJ inspection tracking begins? | `sales@provizual.com` | `Upstream permit-requirements signal for AHJ inspection workflows` |
 | 4 | AppWork | Can a work-order/estimate approval step trigger permit preflight? | `sales@appworkco.com` | `Permit preflight at work-order / estimate approval time` |
-| 5 | SyncEzy | Do Procore customers repeatedly need permit-research logic in custom integrations? | `support@syncezy.com` | `Reusable permit-preflight component for Procore integrations` |
+| 5 | SyncEzy | Do Procore customers repeatedly need permit-research logic in custom integrations? | `sales@syncezy.com` | `Reusable permit-preflight component for Procore integrations` |
 
 Full tailored bodies are in `docs/OUTREACH_BATCH_01.md`.
 
-Before sending, re-verify each public contact on its official site/marketplace page because public routing addresses can change.
+### Route verification — 2026-08-27
+
+- ServiceTitan's live iPermit listing still publishes `STSupport@iPermitUSA.com` and the contractor testimonial reporting roughly 80+ jobs/month.
+- Property Meld's current official site exposes a `Book a Demo` path; use it instead of treating customer support as a partnership inbox.
+- Procore's current Provizual listing publishes `sales@provizual.com`.
+- AppWork's current official site publishes `sales@appworkco.com`.
+- SyncEzy's current official contact page publishes `sales@syncezy.com`; use Sales rather than Support.
+
+Re-verify immediately before sending if outreach is delayed materially, because routing addresses/forms can change.
 
 ## Why these five first
 
