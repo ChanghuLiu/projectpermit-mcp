@@ -16,7 +16,7 @@ See also:
 
 - `docs/COVERED_MARKET_CALL_SENSITIVITY.md` for the covered-city issuance floor and paid-share analysis;
 - `docs/REACHABLE_CONTRACTOR_DENOMINATOR.md` for the seven-city business-location floor;
-- `docs/TRADE_WORKLOAD_EVIDENCE.md` for direct-contractor versus platform-level cadence evidence.
+- `docs/TRADE_WORKLOAD_EVIDENCE.md` for direct-contractor, broad trade-flow and current-family-like workflow evidence.
 
 ## Two different commercial checkpoints
 
@@ -85,37 +85,71 @@ The arithmetic shapes are still useful, but they no longer have equal evidentiar
 | High-volume direct contractor accounts | 80 | 125 | 10,000 | **Aggressive / unproven as a repeatable Canadian distribution shape** |
 | Medium direct contractor accounts | 25 | 400 | 10,000 | Possible, but requires broad acquisition and cadence proof |
 | Property portfolios | 20 | 500 | 10,000 | Unproven until permit-sensitive work-order incidence is measured |
-| Strong SaaS / permit-ops integrations | 2,000 | 5 | 10,000 | **Primary commercial path** |
-| Mid-sized integrations / multi-account partners | 500 | 20 | 10,000 | **Primary commercial path** |
-| One platform workflow | 10,000 | 1 | 10,000 | **High-leverage path if bounded covered-geography volume exists** |
+| Strong SaaS / multi-account integrations | 2,000 | 5 | 10,000 | **Primary arithmetic path, but current-family fit remains unproven** |
+| Mid-sized integrations / multi-account partners | 500 | 20 | 10,000 | **Primary arithmetic path, but current-family fit remains unproven** |
+| One platform workflow | 10,000 | 1 | 10,000 | High leverage only if bounded covered-geography **current-family** volume exists |
 
 Why the direct 80/month shape was downgraded:
 
 - Vancouver 2024 public building-permit data shows corporate-like contractor tokens maxing at 47 permits/year across all building permits, 35/year for Addition/Alteration, and 20/year for residential renovation; the maximum observed single month was 8.
 - A public iPermit Marketplace testimonial does show one HVAC contractor sending roughly 80+ jobs/month to a permit-management vendor, proving that high-volume outliers exist.
-- One outlier does not establish that 125 similar reachable Canadian contractor accounts exist or that all 80 jobs/month would require a ProjectPermit applicability preflight.
+- One outlier does not establish that 125 similar reachable Canadian contractor accounts exist, and ProjectPermit's current families do not cover the full high-frequency HVAC/electrical/mechanical universe.
 
 Therefore `125 × 80/month` remains arithmetic sensitivity only. It is not the base distribution plan.
 
-## Stable Toronto trade-workflow volume
+## Toronto: broad workflow density vs current-family fit
 
-Toronto Open Data provides a much stronger signal for **aggregated workflow volume** than for individual-account cadence.
+Toronto Open Data gives strong evidence that permit workflows can be dense at city/platform level, but the broad trade series must **not** be treated as current ProjectPermit addressable volume.
 
 Using Active + Cleared permit records, deduplicated by permit number + revision, Mechanical + Plumbing + Drain/Site Service issued revisions were:
 
-| Year | Combined trade permit revisions | Avg/month | Share of all issued revisions |
+| Year | Combined broad trade permit revisions | Avg/month | Share of all issued revisions |
 |---:|---:|---:|---:|
 | 2023 | 20,085 | **1,673.8** | 53.20% |
 | 2024 | 20,013 | **1,667.8** | 53.44% |
 | 2025 | 20,733 | **1,727.8** | 54.13% |
 
-This is a persistent three-year band, not a one-year spike.
+This is a persistent three-year band, but the City `WORK` labels show why it is not current-product SAM. In 2024, most of the Mechanical/Plumbing/Drain volume sits in broad labels such as `Building Permit Related(PS)`, `Building Permit Related(MS)` and `Building Permit Related (DR)`. Those labels do not expose enough scope detail to map safely into the current eight project families.
 
-Important boundary: permit revisions are workflow events, not unique projects or unique customers. Multiple Mechanical or Plumbing permits can be associated with a broader project. This evidence therefore supports the **platform/integration flow thesis**, not a 1:1 contractor-account model.
+ProjectPermit currently has no dedicated general HVAC/electrical/mechanical-service family, and `kitchen_bath_plumbing` cannot be equated with all Plumbing/Drain permits.
 
-A partner that aggregates a meaningful portion of Toronto's trade workflow could plausibly expose 500+ monthly candidate events. Whether those events occur early enough for ProjectPermit, and what fraction require applicability research, remains an external validation question.
+Therefore:
 
-## Covered-city activity floor
+> **~1.7k broad trade permit revisions/month proves workflow density, not current serviceable demand.**
+
+### Current-family-like diagnostic
+
+A conservative/diagnostic match against City `WORK` labels that visibly resemble current ProjectPermit families produced:
+
+| Year | Non-exclusive current-family-like issued-workflow signal | Avg/month |
+|---:|---:|---:|
+| 2023 | **6,695** | **557.9** |
+| 2024 | **6,690** | **557.5** |
+| 2025 | **7,038** | **586.5** |
+
+The 2024 signal is heavily dominated by `Interior Alterations` (~4.8k/year). It also has major limitations:
+
+- it is non-exclusive label matching, not unique projects or SAM;
+- `Interior Alterations` is broader than a guaranteed ProjectPermit candidate;
+- ambiguous MEP records remain unmapped rather than being forced into `kitchen_bath_plumbing`;
+- `kitchen_bath_plumbing = 0` in the label matcher reflects weak label visibility, not zero market;
+- every observed item is a downstream issued/permit-positive workflow event, not an upstream Request/Quote with unresolved applicability;
+- candidate/issued multiplier, address-aware share and willingness to pay remain unknown.
+
+The most defensible current reading is:
+
+> Toronto visibly contains roughly **560–587 current-family-like issued workflow events/month**, but even that is only a diagnostic signal — not a callable preflight denominator.
+
+A partner must expose the upstream subset where:
+
+1. the scope maps to a current family;
+2. permit applicability is still unresolved;
+3. the event occurs before quote/job routing;
+4. ProjectPermit can be called repeatedly.
+
+Until that exists, Toronto's broad MEP flow must not be used to support the 10k-call target.
+
+## Covered-city activity floor — broad activity, not serviceable SAM
 
 A clean same-year first-party 2024 floor previously established for Toronto, Ottawa, Mississauga, Laval and Vancouver is:
 
@@ -127,13 +161,20 @@ A clean same-year first-party 2024 floor previously established for Toronto, Ott
 
 Combined: **54,153 issued permits/year = 4,512.75/month**.
 
-Do not silently merge that earlier issuance series with the Toronto Active+Cleared `permit revision` series above; they are useful for different questions and have different definitions.
+This number is useful as evidence that municipal permit activity is substantial across covered cities. It is **not ProjectPermit serviceable SAM** because:
+
+- permit universes include project types outside the current eight families;
+- some records are downstream sub-permits/revisions rather than one candidate project;
+- permit-positive issuance says nothing about whether applicability was uncertain upstream;
+- the city series use different permit definitions.
+
+Do not silently merge this earlier issuance series with the Toronto Active+Cleared `permit revision` series; they answer different questions.
 
 Gatineau and Longueuil remain excluded from this exact cumulative floor rather than being guessed.
 
-If upstream candidate-preflight volume were:
+The old candidate/issued sensitivity remains arithmetic only:
 
-| Candidate preflights per observed issued permit | Implied external preflights/month |
+| Candidate preflights per broad observed issued permit | Implied external preflights/month |
 |---:|---:|
 | 1.0x | 4,513 |
 | 1.5x | 6,769 |
@@ -142,7 +183,7 @@ If upstream candidate-preflight volume were:
 | 3.0x | 13,538 |
 | 5.0x | 22,564 |
 
-The candidate/issued multiplier is not externally measured. It must not be treated as observed demand.
+Because the denominator itself is broader than current-family serviceable work, **do not use 2.22× as evidence that the present product can reach 10k calls/month**. The candidate/issued multiplier and current-family share are both externally unmeasured.
 
 ## Reachable contractor denominator
 
@@ -150,15 +191,20 @@ Statistics Canada June 2026 CSD employer-location data gives a seven-city broad 
 
 Toronto + Ottawa + Mississauga account for about 70% of that observed broad employer-location floor. Province-level companion data also shows substantial without-employee contractor populations, especially in Ontario and British Columbia, but those provincial ratios must not be multiplied into city counts and presented as observed municipal SAM.
 
-This evidence says the business-account pool itself is not obviously too small. The harder variable is still **candidate permit-applicability events per account/integration per month**.
+This evidence says the business-account pool itself is not obviously too small. The harder variables are still:
+
+- relevant current-family candidate events per account/integration;
+- whether permit applicability is unresolved at Request/assessment/quote time;
+- address-aware share;
+- willingness to pay.
 
 ## ServiceTitan scale sensitivity
 
-Public ServiceTitan partner material has reported platform scale in the tens of millions of jobs annually. The relevant question is not total platform volume; it is what fraction of jobs creates an upstream permit-applicability decision in ProjectPermit's covered geographies.
+Public ServiceTitan partner material has reported platform scale in the tens of millions of jobs annually. The relevant question is not total platform volume; it is what fraction of jobs creates an upstream permit-applicability decision in ProjectPermit's **current families and covered Canadian geographies**.
 
-Use platform-wide incidence only as sensitivity, never as current SAM. The platform is predominantly U.S.-oriented while ProjectPermit currently covers seven Canadian municipalities, many jobs are low/no-permit, applicability may already be known, and not every address-aware call will be paid.
+Use platform-wide incidence only as sensitivity, never as current SAM. The platform is predominantly U.S.-oriented, many jobs are low/no-permit, much high-frequency MEP work is not covered by the current family set, applicability may already be known, and not every address-aware call will be paid.
 
-Do not add U.S. municipalities speculatively. If a real partner identifies a bounded high-volume geography/workflow, that evidence should determine expansion priority.
+Do not add U.S. municipalities or HVAC/electrical families speculatively. If a real partner identifies a bounded high-volume workflow, that evidence should determine expansion priority.
 
 ## Jobber scale interpretation
 
@@ -168,9 +214,9 @@ Platform-wide account/professional counts are useful only as a distribution ceil
 
 For Jobber, the measurements that matter are:
 
-- number of candidate Requests/Quotes/Jobs in covered municipalities;
-- trade mix;
-- fraction requiring permit-applicability research;
+- number of candidate Requests/Assessments/Quotes/Jobs in covered municipalities;
+- fraction mapping to a current ProjectPermit family;
+- fraction still requiring permit-applicability research before the Quote/Job is finalized;
 - fraction where address/property context changes the answer;
 - next workflow step changed by the result;
 - willingness to pay.
@@ -183,11 +229,11 @@ Large property-management platforms can provide very large unit denominators, bu
 
 Use the generic model:
 
-`units × maintenance/capex events per unit × permit-decision share × covered-geography share × address-aware share`
+`units × maintenance/capex events per unit × current-family share × unresolved permit-decision share × covered-geography share × address-aware share`
 
 Every multiplier after `units` must be observed or explicitly labeled as a scenario.
 
-A platform with millions of units can still be a poor ProjectPermit market if only a tiny fraction of work orders have relevant construction scope or if applicability is already handled by vendors before the platform sees it.
+A platform with millions of units can still be a poor ProjectPermit market if only a tiny fraction of work orders map to current project families or if applicability is already handled by vendors before the platform sees it.
 
 ## Partner-by-partner evidence questions
 
@@ -196,19 +242,18 @@ A platform with millions of units can still be a poor ProjectPermit market if on
 Ask:
 
 - How many new workflows enter the system each month?
-- How many upstream candidate jobs were reviewed before it was known a permit was required?
-- How many are rejected/not-required/out-of-scope?
-- Is applicability already known before their service is invoked?
+- Are jobs already known permit-positive before intake?
+- If not, how many still require a `permit required?` decision?
 
-If they only receive known permit-positive jobs, the ProjectPermit upstream wedge is weak.
+Current external boundary evidence from Permitio points toward downstream permit-filing intake already being permit-positive. That reply is E1, not E2, because no bounded recent denominator was provided. Do not overgeneralize it to all permit vendors, but prioritize upstream workflows instead of filing intake.
 
 ### Field-service / contractor software
 
 Ask:
 
-- candidate Requests/Quotes/Jobs per month in covered municipalities;
-- permit-sensitive trade and project-family mix;
-- fraction that triggers manual permit research;
+- candidate Requests/Assessments/Quotes/Jobs per month in covered municipalities;
+- current-family project mix;
+- fraction that triggers manual permit-applicability research;
 - fraction needing property/zoning/heritage context;
 - manual research minutes;
 - whether the result changes quote, scheduling, dispatch or job creation.
@@ -218,13 +263,12 @@ Ask:
 Ask:
 
 - work orders/month;
-- fraction involving structural/plumbing/window/door/deck/addition/renovation scopes;
-- fraction that triggers permit research;
+- current-family share;
+- fraction that triggers permit research before vendor dispatch / approval / capital authorization;
 - municipality mix;
-- decision point before vendor dispatch / approval / capital authorization;
 - address-aware share.
 
-### Integration consultants
+### Integration consultants / estimators
 
 A consultant serving several contractor accounts may be more valuable than one contractor because they can provide a bounded cross-customer denominator and identify which workflows repeat.
 
@@ -262,11 +306,11 @@ A city generating little paid usage but requiring several maintenance hours/mont
 - 2 independent representative E3 historical benchmarks;
 - 1 repeated external workflow with 20+ successful calls;
 - 3 external integrations + 100+ non-owner successful calls;
-- 1 workflow with 500+ candidate calls/month;
-- 1 partner/integration with 2,000+ candidate calls/month;
-- credible path to 10,000+ **external successful preflights/month**.
+- 1 workflow with **500+ current-family candidate events/month** in covered geography;
+- 1 partner/integration with **2,000+ current-family candidate events/month**, or equivalent proven aggregation;
+- credible path to 10,000+ **external successful current-family preflights/month**.
 
-The next search priority is explicitly a partner or integration capable of exposing **500+ bounded candidate events/month** in covered geographies, not another broad directory listing or another speculative adapter.
+The next search priority is explicitly a partner or integration capable of exposing bounded **current-family** Request/Assessment/Quote volume, not another broad directory listing, trade-volume statistic or speculative adapter.
 
 ### Monetization proof
 
@@ -282,8 +326,9 @@ A strong checkpoint is 10,000 paid address-aware calls/month, but lower volume c
 ### Reconsider or pause when
 
 - after 20 qualified conversations nobody identifies a repeated upstream applicability decision;
+- current-family upstream candidate volume is too small even when aggregated;
 - external testers use ProjectPermit only as a one-off lookup;
-- candidate/issued multiplier is too low to support distribution;
+- applicability is usually already known before the Request/Quote workflow point;
 - address-aware share or willingness to pay is too low to support monetization;
 - partners mainly want full submission/expediting rather than preflight;
 - nearly every call requires manual expert research;
@@ -291,22 +336,24 @@ A strong checkpoint is 10,000 paid address-aware calls/month, but lower volume c
 
 ## Bottom line
 
-ProjectPermit does not need millions of customers. It needs a small number of integrations that generate repeated calls **and** a sufficiently large monetizable address-aware subset.
+ProjectPermit does not need millions of customers. It needs a small number of integrations that generate repeated **current-family** calls and a sufficiently large monetizable address-aware subset.
 
-Current public evidence now favors aggregation over direct-account volume:
+Current public evidence says:
 
 > **ordinary direct contractor:** useful for validation, weak as the main scale engine
 
-> **high-volume trade/permit operator:** plausible but must be specifically proven
+> **broad HVAC/plumbing/mechanical trade flow:** real and high-frequency, but mostly not safely countable as current ProjectPermit demand
 
-> **platform / multi-account integration:** current primary path to 10k monthly external calls
+> **current-family-like Toronto issued-work signal:** roughly 560–587/month, diagnostic only and heavily dominated by Interior Alterations
+
+> **platform / multi-account integration:** still the most plausible aggregation path, but current-family upstream incidence is unproven
 
 The near-term model remains two-dimensional:
 
-> **distribution:** external successful preflights/month
+> **distribution:** external successful current-family preflights/month
 
 and
 
 > **economics:** paid address-aware calls/month × realized price − maintenance/infra cost
 
-Do not collapse those two metrics into one.
+Do not collapse those metrics or substitute broad permit volume for current-product demand.
