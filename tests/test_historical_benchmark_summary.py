@@ -32,6 +32,9 @@ def make_row(case_id: str, **overrides: str) -> dict[str, str]:
         "historical_decision_source": "municipal_research",
         "manual_research_minutes": "12",
         "workflow_changed": "yes",
+        "generic_checklist_determination": "",
+        "municipality_specificity_changed_generic_answer": "",
+        "municipality_specificity_reason": "",
         "projectpermit_determination": "REQUIRED",
         "projectpermit_confidence": "HIGH",
         "agreement": "yes",
@@ -115,6 +118,25 @@ class HistoricalBenchmarkSummaryTest(unittest.TestCase):
         benchmark = summary["partner_benchmarks"][0]
         self.assertFalse(benchmark["e3_qualified"])
         self.assertEqual(["A-0"], benchmark["duplicate_case_ids"])
+
+    def test_optional_municipality_specificity_is_summarized_without_affecting_e3(self):
+        rows = [make_row(f"A-{index}") for index in range(5)]
+        rows[0]["municipality_specificity_changed_generic_answer"] = "yes"
+        rows[1]["municipality_specificity_changed_generic_answer"] = "yes"
+        rows[2]["municipality_specificity_changed_generic_answer"] = "no"
+        rows[3]["municipality_specificity_changed_generic_answer"] = "unknown-value"
+
+        summary = module.summarize(rows)
+        benchmark = summary["partner_benchmarks"][0]
+
+        self.assertTrue(benchmark["e3_qualified"])
+        self.assertEqual(3, benchmark["municipality_specificity_cases_recorded"])
+        self.assertEqual(2, benchmark["municipality_specificity_material_cases"])
+        self.assertEqual(1, benchmark["municipality_specificity_not_material_cases"])
+        self.assertEqual(0.6667, benchmark["municipality_specificity_material_rate"])
+        self.assertEqual(
+            ["A-3"], benchmark["municipality_specificity_invalid_optional_case_ids"]
+        )
 
 
 if __name__ == "__main__":
