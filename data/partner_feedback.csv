@@ -1,5 +1,9 @@
-company,ecosystem,contact_status,response_class,conversation_date,workflow_step,jobs_or_work_orders_per_month,permit_research_share_pct,candidate_preflights_per_month,address_aware_needed,monthly_call_band,price_reaction_025,price_reaction_050,requested_jurisdictions,requested_project_families,pilot_scopes_provided,pilot_calls,integration_status,notes
-iPermit,ServiceTitan,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,"Sent initial validation email to STSupport@iPermitUSA.com."
-Provizual,Procore,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,"Sent initial validation email to sales@provizual.com."
-AppWork,AppFolio,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,"Sent initial validation email to sales@appworkco.com."
-SyncEzy,Procore,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,"Sent initial validation email to support@syncezy.com; current public sales route is sales@syncezy.com, so avoid duplicate resend unless follow-up is warranted."
+company,ecosystem,contact_status,response_class,conversation_date,workflow_step,jobs_or_work_orders_per_month,permit_research_share_pct,candidate_preflights_per_month,address_aware_needed,monthly_call_band,price_reaction_025,price_reaction_050,requested_jurisdictions,requested_project_families,pilot_scopes_provided,pilot_calls,integration_status,evidence_level,evidence_timeframe_days,evidence_denominator_count,historical_samples_provided,observed_external_calls,paid_signal,notes
+iPermit,ServiceTitan,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,E0,,,,,,"Sent initial validation email to STSupport@iPermitUSA.com."
+Provizual,Procore,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,E0,,,,,,"Sent initial validation email to sales@provizual.com."
+AppWork,AppFolio,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,E0,,,,,,"Sent initial validation email to sales@appworkco.com."
+SyncEzy,Procore,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,E0,,,,,,"Sent initial validation email to support@syncezy.com; current public sales route is sales@syncezy.com, so avoid duplicate resend unless follow-up is warranted."
+Calance,Procore / AppFolio / Autodesk / Northspyre,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,E0,,,,,,"Sent evidence-seeking validation email to connect@calance.com."
+Outbuild,Procore,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,E0,,,,,,"Sent evidence-seeking validation email to sales@outbuild.com."
+PermitFlow,Procore,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,E0,,,,,,"Sent wedge-validation email to sales@permitflow.com; explicit request for bounded workflow evidence or historical examples."
+Pulley,Procore,sent,,2026-08-27,,,,,,,,,,,,,awaiting_reply,E0,,,,,,"Sent wedge-validation email to hello@withpulley.com; explicit request for recent volume range or anonymized historical scopes."
