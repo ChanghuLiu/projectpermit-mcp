@@ -157,6 +157,105 @@ Do **not** expand into:
 
 PermitCheck demonstrates that downstream application QA is becoming its own product category. That strengthens the need for ProjectPermit to remain the upstream applicability layer rather than stretch across the whole permit lifecycle.
 
+## Permitio
+
+Permitio is the strongest current evidence that permit applicability can be bundled directly into field-service workflows.
+
+Current public positioning:
+
+- U.S.-only HVAC/mechanical, electrical and plumbing/gas permit service;
+- direct integrations with ServiceTitan, Jobber and Housecall Pro;
+- pulls job address, equipment and scope from the field-service record;
+- identifies jurisdiction and permit requirements, files applications, handles corrections and inspections;
+- explicitly advertises **automatic permit detection** from job type/equipment/scope;
+- human-assisted filing remains part of the service model;
+- public pricing is roughly `$25-$100 per permit` with pay-as-you-go positioning.
+
+Public adoption evidence is still early rather than mature:
+
+- vendor site shows several contractor testimonials;
+- public LinkedIn company page shows a 2-10 employee company and only a small public following at the time of review;
+- no representative independent customer-volume evidence was found.
+
+Boundary implication:
+
+Permitio means ProjectPermit cannot claim the conceptual idea `job details -> permit requirement` is novel.
+
+Current differentiation remains:
+
+- Canada vs. Permitio's U.S. focus;
+- deterministic rule engine + stable rule IDs + official-source evidence;
+- API/MCP capability layer rather than a staffed permit-filing service;
+- broad renovation/building project families rather than only high-frequency MEP/service permits.
+
+A bounded E2 question was sent to Permitio asking whether Jobber-originated jobs generally arrive already known to require a permit or whether `permit required?` is still unresolved at intake. This is a high-value boundary measurement regardless of the answer.
+
+Do not respond to this competitor by adding filing/inspection operations or U.S. municipalities without partner-linked evidence.
+
+## QwikScope Greenlight
+
+QwikScope Greenlight is the closest currently observed **conceptual product analogue**.
+
+Current public positioning:
+
+- project + scope + address -> jurisdiction resolution;
+- required / likely / conditional permit determination;
+- issuing agency and jurisdiction-specific triggers;
+- building, grading, floodplain, zoning, telecom and utility permits;
+- dependency-ordered permitting plan, critical path, fees and risk flags;
+- self-serve product plus API access on engagement;
+- QwikScope's public property layer states U.S.-nationwide coverage across 3,000+ counties and U.S. federal/state/local sources.
+
+This is materially closer to ProjectPermit than a zoning lookup or filing service.
+
+Boundary implication:
+
+- the category already exists outside Canada;
+- ProjectPermit must not claim `scope -> permit determination -> API` as a unique architecture;
+- current geographic separation matters: no comparable seven-city Canadian deterministic/evidence-linked API product was found in this scan;
+- QwikScope makes future U.S. expansion less attractive unless a real partner supplies large bounded demand in a geography QwikScope does not already serve well.
+
+No credible independent usage/customer-scale evidence was found in the current public scan, so QwikScope is a **replication/competition risk**, not evidence that this market is already mature or saturated.
+
+## Ampr
+
+Ampr is a narrow but important Canadian embedded-workflow example.
+
+Current public positioning:
+
+- electrician-specific quoting/invoicing/job app;
+- used in Ontario plus selected U.S. states;
+- automatically detects permit-triggering electrical tasks during quote creation;
+- Ontario examples add an ESA permit line item for panel/service/EV/hot-tub/generator and related tasks;
+- permit cost is included before the quote is sent;
+- quote workflow is exactly where ProjectPermit hopes to provide a routing signal in broader contractor software.
+
+Adoption evidence remains early:
+
+- live iOS product exists;
+- App Store currently does not have enough ratings to show an overview;
+- limited community mentions exist, but no representative volume evidence was found.
+
+Boundary implication:
+
+Ampr proves the **embedded-before-quote permit trigger** is not hypothetical, including in Ontario.
+
+However, ProjectPermit's current eight project families do not include a dedicated electrical/HVAC family. Therefore Ampr is not a one-for-one substitute for the current product.
+
+Do **not** add electrical/HVAC/mechanical project families simply because Toronto issued-permit volume is high. Add them only if an E2+/E3 partner exposes a bounded >=500/month candidate-preflight path and requests that coverage.
+
+## PermitBird
+
+PermitBird uses a very similar capability-layer architecture for environmental permits:
+
+- deterministic/cited permit determination;
+- REST API + hosted MCP;
+- agent-callable output with rule text attached.
+
+Its current domain is wetland/stormwater/environmental coverage rather than municipal residential building permits, so it is not a direct ProjectPermit substitute.
+
+It does show that `cited permit-determination engine -> API/MCP` is becoming a recognizable product pattern. ProjectPermit's moat therefore cannot be the protocol wrapper or generic decision-engine concept.
+
 ## BuildBlox
 
 Current public positioning is much broader housing-delivery intelligence:
@@ -171,19 +270,25 @@ Its Ontario emphasis is not currently a clean match to ProjectPermit's covered G
 
 ## Why this boundary matters
 
-The adjacent market is already becoming crowded across two layers:
+The adjacent market is already becoming crowded across three layers:
 
 **Upstream feasibility**
 
 `address -> parcel -> zoning -> setbacks -> development potential -> approval route`
 
-**Downstream submission QA**
+**Permit applicability / permit determination**
 
-`known permit-positive project -> drawings/forms -> completeness/code/package checks -> submission`
+`project/job scope -> jurisdiction -> permit required/type -> evidence/routing`
 
-ProjectPermit's defensible gap sits between them and earlier in the commercial workflow:
+**Downstream submission QA / filing**
 
-`Request/Estimate/Quote scope -> permit applicability -> official evidence -> workflow routing`
+`known or detected permit-positive project -> forms/drawings -> filing -> corrections -> inspections`
+
+ProjectPermit is **not alone in the middle layer**. QwikScope, Permitio and Ampr show overlapping implementations in different geographies/trades.
+
+ProjectPermit's current gap is therefore narrower:
+
+`Canadian Request/Estimate/Quote scope -> municipal building-permit applicability -> deterministic official evidence -> workflow routing`
 
 That boundary also keeps operating cost low: ProjectPermit can use first-party municipal/open-data property facts as supporting context without having to build a full development-feasibility engine or a staffed expert-review operation for every city.
 
@@ -203,9 +308,36 @@ Do not build the following merely because an adjacent product has them:
 - permit submission/expediting;
 - PDF/document completeness QA;
 - full architectural/OBC/code-plan review;
-- human reviewer marketplace/network.
+- human reviewer marketplace/network;
+- inspections/status operations;
+- speculative U.S. coverage;
+- speculative electrical/HVAC family expansion.
 
 Any item above requires new external evidence showing that it is necessary to win or retain a high-volume workflow.
+
+## Defensibility rule
+
+ProjectPermit should no longer treat **idea novelty** as a moat.
+
+Observed 2026 products already demonstrate:
+
+- scope-aware permit determination;
+- permit detection inside quote/job software;
+- jurisdiction resolution;
+- cited regulatory outputs;
+- API access;
+- CRM/FSM integration.
+
+The only credible future moat candidates are cumulative operational assets:
+
+1. **maintained Canadian rule corpus** with stable rule IDs and source history;
+2. **address/property adapters** tied to first-party municipal datasets;
+3. **representative historical accuracy corpus** with false-negative tracking;
+4. **embedded distribution agreements/integrations** where switching removes workflow value;
+5. **observed production outcomes** that improve coverage prioritization and rule maintenance;
+6. low-cost/self-service operations that competitors cannot match without a staffed permit-runner model.
+
+Until items 3-5 exist externally, defensibility should be scored **medium-low**, not high.
 
 ## Distribution implication
 
@@ -216,17 +348,24 @@ Priority partner test:
 1. Does the adjacent product already receive a normalized project type plus address before construction/permit certainty?
 2. Does it process >=500 bounded candidate events/month in a ProjectPermit-covered geography?
 3. Is `permit required?` still a distinct unresolved next-step question after its current output?
-4. Can 5–20 representative de-identified historical cases be benchmarked?
+4. Can 5-20 representative de-identified historical cases be benchmarked?
 5. If E3 passes, can repeated external ProjectPermit calls be observed without requiring a staffed manual workflow?
 
-If yes, pursue integration/E3 before adding new zoning or submission features.
+If yes, pursue integration/E3 before adding new zoning, trade, filing or submission features.
 
 ## Current conclusion
 
-Current public evidence does **not** show that the adjacent products provide the same deterministic municipal permit-applicability layer across ProjectPermit's seven Canadian jurisdictions.
+The 2026 competitive scan changes the conclusion from **no equivalent layer found** to a more cautious one:
 
-It does show that both zoning/buildability intelligence and downstream package QA are increasingly mature. Toronto in particular is already crowded as a consumer/developer destination-product market.
+- no current public product found with the same **seven-city Canadian municipal-building coverage + deterministic official-evidence API/MCP contract**;
+- but the underlying capability category is clearly real and reproducible;
+- QwikScope Greenlight is a close U.S. conceptual analogue;
+- Permitio bundles automatic permit detection into U.S. field-service permit filing;
+- Ampr embeds Ontario electrical permit detection directly at quote creation;
+- these competitors appear early-stage rather than mature based on currently visible adoption evidence.
 
-ProjectPermit should therefore protect a clean B2B/API differentiation:
+Therefore ProjectPermit is still early enough to validate, but **feature novelty is not defensibility**.
 
-> **Permit applicability is the product. Zoning/property intelligence is supporting context. Submission-package review is downstream.**
+ProjectPermit should protect a clean B2B/API differentiation:
+
+> **Canadian permit applicability is the product. Zoning/property intelligence is supporting context. Filing/package review is downstream. The moat, if one develops, must come from maintained evidence + accuracy + distribution.**
