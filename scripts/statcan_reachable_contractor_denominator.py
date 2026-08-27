@@ -93,6 +93,7 @@ def summarize() -> dict:
     naics_col = _find_column(fieldnames, "North American Industry Classification System")
     employment_col = _find_column(fieldnames, "Employment size")
     value_col = "VALUE" if "VALUE" in fieldnames else _find_column(fieldnames, "VALUE")
+    dguid_col = "DGUID" if "DGUID" in fieldnames else None
 
     employment_values = sorted({(row.get(employment_col) or "").strip() for row in rows})
     total_employment_values = [
@@ -119,7 +120,19 @@ def summarize() -> dict:
         })
         diagnostics[jurisdiction] = geo_candidates
         if not geo_candidates:
-            raise RuntimeError(f"No StatCan geography matched {city}, {province}")
+            broad_matches = sorted({
+                (
+                    (row.get(geo_col) or "").strip(),
+                    (row.get(dguid_col) or "").strip() if dguid_col else "",
+                )
+                for row in rows
+                if city.lower() in (row.get(geo_col) or "").lower()
+            })
+            raise RuntimeError(
+                f"No StatCan geography matched {city}, {province}; "
+                f"city_name_matches={broad_matches[:50]}; "
+                f"geography_related_columns={[name for name in fieldnames if any(token in name.lower() for token in ('geo', 'dguid', 'census'))]}"
+            )
 
         if len(geo_candidates) == 1:
             chosen_geo = geo_candidates[0]
