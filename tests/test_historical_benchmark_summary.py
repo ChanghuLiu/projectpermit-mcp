@@ -95,6 +95,19 @@ class HistoricalBenchmarkSummaryTest(unittest.TestCase):
         self.assertEqual(1, benchmark["material_disagreements"])
         self.assertEqual(0.8, benchmark["agreement_rate"])
 
+    def test_out_of_scope_case_remains_in_representative_sample(self):
+        rows = [make_row(f"A-{index}") for index in range(5)]
+        rows[3]["projectpermit_determination"] = "OUT_OF_SCOPE"
+        rows[3]["agreement"] = "no"
+        rows[3]["material_disagreement"] = "yes"
+        rows[3]["unsupported_family"] = "yes"
+        summary = module.summarize(rows)
+        benchmark = summary["partner_benchmarks"][0]
+        self.assertTrue(benchmark["e3_qualified"])
+        self.assertEqual(1, benchmark["out_of_scope_outputs"])
+        self.assertEqual(1, benchmark["material_disagreements"])
+        self.assertEqual(0.8, benchmark["agreement_rate"])
+
     def test_duplicate_case_ids_prevent_qualification(self):
         rows = [make_row(f"A-{index}") for index in range(5)]
         rows[4]["case_id"] = "A-0"
