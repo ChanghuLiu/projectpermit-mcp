@@ -1,0 +1,2 @@
+case_id,jurisdiction,address_optional,resolve_address,project_family,action,structural_change,plumbing_change,estimated_cost_cad,known_property_overlays,expected_or_current_manual_outcome,notes
+example-001,ottawa_on,,false,window_door,replace_same_size,false,false,,,unknown,"Synthetic example only; replace with anonymized partner cases"
