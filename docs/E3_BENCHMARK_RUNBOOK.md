@@ -8,20 +8,41 @@ Purpose: turn partner-supplied anonymized historical cases into reproducible E3 
 
 Start from `data/historical_benchmark_template.csv`.
 
-After normalizing each anonymized scope into structured `project_facts_json` (and, only when required, de-identified `property_facts_json`), evaluate the whole sample through the deterministic engine:
+After normalizing each anonymized scope into structured `project_facts_json` (and, only when required, de-identified `property_facts_json`), choose one of two evaluation paths.
+
+### Local deterministic engine
+
+For a contributor who has cloned the repository:
 
 ```bash
 python scripts/run_partner_e3_cases.py path/to/partner_cases.csv
 ```
 
-This writes `partner_cases.evaluated.csv` by default and refuses to overwrite the source file. It automatically fills:
+This writes `partner_cases.evaluated.csv` by default and refuses to overwrite the source file.
+
+### Free hosted MCP — no platform integration required
+
+A partner can benchmark historical cases against the live developer-validation endpoint without an API key, wallet, Jobber/ServiceM8 adapter, or other platform integration:
+
+```bash
+pip install -e '.[mcp]'
+python scripts/run_remote_historical_benchmark.py path/to/partner_cases.csv \
+  --output path/to/partner_cases.evaluated.csv \
+  --client-tag partner-pilot-01
+```
+
+Use a stable non-PII `--client-tag`. The server hashes it before telemetry is written; do not use a customer/person name, email, civic address, account id, or other identifying value.
+
+The hosted runner intentionally sends `resolve_address=false`. Historical benchmark CSVs must not contain exact civic addresses. If a rule depends on address-derived facts, resolve them in the partner's authorized workflow and retain only the de-identified facts needed to reproduce the decision in `property_facts_json`.
+
+Both evaluation paths fill deterministic ProjectPermit result fields such as:
 
 - `projectpermit_determination`
 - `projectpermit_confidence`
 - `agreement`
 - `false_likely_not_required`
-- `unsupported_family`
-- `unsupported_jurisdiction`
+
+The local runner also records unsupported-family/jurisdiction flags. The remote runner preserves all source columns and never auto-labels a disagreement as harmless: when determinations disagree, `material_disagreement` remains blank for human review.
 
 Then record the human judgment fields that cannot safely be inferred automatically, especially `material_disagreement`, and audit the benchmark:
 
@@ -60,7 +81,7 @@ Do not put any of the following into the benchmark CSV:
 
 For address-aware rules, resolve the address in the authorized workflow and retain only derived non-PII facts required by the deterministic engine, for example heritage/zoning/property flags. The benchmark should remain reproducible without preserving the original customer address.
 
-The E3 runner itself performs no address lookup and accepts no raw address field. It evaluates only the already-de-identified structured facts in the CSV.
+The E3 runners themselves perform no address lookup and accept no raw address field. They evaluate only the already-de-identified structured facts in the CSV.
 
 ## Recommended sampling
 
