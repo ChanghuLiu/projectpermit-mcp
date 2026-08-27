@@ -2,11 +2,30 @@
 
 Updated: 2026-08-27
 
-Status: **research/preparation only — no Canadian operator cold email sent**
+Status: **future E3 candidate cohort only — do not connect existing Jobber customer accounts yet**
 
-Purpose: validate the actual contractor workflow behind the Jobber distribution wedge. Platform/API fit alone is insufficient; this cohort is intended to generate E3 historical benchmark evidence and eventually E4 observed use.
+Purpose: validate the actual contractor workflow behind the Jobber distribution wedge. Platform/API fit alone is insufficient; this cohort is intended to generate E3 historical benchmark evidence and eventually E4 observed use **after the Jobber customer-testing route is coordinated appropriately**.
 
-Canadian cold commercial outreach is blocked until `docs/CANADA_OUTREACH_COMPLIANCE.md` is satisfied. Do not use the contacts below as a mass-mail list.
+## Two independent gates apply before operator testing
+
+### 1. Jobber platform-testing gate
+
+Jobber's current **Testing Your Application** guidance says that, for an app intended for App Marketplace publication, developers should not engage existing Jobber customers to test the application before first coordinating with a Jobber developer representative.
+
+Therefore the companies below are **research/design-partner candidates only** at this stage:
+
+- do not connect their Jobber accounts to ProjectPermit;
+- do not ask them to install/authorize the Draft Jobber app yet;
+- do not treat Jobber's separate `up to 5 paying accounts in Draft` custom-integration rule as permission to bypass the Marketplace-testing coordination guidance;
+- internal Developer Center / test-account / GraphiQL work may continue without waiting for a support reply.
+
+See `docs/JOBBER_DEVELOPER_BOOTSTRAP.md` and `docs/JOBBER_DISTRIBUTION_WEDGE.md`.
+
+### 2. Canadian outreach/compliance gate
+
+Canadian cold commercial outreach is separately constrained by `docs/CANADA_OUTREACH_COMPLIANCE.md`. Do not use the contacts below as a mass-mail list.
+
+No Canadian Jobber operator cold email has been sent from this cohort.
 
 ## Priority operator candidates inside current ProjectPermit coverage
 
@@ -21,7 +40,7 @@ Why especially strong:
 
 Public first-party contact observed: `info@guestplumbing.com`; phone `905-745-1963`. Toronto office: `24E Jutland Road, Toronto`.
 
-Best E3 question: take 20 recent Toronto/Mississauga jobs or quotes that were not routine service-only calls, sample them chronologically rather than choosing interesting examples, and compare whether permit applicability was known immediately or required research/escalation.
+Future E3 question after the platform-testing gate is cleared: take 20 recent Toronto/Mississauga jobs or quotes that were not routine service-only calls, sample them chronologically rather than choosing interesting examples, and compare whether permit applicability was known immediately or required research/escalation.
 
 Sources:
 - https://www.getjobber.com/academy/plumbing/guest-plumbing/
@@ -39,7 +58,7 @@ Why strong:
 
 Public contact: `team@gravityhomeservices.ca`; `613-702-6262`.
 
-Best E3 question: 20 recent installation/replacement quotes, excluding simple repair/maintenance. Ask which required permit confirmation, who made the decision, and whether the answer changed price/schedule/dispatch.
+Future E3 question: 20 recent installation/replacement quotes, excluding simple repair/maintenance. Ask which required permit confirmation, who made the decision, and whether the answer changed price/schedule/dispatch.
 
 Sources:
 - https://gravityhomeservices.jobbersites.com/
@@ -55,7 +74,7 @@ Why strong:
 
 Public contact: `services@trademarkplumbing.ca`; `416-258-8231`.
 
-Best E3 question: 20 recent non-emergency project quotes in Toronto/Mississauga, with an explicit field for `permit answer known from experience vs researched/confirmed`.
+Future E3 question: 20 recent non-emergency project quotes in Toronto/Mississauga, with an explicit field for `permit answer known from experience vs researched/confirmed`.
 
 Source:
 - https://trademark.jobbersites.com/
@@ -70,7 +89,7 @@ Why strong:
 
 Public contact: `info@directplumbing.ca`; `416-450-9886`.
 
-Best E3 question: sample 20 recent estimates spanning repairs, installations, gas/backflow and renovation-related work; do not cherry-pick only projects known to need a permit.
+Future E3 question: sample 20 recent estimates spanning repairs, installations, gas/backflow and renovation-related work; do not cherry-pick only projects known to need a permit.
 
 Source:
 - https://directplumbinglimited.jobbersites.com/
@@ -85,7 +104,7 @@ Why strong:
 
 Public contact: `info@23degrees.ca`; `437-333-4732`.
 
-Best E3 question: 20 recent installation quotes and classify not only ProjectPermit agreement but also `unsupported trade/permit family`, preventing false success from forcing every job into current building-permit families.
+Future E3 question: 20 recent installation quotes and classify not only ProjectPermit agreement but also `unsupported trade/permit family`, preventing false success from forcing every job into current building-permit families.
 
 Source:
 - https://23degrees.jobbersites.com/
@@ -100,16 +119,16 @@ Why useful:
 
 Public contact: `raffy@invirotechmechanical.com`; `416-676-2062`.
 
-Best E3 question: separate recent Toronto cases from unsupported municipalities. This lets us measure actual Toronto call share before considering any adjacent-city expansion.
+Future E3 question: separate recent Toronto cases from unsupported municipalities. This lets us measure actual Toronto call share before considering any adjacent-city expansion.
 
 Source:
 - https://invirotechmechanicalservicesinc.jobbersites.com/
 
-## Benchmark protocol
+## Future benchmark protocol after both gates are cleared
 
 Do not ask operators to choose “cases where permits were difficult.” That would bias the benchmark upward. Preferred sampling method:
 
-1. choose a recent time window (e.g. last 30 or 60 days);
+1. choose a recent time window (for example last 30 or 60 days);
 2. filter to project/installation/renovation quotes rather than maintenance-only visits;
 3. take the first 20 chronological records or a reproducible random sample;
 4. anonymize customer identity and exact address if the partner cannot share it; municipality + scope is enough for non-address tests;
@@ -147,12 +166,12 @@ The contractor-side wedge becomes materially stronger when at least two independ
 - the permit decision changes quote, schedule, routing, fee, or escalation behavior;
 - a plausible ongoing frequency of at least 20 relevant decisions/month/operator or a clear platform aggregation path.
 
-The wedge becomes weaker if experienced operators consistently say—and historical samples confirm—that permit applicability is obvious from trade/scope, with manual research required only for rare edge cases.
+The wedge becomes weaker if experienced operators consistently say — and historical samples confirm — that permit applicability is obvious from trade/scope, with manual research required only for rare edge cases.
 
-## Next technical bridge
+## Current technical bridge
 
-The highest-value prototype is not a full Jobber Marketplace app yet. It is a read-only adapter for a Jobber developer/test account:
+The highest-value work now is an **internal read-only Jobber developer/test-account integration**, not an operator-connected pilot:
 
-`Jobber Quote/Job ID -> property + title/line items -> normalized ProjectPermit request -> result + proposed custom-field write-back`
+`Jobber test Request/Quote/Job -> property + title/line items -> normalized ProjectPermit request -> result + proposed custom-field write-back`
 
-Keep mutation disabled until the read-only mapping is benchmarked. See `docs/JOBBER_DISTRIBUTION_WEDGE.md`.
+Keep mutation disabled. Build and test against the Jobber Developer Center sandbox first. Only move this cohort from research to real E3 collection after the Jobber testing gate and Canadian outreach/compliance gate are both satisfied.
