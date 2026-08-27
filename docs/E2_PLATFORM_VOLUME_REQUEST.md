@@ -1,44 +1,98 @@
-# E2 bounded platform-volume request
+# E2 bounded workflow request
 
 Updated: 2026-08-27
 
-Purpose: obtain a decision-useful workflow denominator from a platform, consultant, permit-operations vendor or multi-account operator **before** asking for integration work or a large historical data export.
+Purpose: obtain a decision-useful **bounded workflow claim** before asking for integration work, customer data or a large historical export.
 
-This request is intentionally short. Positive opinions, demos, API documentation and general market-size claims do not satisfy it.
+Positive opinions, demos, API documentation and general market-size claims do not satisfy E2.
 
-## Fast threshold question
+## Principle: ask the smallest question that can falsify the thesis
+
+Do **not** default to asking a contractor, consultant or competitor for its internal monthly volume. That can trigger unnecessary competitive/privacy resistance and is often not needed.
+
+Prefer one of three patterns, in this order.
+
+## Pattern A — public denominator already known
+
+When the company's own public site already states a bounded workload/capacity, use that number and ask only for the unresolved-permit subset.
+
+Example:
+
+> Your site says you take on 4 projects per month. Looking at those 4 in a typical/recent month, about how many need someone to check `do we need a permit?` before the fixed quote is finalized: 0, 1, 2, 3, or 4?
+
+Useful because:
+
+- no internal total is requested;
+- the denominator is already public;
+- the answer directly measures incidence at the insertion point.
+
+To count as E2, retain the source/date for the public denominator and the respondent's bounded workflow statement.
+
+## Pattern B — fixed recent sample
+
+When monthly volume is sensitive or unknown, ask about a fixed recent sequence instead of company scale.
+
+Example:
+
+> Think about your last 10 residential renovation estimates. For how many was permit applicability still unresolved when you first priced the job: 0, 1–2, 3–5, 6–8, or 9–10?
+
+Then ask one optional routing question:
+
+> For the rest, was it already resolved by the homeowner, architect/designer, permit consultant, internal checklist/software, or municipality?
+
+A bounded `last 10` sample with workflow location can qualify as E2 if the respondent confirms it is consecutive/representative rather than hand-picked.
+
+## Pattern C — platform / multi-account threshold
+
+Use the >=500/month question only for a platform, multi-account operator or implementation consultant where aggregate scale is the commercial thesis.
 
 For one recent complete month:
 
-> In the stated covered geography, did your workflow contain at least **500 candidate Requests / Estimates / Quotes / Jobs** that could plausibly require a municipal permit-applicability decision before work was scheduled or accepted?
+> In the stated covered geography, did your workflow contain at least **500 current-family candidate Requests / Assessments / Estimates / Quotes / Jobs** where permit applicability was still unresolved at that point?
 
-A simple `yes` / `no` is usable **only if the response also states**:
+A simple yes/no is useful only if the response also states:
 
-- the month or bounded date range;
-- the geography;
-- the workflow object being counted (Request, Estimate, Quote, Job, work order, permit intake, etc.);
-- whether the count is aggregate across multiple customer accounts or one account.
+- month or bounded date range;
+- geography;
+- workflow object;
+- whether the count aggregates multiple customer accounts.
 
 Do not ask for customer names, exact addresses, phone/email, payment data or account identifiers.
 
-## Preferred numeric response
+## The critical denominator
 
-If the partner can provide aggregate counts, request:
+The quantity we need is not total projects, quotes or permits.
+
+It is:
+
+`current-family workflow events where permit applicability is still unresolved at the intended insertion point / total relevant events in the bounded sample`
+
+Public workflow research shows both patterns exist:
+
+- **quote-first**: estimate/quote before design/permit;
+- **permit-first**: permit-approved drawings before construction estimate.
+
+See `docs/QUOTE_STAGE_WORKFLOW_TIMING_EVIDENCE.md`.
+
+Therefore a quote count is not a call denominator until permit certainty timing is measured.
+
+## Preferred follow-up fields
+
+If the respondent is willing to give aggregate detail:
 
 ```text
-month/date range:
+month/date range or fixed recent sample:
 geography:
 workflow object:
-total candidate workflow events:
-distinct customer accounts represented (optional but preferred):
-HVAC/mechanical events (if available):
-plumbing/drain events (if available):
-residential renovation/build events (if available):
-events that triggered manual permit research (if available):
-events where property/zoning/heritage context was checked (if available):
+total relevant events:
+events mapping to current ProjectPermit families:
+events where permit applicability was unresolved at this point:
+who/what resolved the remainder before this point:
+events where municipality-specific rules changed a generic answer:
+events where property/zoning/heritage context was needed:
 ```
 
-The first four fields are the minimum useful denominator.
+The first six fields are the strongest E2 shape.
 
 ## Evidence classification
 
@@ -48,78 +102,84 @@ The first four fields are the minimum useful denominator.
 - routing to sales/support;
 - generic API documentation;
 - invitation to book a demo;
-- no denominator/timeframe/geography.
+- bounced/invalid contact;
+- no bounded workflow claim.
 
 ### E1
 
 - person says permit research is common/useful;
-- person says customers ask about permits;
-- no bounded count.
+- person says all/most jobs need permits but gives no bounded sample/timeframe;
+- workflow-boundary opinion with no denominator.
 
 ### E2
 
 A bounded workflow claim with:
 
-- denominator or threshold;
-- timeframe;
-- geography;
-- workflow location/object.
+- denominator or fixed sample/threshold;
+- timeframe or recent-sequence boundary;
+- workflow location/object;
+- enough context to know what is being counted.
 
-Example:
+Examples:
 
-> In July 2026, customers in Toronto generated 820 residential estimates before conversion to jobs.
+> In our last 10 basement estimates, 3 needed a permit check before we could finalize pricing.
 
-That is E2 even if no ProjectPermit call has occurred.
+or
+
+> In July 2026, Toronto customers generated 820 relevant estimates and about 210 still needed permit-applicability research before quote approval.
+
+Neither requires a ProjectPermit call to have occurred.
 
 ## Threshold interpretation
 
-### <100 candidate events/month
+### Direct account / small contractor
 
-Useful only as an E3/E4 learning partner unless price per decision is much higher than the current per-call hypothesis.
+A 4–10 project/month contractor is useful for E3/E4 learning but cannot be the primary path to 10k calls/month unless economics are much higher than the current per-call hypothesis.
+
+### <100 aggregated candidate events/month
+
+Useful learning partner; weak distribution engine.
 
 ### 100–499/month
 
-Potential validation partner. Do not expand product scope solely for this volume.
+Potential validation partner. Do not expand scope solely for this volume.
 
 ### >=500/month
 
-Meaningful distribution candidate. Move to E3 historical benchmark if representative scopes can be supplied.
+Meaningful distribution candidate **only if the events are current-family and applicability is still unresolved**.
 
 ### >=2,000/month
 
-High-priority integration candidate if the events occur upstream of permit certainty and a material share falls in supported project families/geographies.
+High-priority integration candidate if geography/family fit and access are real.
 
 ### >=10,000/month
 
-Potential single-channel path to the distribution checkpoint; verify scope mix, address-aware share, integration access and economics before expanding jurisdictions.
+Potential single-channel path to the distribution checkpoint; verify address-aware share, accuracy and economics before expansion.
 
 ## E3 follow-up after E2 passes
 
-Ask for **5–20 representative de-identified historical scopes**, selected from a bounded recent window rather than hand-picked successes.
+Ask for **5–20 representative de-identified historical scopes** from the same bounded workflow.
 
-Use:
+Offer three intake paths:
 
-```bash
-python scripts/run_partner_e3_cases.py partner.csv
-python scripts/summarize_historical_benchmark.py partner.evaluated.csv
-```
+1. human-readable de-identified scope intake;
+2. hosted free HTTP benchmark;
+3. fully private local aggregate benchmark.
 
-Historical sample must retain unsupported/out-of-scope cases and must not include exact customer identity/contact/payment data.
-
-## Why 500/month is now the preferred first gate
-
-Public market-structure work found:
-
-- a seven-city broad renovation-trade floor of **14,077 employer business locations**;
-- Toronto Mechanical + Plumbing + Drain/Site issued permit revisions of roughly **1.67k–1.73k/month** in each of 2023, 2024 and 2025;
-- Vancouver ordinary building/renovation contractor permit cadence far below 80/month.
-
-Therefore the strongest current hypothesis is not hundreds of individually acquired ordinary contractors. It is an aggregation layer — software platform, permit operator, consultant or multi-account workflow — that can expose hundreds or thousands of candidate decisions per month.
+Do not require a non-technical partner to hand-write `project_facts_json`.
 
 ## Current outreach wording
 
-Use this when a contact has already received the product explanation:
+### Contractor with public monthly number
 
-> Before discussing an integration, I only need one aggregate validation point. For one recent complete month, did customers in [covered geography] collectively create at least **500 [Requests / Estimates / Quotes / Jobs]** in the workflow where permit applicability could still affect the next action? A yes/no is enough if you can state the month, geography and workflow object. No customer-level data is needed.
+> I saw your site already says you take on about [N] projects per month, so I am not asking for internal volume. Of those [N], roughly how many need someone to check whether a permit is required before the first fixed quote is finalized? A number or simple range is enough.
 
-This wording is deliberately designed to make a useful response easier than a generic sales conversation.
+### Estimator / consultant
+
+> Looking only at your last 10 consecutive residential renovation estimates, about how many still needed a `permit required?` check when you first priced them: 0, 1–2, 3–5, 6–8, or 9–10? No client names or project details needed.
+
+### Platform / multi-account operator
+
+> For one recent complete month, did covered-geography customers collectively create at least 500 current-family Requests/Assessments/Estimates/Quotes where permit applicability was still unresolved? A yes/no is enough if you can state the month, geography and workflow object.
+
+The goal is not to maximize replies. It is to obtain a bounded answer that can kill or strengthen the commercial thesis.
