@@ -1,0 +1,27 @@
+{
+  "$schema": "../../../schemas/mcp.schema.json",
+  "id": "projectpermit",
+  "type": "mcp",
+  "name": "ProjectPermit",
+  "tagline": "Evidence-linked municipal permit preflight for construction and renovation agents",
+  "description": "A hosted Streamable HTTP MCP server that turns normalized construction or renovation scope into deterministic, evidence-linked municipal permit/planning preflight results. Current coverage includes Gatineau, Ottawa, Toronto, Mississauga, Laval, Longueuil, and Vancouver. The developer-validation endpoint is currently open and requires no API key. Results preserve uncertainty and are not municipal authorization or legal/engineering advice.",
+  "author": {
+    "name": "ChanghuLiu",
+    "url": "https://github.com/ChanghuLiu"
+  },
+  "homepage": "https://github.com/ChanghuLiu/projectpermit-mcp",
+  "repo": "https://github.com/ChanghuLiu/projectpermit-mcp",
+  "icon": "./icon.png",
+  "tags": ["business", "research"],
+  "verified": false,
+  "featured": false,
+  "install": {
+    "args": [
+      "projectpermit",
+      "--transport",
+      "http",
+      "https://projectpermit-mcp-production.up.railway.app/mcp"
+    ],
+    "notes": "No authentication is required during the current developer-validation preview. Call projectpermit_info first to discover supported jurisdiction IDs and project families before calling check_project_requirements."
+  }
+}
