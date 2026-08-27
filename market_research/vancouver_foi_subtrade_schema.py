@@ -16,18 +16,28 @@ from openpyxl import load_workbook
 SOURCE_URL = "https://vancouver.ca/files/cov/2024-671-release2.XLSX"
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--output", type=Path, default=Path("vancouver_foi_schema.json"))
-    args = parser.parse_args()
+def _read_payload(input_file: Path | None) -> bytes:
+    if input_file is not None:
+        return input_file.read_bytes()
 
     request = urllib.request.Request(
         SOURCE_URL,
-        headers={"User-Agent": "ProjectPermit public-market-research/1.0"},
+        headers={
+            "User-Agent": "Mozilla/5.0 ProjectPermit public-market-research/1.0",
+            "Referer": "https://vancouver.ca/your-government/freedom-of-information.aspx",
+        },
     )
     with urllib.request.urlopen(request, timeout=120) as response:
-        payload = response.read()
+        return response.read()
 
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input-file", type=Path)
+    parser.add_argument("--output", type=Path, default=Path("vancouver_foi_schema.json"))
+    args = parser.parse_args()
+
+    payload = _read_payload(args.input_file)
     workbook = load_workbook(io.BytesIO(payload), read_only=True, data_only=True)
     result = {"source_url": SOURCE_URL, "sheets": []}
 
