@@ -4,21 +4,17 @@ Updated: 2026-08-27
 
 ## Current state
 
-**Phase 0 testnet discovery / market-validation release readiness: PASS.**
+**Seven-jurisdiction deterministic permit-preflight engine: LIVE.**
 
-**Phase 1A Toronto + Mississauga expansion: PASS.** Both cities have deterministic rule coverage plus first-party municipal address/zoning/heritage adapters.
+**Distribution validation: ACTIVE.** Replies are lead signals only. E3 representative historical benchmarks, E4 repeated external usage and E5 economic behavior remain the decision gates.
 
-**Phase 1B Laval + Longueuil six-city expansion: PASS.** Conservative deterministic rule coverage is publicly verified.
+ProjectPermit is an evidence-linked cross-jurisdiction B2B/Agent permit-preflight layer. It is **not** a homeowner-only wizard, municipal application portal, managed permit-expediting service, legal opinion or municipal authorization.
 
-**Phase 1C Vancouver seven-city expansion: PASS.** Vancouver rules plus first-party City address/zoning/heritage resolution are deployed and verified against the public MCP service.
+The calling agent normalizes project scope into structured facts. The ProjectPermit rules engine does not call an LLM.
 
-**Distribution validation: ACTIVE.** External outreach has started. Replies are lead signals only; E3 historical benchmarks, E4 repeated external usage and E5 economic behavior are the decision gates.
+## Current jurisdiction coverage
 
-ProjectPermit is an evidence-linked deterministic municipal permit-preflight engine across seven jurisdictions. The calling Agent normalizes project scope; the server applies municipal rules and returns official-source evidence. The rules engine does not call an LLM and payment remains outside BuildRequirements.
-
-## Jurisdiction coverage
-
-- `gatineau_qc` — deterministic rules + municipal address geocoder; PIIA/heritage machine overlays still unresolved
+- `gatineau_qc` — deterministic rules + municipal address geocoder
 - `ottawa_on` — deterministic rules + address/zoning/heritage GIS
 - `toronto_on` — deterministic rules + City address/zoning/heritage GIS
 - `mississauga_on` — deterministic rules + City address/zoning/heritage/property GIS
@@ -26,7 +22,7 @@ ProjectPermit is an evidence-linked deterministic municipal permit-preflight eng
 - `longueuil_qc` — conservative deterministic rules; address/GIS adapter pending
 - `vancouver_bc` — deterministic rules + City Open Data property-address/zoning/heritage adapter
 
-All transports call the same `preflight_service` before the jurisdiction router. For supported address jurisdictions, `resolve_address=true` enriches the request with first-party municipal property context. Laval and Longueuil currently use `resolve_address=false`.
+Municipality expansion is paused until external workflow evidence justifies maintenance.
 
 ## Live services
 
@@ -34,40 +30,58 @@ All transports call the same `preflight_service` before the jurisdiction router.
 - Free MCP developer-validation preview: `https://projectpermit-mcp-production.up.railway.app/mcp`
 - Paid x402 MCP: `https://projectpermit-x402-mcp-production.up.railway.app/mcp`
 
-Current **testnet discovery price**: **$0.01 USDC per paid tool/API call** on Base Sepolia. This is not the intended commercial price.
+Current Base Sepolia discovery price is `$0.01 USDC/call`; this is not the intended commercial price.
 
-Real buyer-side HTTP and MCP x402 settlement have already been proven. Do not spend additional test USDC merely to re-prove plumbing.
+Real buyer-side HTTP and MCP x402 settlement have already been proven. Do not spend test USDC merely to re-prove payment plumbing.
 
-## Completed infrastructure
+## Core infrastructure completed
 
-- seven-jurisdiction deterministic rule router across 8 normalized project families
-- five first-party municipal/open-data address resolver jurisdictions
+- 7-jurisdiction deterministic router across 8 normalized project families
+- 5 first-party municipal/open-data address resolver jurisdictions
 - shared address-aware preflight service for HTTP/free MCP/paid MCP
-- official evidence and stable rule ids
-- public FastAPI, standard MCP v2 and x402-native paid MCP
-- Base Sepolia x402 payment profile and real buyer-side settlement verification
-- GoPlausible Bazaar canonical HTTPS indexing
-- Docker + GitHub Actions CI
+- official evidence + stable rule ids
+- FastAPI + MCP v2 + x402-native MCP
 - privacy-minimal structured usage telemetry
-- internal CI/owner traffic tagging so it cannot be mistaken for demand
-- municipal request-URL logging suppression to avoid leaking address/query details
+- CI/owner traffic tagging
+- municipal request URL logging suppression to reduce address/query leakage
+- Docker + GitHub Actions CI
+- no paid municipal/property data dependency
 - no server-side LLM dependency
-- no paid map/property-data dependency
-- read-only Jobber Request/Quote/Job adapter + tests
-- read-only Jobber GraphQL transport + tests
-- Jobber no-mutation account probe
-- Jobber developer/test-account bootstrap instructions
-- **20-case synthetic/de-identified Jobber integration benchmark across all 8 project families**
-- runnable Jobber synthetic benchmark summary command
-- Jobber E3 historical benchmark template
-- Vancouver 10-case public permit-positive false-negative backtest
-- Gatineau URBAIN first-party competitive-boundary analysis
 
-Latest CI on `main` after these additions: **PASS**.
+## Validation evidence standard
+
+See `docs/VALIDATION_EVIDENCE_STANDARD.md`.
+
+- **E0** — no usable evidence / routing / auto-reply
+- **E1** — opinion only
+- **E2** — bounded workflow claim with denominator + timeframe + workflow location
+- **E3** — representative anonymized historical cases benchmarked against ProjectPermit
+- **E4** — observed repeated external usage
+- **E5** — economic behavior / paid or resource-committed integration
+
+Synthetic/de-identified platform benchmarks and public municipal permit-positive backtests are technical evidence only. They do **not** count as E3/E4.
+
+## External usage baseline
+
+Initial post-telemetry baseline:
+
+- external/non-owner successful preflight calls: **0**
+- internal CI/smoke successful events at initial capture: **32**
+- external integrations/client tags: **0**
+
+Post-outreach Railway audit on 2026-08-27:
+
+- free/standard MCP successful usage: internal CI/owner smoke only
+- paid x402 MCP successful external usage: **0**
+- paid HTTP/API-v2 successful external usage: **0**
+- unpaid `402 Payment Required` probes are present but do **not** count as E4
+- countable E4 external successful preflights remains **0**
+
+Do not count replies, crawlers, synthetic benchmarks, CI, owner smoke, demos or unpaid 402 probes as demand.
 
 ## Outreach state
 
-Direct emails sent on 2026-08-27:
+Sent on 2026-08-27:
 
 **Batch A**
 - iPermit
@@ -82,154 +96,202 @@ Direct emails sent on 2026-08-27:
 - Pulley
 
 **Platform technical validation**
-- Jobber API support — Marketplace/API eligibility question sent to `api-support@getjobber.com`
+- Jobber API support / Marketplace-testing eligibility question sent to `api-support@getjobber.com`
 
-Prepared but not submitted because the current route is interactive/form-based:
+Prepared, not submitted because the route is interactive/form-based:
 - Lula
 - ServiceChannel
 
-Sender identity is now ProjectPermit. No further product work is blocked on replies.
+Latest Gmail check found no reply or delivery-failure message from the current outreach set. Work continues without waiting.
 
-## Validation evidence standard
+## Platform strategy — keep scale separate from ease of integration
 
-See `docs/VALIDATION_EVIDENCE_STANDARD.md`.
+See `docs/PLATFORM_DISTRIBUTION_SCORECARD.md`.
 
-- **E0:** no usable evidence / routing / auto-reply
-- **E1:** opinion only
-- **E2:** bounded workflow claim with denominator + timeframe + workflow location
-- **E3:** representative anonymized historical cases benchmarked against ProjectPermit
-- **E4:** observed repeated external usage
-- **E5:** economic behavior / paid or resource-committed integration
+### Commercial distribution priority
 
-A positive reply is not market validation. Major coverage, product-boundary, mainnet and pricing decisions should not be made from E0/E1.
+**#1 Jobber** remains the strongest current fit because of Canadian relevance, home-service workflow, address + Request/Quote/Job scope, and large platform footprint.
 
-Synthetic/de-identified integration benchmarks and public municipal permit-positive backtests are technical evidence only. They do **not** count as E3/E4.
+**ServiceTitan** has the strongest annual workflow-density signal reviewed so far — 12,000+ businesses and 40M+ jobs/year — but ProjectPermit is Canada-only while ServiceTitan is U.S.-heavy. Do not add U.S. cities without partner-linked volume.
 
-## External usage baseline
+**Workiz / Housecall Pro** remain credible large-platform candidates. Workiz currently states 120k+ home-service pros in the US and Canada; Housecall Pro states 200k+ pros / 45k+ businesses. Access/geography evidence is not yet strong enough to justify another adapter now.
 
-Initial post-telemetry baseline before outreach:
+**ServiceM8 commercial scale is intentionally unproven.** Its Canadian account denominator is unknown, so do not promote it merely because its API is easy to use.
 
-- successful external/non-owner preflight calls: **0**
-- successful internal CI/smoke events observed at initial capture: **32**
-- external integrations/client tags: **0**
+### Immediate low-cost technical validation priority
 
-Post-outreach Railway audit on 2026-08-27:
+1. **Jobber** — adapter/client/benchmark done; manual Developer Center token/live-schema gate remains.
+2. **ServiceM8** — adapter/client/benchmark done; manual own-account Read Only API-key gate remains.
+3. **Workiz** — only if the first two paths become blocked/weak or new evidence justifies it.
+4. **ServiceTitan** — high leverage, but developer-access approval required.
+5. **Housecall Pro** — high scale, but less attractive low-cash API-access path.
 
-- standard/free MCP successful usage events observed: internal CI/owner-smoke only
-- paid x402 MCP successful usage events: **0**
-- paid HTTP/API-v2 successful usage events: **0**
-- API-v2 has received unpaid `402 Payment Required` probes; these do **not** count as E4
-- countable E4 external successful preflight calls remains **0**
+Stop adapter proliferation after Jobber + ServiceM8 unless a new platform brings credible E2+/E3 access or a 500+/month candidate-call path.
 
-Do not count CI, owner smoke, demos, synthetic loads, unpaid 402 probes, discovery/crawler traffic or replies as E4.
+## Jobber — #1 current commercial wedge
 
-## Market decision
+Preferred flow:
 
-The commercial thesis remains a **cross-jurisdiction B2B/Agent permit-requirements intelligence layer**, not a homeowner-only wizard and not a managed permit-submission service.
+`Jobber Quote/Job -> property address + title/line items -> structured ProjectPermit facts -> preflight -> proposed routing/write-back metadata`
 
-The seven-city footprint is enough to validate distribution. Municipality expansion remains paused until representative E3 cases plus a credible repeated E4 call path justify maintenance.
+Completed:
 
-Working commercial hypothesis: roughly **$0.20-$0.50 per address-aware evidence-linked preflight** or an equivalent platform volume plan, subject to E5 validation.
+- read-only Jobber adapter
+- no-mutation GraphQL client
+- token-safe error handling
+- account probe
+- developer bootstrap docs
+- **20-case synthetic/de-identified integration benchmark across all 8 project families**
+- runnable synthetic benchmark command
+- E3 historical benchmark template
 
-The first commercially meaningful internal checkpoint remains roughly **10,000 external preflight calls/month**. Example proof shapes:
+Important testing rule: Jobber's current Marketplace-oriented testing guidance says not to engage existing Jobber customers to test before coordinating with a Jobber developer representative. The prepared Canadian operator cohort therefore remains research/future-E3 only.
 
-- 5 integrations × ~2,000 calls/month
-- 20 integrations × ~500 calls/month
-- one platform workflow × ~10,000 calls/month
+Next Jobber technical gate requires interactive account work:
 
-At 10k monthly calls, gross revenue would be about $2,500 at $0.25/call or $5,000 at $0.50/call before infrastructure, support and municipal-rule maintenance.
+1. create/use Jobber developer testing account;
+2. create Developer Center Draft app;
+3. obtain GraphiQL testing token;
+4. run `scripts/jobber_readonly_probe.py`;
+5. verify exact live Request/Quote/Job/Property/line-item fields;
+6. bind those verified fields without enabling mutations.
 
-## First-party municipal assistant risk: Gatineau URBAIN
+See:
+- `docs/JOBBER_DEVELOPER_BOOTSTRAP.md`
+- `docs/JOBBER_DISTRIBUTION_WEDGE.md`
+- `docs/JOBBER_OPERATOR_VALIDATION.md`
 
-Ville de Gatineau now operates **URBAIN**, a first-party address-aware/project-aware urban-planning assistant. The City says it uses structured questions, applies regulations according to project location, indicates whether a permit is required, provides applicable standards and routes complex cases to municipal staff. Further modules are planned through 2027.
+## ServiceM8 — #2 immediate technical wedge
 
-This is a direct substitution risk for a **single-city homeowner permit checker** and a strong reason not to move ProjectPermit toward that product shape.
+ServiceM8 provides a materially different and lower-friction live-account test path.
 
-It does **not** currently establish a public machine-to-machine developer API. The correct finding is only that no public developer/API surface was identified in the official material reviewed so far; do not claim one does not exist.
+Official current docs establish:
 
-ProjectPermit differentiation must remain:
+- Private Applications may connect to the developer's own account / one specific customer via API key;
+- a Developer account is not required for that private path;
+- API key uses `X-API-Key`;
+- ServiceM8 explicitly supports a **Read Only** API-key type;
+- public apps later use OAuth 2.0;
+- Free plan is `$0/month`, 1 user, up to 30 jobs/month;
+- Job records expose `uuid`, `status`, `job_address`, `job_description`;
+- documented status values include `Quote`, `Work Order`, `Unsuccessful`, `Completed`.
 
-- cross-jurisdiction normalization;
-- embedded contractor/platform workflow;
-- API/MCP delivery;
-- common evidence/rule schema;
-- repeat portfolio volume;
-- fail-safe uncertainty rather than municipal-authority claims.
+Completed on `main`:
 
-See `docs/GATINEAU_URBAIN_COMPETITIVE_BOUNDARY.md`.
+- `src/projectpermit/servicem8_adapter.py`
+- `src/projectpermit/servicem8_client.py` — GET-only, no POST/DELETE methods
+- token/body-safe error handling
+- `scripts/servicem8_readonly_probe.py`
+- `docs/SERVICEM8_DEVELOPER_BOOTSTRAP.md`
+- `docs/SERVICEM8_DISTRIBUTION_WEDGE.md`
+- **12-case synthetic/de-identified benchmark across all 8 project families**
+- runnable ServiceM8 benchmark command
+- tests enforcing exclusion of customer UUID, billing, contact, payment, price and cost data
 
-## Objective activity baseline
+Full CI after the ServiceM8 adapter/client/benchmark addition: **PASS** on Python 3.11/3.13, container, remote MCP, paid challenge, HTTP Bazaar challenge and optional integrations.
 
-First-party 2024 counts already established for four supported cities:
+Next ServiceM8 live gate:
+
+1. create/sign in to a ServiceM8 account;
+2. verify whether the Free-plan UI shows `Account -> Settings -> API Keys`;
+3. if available, create **Read Only** key named `ProjectPermit Read Only Validation`;
+4. do not upgrade/pay if the Free plan hides API keys;
+5. store key locally only as `SERVICEM8_API_KEY`;
+6. create several obviously synthetic Quote/Work Order jobs;
+7. run `python scripts/servicem8_readonly_probe.py`.
+
+This live own-account test is technical evidence only, not E3/E4.
+
+## Municipal first-party substitution
+
+See:
+- `docs/MUNICIPAL_SELF_SERVICE_COMPETITION.md`
+- `docs/GATINEAU_URBAIN_COMPETITIVE_BOUNDARY.md`
+
+Current pattern:
+
+- **Gatineau URBAIN:** Level-4-style direct address/project-aware permit eligibility assistant; strongest homeowner substitution risk.
+- **Toronto:** AI Building Permit Application Pre-Check for eligible residential application documents; downstream application-review competition rather than initial eligibility routing.
+- **Longueuil:** meaningful online application/selected automated issuance workflow.
+- **Ottawa / Mississauga / Laval / Vancouver:** strong digital guidance/property/application tooling; no equivalent integrated URBAIN-style eligibility assistant was identified in the official material reviewed on 2026-08-27.
+
+Strategic boundary:
+
+- no homeowner destination app as priority;
+- no municipal application portal clone;
+- no full drawing/document code review without independent B2B evidence;
+- keep differentiation in cross-jurisdiction schema, embedded contractor workflow, API/MCP delivery and normalized first-party evidence.
+
+Before adding/deepening any city, check for first-party eligibility assistants, automated issuance and AI/document pre-checks.
+
+## Technical correctness guards
+
+### Vancouver permit-positive backtest
+
+A 10-case first-party public permit-positive fixture is committed with residential addresses/contact details intentionally omitted.
+
+Regression requirement: known permit-positive scopes must never be classified `LIKELY_NOT_REQUIRED` by the mapped structured facts.
+
+This is a technical false-negative guard, not market E3.
+
+### Platform benchmarks
+
+- Jobber: 20 synthetic/de-identified cases, all 8 project families
+- ServiceM8: 12 synthetic/de-identified cases, all 8 project families
+
+Both verify adapter -> structured facts -> engine -> proposed routing metadata without platform mutation or market-evidence inflation.
+
+## Objective municipal activity baseline
+
+Clean first-party 2024 counts established:
 
 - Toronto: **36,887** building permits issued (~3,074/month)
 - Ottawa: **7,688** (~641/month)
 - Mississauga: **4,458** (~372/month)
 - Laval: **1,415** construction + improvement permits (~118/month), including **1,111 improvement permits**
 
-Combined clean observed issuance flow: **50,448/year**, about **4,204/month**.
+Combined clean observed issuance floor: **50,448/year**, ~**4,204/month**.
 
-Vancouver's first-party issued-building-permits dataset contains 51k+ records since 2017, with roughly half currently categorized as Addition / Alteration. Gatineau annual cumulative extraction and Longueuil distinct-permit extraction remain pending.
+Vancouver's first-party dataset contains 51k+ issued-building-permit records since 2017, roughly half categorized Addition / Alteration. Exact Gatineau annual cumulative extraction and Longueuil distinct-permit extraction remain pending; do not invent counts merely to fill the table.
 
-This is an activity floor, not ProjectPermit call volume. It reinforces that a 10k-calls/month business cannot rely on `one call only after a permit is already known to be required`; the intended wedge must preflight a broader stream of candidate quotes/work orders/scopes.
+This reinforces that a 10k-calls/month product cannot rely on `one call only after a permit is already known to be required`. The commercial wedge must prove a broader `candidate quote/work order -> preflight` multiplier through E3/E4.
 
-See `docs/MUNICIPAL_ACTIVITY_BASELINE.md`.
+## Commercial checkpoint
 
-## Highest-priority wedge: Jobber
+Working price hypothesis remains roughly **$0.20-$0.50 per address-aware evidence-linked preflight**, subject to E5.
 
-Jobber is currently the top distribution experiment because Request/Quote/Job objects can expose property address plus structured scope before a job is committed.
+First meaningful internal scale checkpoint: **~10,000 external successful preflights/month**.
 
-Preferred workflow:
+Equivalent shapes include:
 
-`Jobber Quote/Job -> address + title/line items -> structured ProjectPermit facts -> preflight -> proposed custom-field writeback`
+- 500 contractor businesses × 20 candidate calls/month
+- 125 × 80/month
+- 20 integrations × 500/month
+- 5 integrations × 2,000/month
+- one platform workflow × 10,000/month
 
-### Current Jobber state
-
-- API/Marketplace eligibility question — **SENT; not a sandbox blocker**
-- read-only adapter + unit tests — **DONE**
-- read-only GraphQL client that rejects mutation/subscription — **DONE**
-- one-command account probe — **DONE**
-- developer/test-account bootstrap path — **DOCUMENTED**
-- 20-case synthetic/de-identified integration benchmark — **DONE; all 8 project families**
-- external existing-customer Jobber testing — **ON HOLD until coordinated with a Jobber developer representative**
-
-Jobber's current testing guidance says that an app intended for Marketplace publication should not engage existing Jobber customers for testing before coordinating with a Jobber developer representative. The separate rule allowing a Draft custom integration to connect to up to five paying accounts does not override that testing guidance.
-
-### Current sequence
-
-1. create/use a Jobber developer testing account + Developer Center Draft app + GraphiQL testing token — **CURRENT MANUAL SANDBOX STEP**
-2. run the read-only account probe and verify exact live Request/Quote/Job/Property/line-item fields — **NEXT TECHNICAL GATE**
-3. bind the verified live schema into the query layer and rerun the existing 20-case integration contract — **NEXT AFTER SCHEMA**
-4. after Jobber customer-testing coordination, obtain 20+ representative historical Canadian cases from independent operators — **E3 GATE**
-5. only then run an authorized repeat-use pilot — **E4 GATE**
-6. Marketplace investment only after E3/E4 shows repeated permit-sensitive volume
-
-Keep mutation disabled until the read-only mapping is benchmarked and external testing is authorized appropriately.
-
-See `docs/JOBBER_DEVELOPER_BOOTSTRAP.md`, `docs/JOBBER_DISTRIBUTION_WEDGE.md`, and `docs/JOBBER_OPERATOR_VALIDATION.md`.
-
-## Known unresolved items
-
-1. **Laval/Longueuil property adapters:** evaluate only if usage justifies them.
-2. **Gatineau PIIA/heritage:** stable unauthenticated machine overlay endpoint is not yet locked; unknown must never become false. URBAIN increases the case for not investing here before external API volume exists.
-3. **Longueuil exemptions:** conservative outcomes remain intentional where simplified official material does not establish universal exemptions.
-4. **Mainnet:** intentionally disabled until external demand and willingness-to-pay validation pass.
-5. **External Bazaar stale row:** historical `http://` discovery row remains alongside canonical HTTPS; non-blocking.
-6. **Free MCP bypass:** full determinations are temporarily free for developer validation; this is not permanent commercial packaging.
-7. **Geographic overlap:** strong U.S. platform distribution does not justify U.S. city expansion without E3/E4-backed volume.
-8. **Municipal first-party substitution:** check each new city for an official address-aware permit assistant before adding homeowner-oriented product work.
+At $0.25/call this is $2,500 gross/month; at $0.50/call $5,000 gross/month, before infrastructure, support and municipal-rule maintenance.
 
 ## Next gates
 
-- complete the Jobber internal developer/test-account account + live-schema probe
-- bind verified live Jobber Request/Quote/Job fields without enabling mutations
-- obtain **2 independent representative E3 historical benchmarks** after the relevant platform/customer-testing route is cleared
-- reach **1 repeated external workflow with 20+ successful calls**
-- reach **3 external integrations and 100+ non-owner successful calls**
-- identify **one workflow with 500+ candidate calls/month**
-- identify **one partner/integration with 2,000+ candidate calls/month**
-- validate **one credible platform path toward 10,000+ calls/month**
-- obtain an **E5 economic signal** around the $0.20-$0.50 address-aware unit economics or equivalent resource commitment
-- add new jurisdictions only when requested geography is tied to credible volume and preferably E3/E4 evidence
+### Technical
 
-GitHub issue #1, `Validate external distribution before expanding municipalities`, is the canonical validation checklist.
+- live Jobber developer-account/token/schema probe
+- live ServiceM8 Free-account Read Only API-key probe
+- do not build a third field-service adapter without new evidence
+
+### Market
+
+- 2 independent representative E3 historical benchmarks
+- 1 repeated external workflow with 20+ successful calls
+- 3 external integrations + 100+ non-owner successful calls
+- one credible workflow with 500+ candidate calls/month
+- one partner/integration with 2,000+ candidate calls/month
+- one credible path to 10,000+ calls/month
+- one E5 price/resource commitment around the working unit economics
+
+### Geography
+
+- add/deepen municipalities only when requested geography is tied to credible repeated volume and passes the municipal-self-service substitution check
+
+GitHub issue #1, `Validate external distribution before expanding municipalities`, remains the canonical validation checklist.
