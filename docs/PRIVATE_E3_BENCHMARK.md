@@ -102,6 +102,8 @@ python scripts/run_partner_e3_cases.py private_cases.csv \
 
 This calls the local deterministic rules engine. It does **not** call the ProjectPermit production API/MCP and does not upload the cases.
 
+The runner automatically writes `material_disagreement=no` for exact historical/ProjectPermit agreement. For every disagreement, it intentionally leaves `material_disagreement` blank so the case must receive a fresh human review; stale/pre-filled materiality values are cleared on re-run.
+
 For every disagreement, review the historical/manual record locally and fill `material_disagreement=yes|no` in `private_cases.evaluated.csv`.
 
 Do not change/remove a case merely because the result is unfavorable.
