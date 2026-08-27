@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
+from .capabilities import PROJECT_FAMILIES
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 from .x402_config import configure_x402
@@ -41,16 +42,7 @@ def capabilities():
             }
             for jurisdiction in SUPPORTED_JURISDICTIONS
         ],
-        "project_families": [
-            "window_door",
-            "interior_renovation",
-            "basement",
-            "dwelling_change",
-            "deck_porch",
-            "accessory_structure",
-            "addition",
-            "kitchen_bath_plumbing",
-        ],
+        "project_families": list(PROJECT_FAMILIES),
         "paid_resource": "/v1/check-project-requirements",
         "disclaimer": "Preflight information only; not municipal authorization or legal advice.",
     }

@@ -8,7 +8,9 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from .preflight_service import run_preflight
+from .capabilities import PROJECT_FAMILIES
+from .jurisdiction_router import SUPPORTED_JURISDICTIONS
+from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 
 
 def build_server():
@@ -22,16 +24,39 @@ def build_server():
     server = MCPServer(
         "ProjectPermit",
         instructions=(
-            "Municipal construction permit preflight. Normalize the user's proposed "
-            "construction scope into structured facts before calling the tool. Results "
-            "are evidence-linked preflight information, not municipal authorization. "
-            "For repeated developer/pilot validation, include a stable non-PII "
-            "context.client_tag when your host can provide one; it is hashed before "
-            "telemetry is logged. Do not put names, emails, phone numbers, addresses, "
-            "account ids, or other personal data in client_tag. This public standard "
-            "MCP endpoint is a temporary developer-validation preview."
+            "Municipal construction permit preflight. Start with projectpermit_info "
+            "to discover supported jurisdictions, project families and an example. "
+            "Normalize the proposed construction scope into structured facts before "
+            "calling check_project_requirements. Results are evidence-linked preflight "
+            "information, not municipal authorization. For repeated validation, "
+            "context.client_tag may be a stable non-sensitive integration label; it is "
+            "hashed before telemetry. This public endpoint is a developer-validation preview."
         ),
     )
+
+    @server.tool()
+    def projectpermit_info() -> dict[str, Any]:
+        """Return free ProjectPermit capabilities and a valid starter example."""
+        return {
+            "service": "ProjectPermit",
+            "tool": "check_project_requirements",
+            "jurisdictions": list(SUPPORTED_JURISDICTIONS),
+            "address_resolution_jurisdictions": list(SUPPORTED_ADDRESS_JURISDICTIONS),
+            "project_families": list(PROJECT_FAMILIES),
+            "example": {
+                "jurisdiction": "ottawa_on",
+                "project": {"family": "window_door", "action": "replace_same_size"},
+                "property": {"heritage": False},
+                "resolve_address": False,
+            },
+            "validation_hint": (
+                "For repeat pilot usage, context.client_tag may be a stable "
+                "non-sensitive integration label; it is hashed before telemetry."
+            ),
+            "disclaimer": (
+                "Preflight information only; not municipal authorization or legal advice."
+            ),
+        }
 
     @server.tool()
     def check_project_requirements(
@@ -42,14 +67,7 @@ def build_server():
         context: dict[str, Any] | None = None,
         resolve_address: bool = False,
     ) -> dict[str, Any]:
-        """Return evidence-linked permit/planning preflight requirements.
-
-        Supports the ProjectPermit jurisdiction router. Set `resolve_address=true`
-        to enrich the request with first-party municipal address/zoning/heritage
-        context where a resolver is available. For repeat pilot usage, callers may
-        provide a stable non-PII `context.client_tag`; ProjectPermit hashes it before
-        logging and never needs customer identity in that tag.
-        """
+        """Return evidence-linked permit/planning preflight requirements."""
         return run_preflight(
             {
                 "jurisdiction": jurisdiction,

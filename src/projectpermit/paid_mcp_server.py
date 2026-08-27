@@ -28,6 +28,7 @@ from x402.mcp import (
 from x402.schemas import ResourceConfig
 from x402.server import x402ResourceServerSync
 
+from .capabilities import PROJECT_FAMILIES
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 
@@ -56,7 +57,7 @@ INPUT_SCHEMA: dict[str, Any] = {
         },
         "context": {
             "type": "object",
-            "description": "Optional rule-version/workflow context. For validation, client_tag may be a stable non-PII integration tag.",
+            "description": "Optional rule-version/workflow context. For validation, client_tag may be a stable non-sensitive integration tag.",
         },
         "resolve_address": {
             "type": "boolean",
@@ -115,6 +116,7 @@ def build_paid_server() -> MCPServer:
         "ProjectPermit x402",
         instructions=(
             "Paid evidence-linked municipal construction permit preflight. "
+            "Start with projectpermit_info for capabilities. "
             "The check_project_requirements tool uses x402 USDC payment. "
             "Results are preflight information, not municipal authorization."
         ),
@@ -204,6 +206,8 @@ def build_paid_server() -> MCPServer:
             "network": settings["network"],
             "jurisdictions": list(SUPPORTED_JURISDICTIONS),
             "address_resolution_jurisdictions": list(SUPPORTED_ADDRESS_JURISDICTIONS),
+            "project_families": list(PROJECT_FAMILIES),
+            "example": EXAMPLE,
             "disclaimer": "Preflight information only; not municipal authorization.",
         }
 
