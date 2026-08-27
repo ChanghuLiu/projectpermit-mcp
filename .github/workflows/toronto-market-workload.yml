@@ -1,0 +1,27 @@
+name: Toronto Market Workload
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'market_research/toronto_trade_permit_volume.py'
+      - '.github/workflows/toronto-market-workload.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  trade-volume:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Aggregate 2024 Toronto permit types without emitting row data
+        run: python market_research/toronto_trade_permit_volume.py --year 2024 --output toronto_trade_permit_volume_2024.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toronto-trade-permit-volume-2024
+          path: toronto_trade_permit_volume_2024.json
+          if-no-files-found: error
