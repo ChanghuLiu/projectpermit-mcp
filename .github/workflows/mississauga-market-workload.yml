@@ -1,0 +1,32 @@
+name: Mississauga Market Workload
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'market_research/mississauga_trade_permit_volume.py'
+      - '.github/workflows/mississauga-market-workload.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  trade-volume:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Aggregate 2023-2025 Mississauga permit application types
+        run: |
+          for year in 2023 2024 2025; do
+            python market_research/mississauga_trade_permit_volume.py \
+              --year "$year" \
+              --output "mississauga_trade_permit_volume_${year}.json"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mississauga-trade-permit-volume-2023-2025
+          path: mississauga_trade_permit_volume_*.json
+          if-no-files-found: error
