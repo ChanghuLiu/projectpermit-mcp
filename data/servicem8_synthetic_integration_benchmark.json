@@ -1,0 +1,92 @@
+{
+  "benchmark": "ServiceM8 synthetic/de-identified integration benchmark",
+  "captured_at": "2026-08-27",
+  "purpose": "Internal adapter and rules integration evidence only. This is not E3 market validation and uses no real ServiceM8 customer data.",
+  "cases": [
+    {
+      "id": "sm8-syn-001",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"uuid": "sm8-job-001", "status": "Quote", "job_address": "101 Example St, Gatineau, QC", "job_description": "Replace same-size front window"},
+      "project": {"family": "window_door", "action": "replace_same_size", "estimated_cost_cad": 1800, "structural_change": false}
+    },
+    {
+      "id": "sm8-syn-002",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"uuid": "sm8-job-002", "status": "Quote", "job_address": "102 Example St, Gatineau, QC", "job_description": "Paint and flooring refresh only"},
+      "project": {"family": "interior_renovation", "action": "painting", "estimated_cost_cad": 9000, "structural_change": false}
+    },
+    {
+      "id": "sm8-syn-003",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
+      "payload": {"uuid": "sm8-job-003", "status": "Quote", "job_address": "103 Example St, Gatineau, QC", "job_description": "Finish basement, final project cost not yet set"},
+      "project": {"family": "basement", "action": "finish_basement", "structural_change": false}
+    },
+    {
+      "id": "sm8-syn-004",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "REQUIRED",
+      "payload": {"uuid": "sm8-job-004", "status": "Work Order", "job_address": "104 Example St, Gatineau, QC", "job_description": "Create an additional dwelling unit"},
+      "project": {"family": "dwelling_change", "action": "add_dwelling", "dwelling_unit_change": true}
+    },
+    {
+      "id": "sm8-syn-005",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"uuid": "sm8-job-005", "status": "Quote", "job_address": "105 Example St, Gatineau, QC", "job_description": "Residential rear deck"},
+      "project": {"family": "deck_porch", "action": "build_deck"}
+    },
+    {
+      "id": "sm8-syn-006",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "REQUIRED",
+      "payload": {"uuid": "sm8-job-006", "status": "Quote", "job_address": "106 Example St, Gatineau, QC", "job_description": "Permanent detached storage shed"},
+      "project": {"family": "accessory_structure", "accessory_structure_kind": "shed", "accessory_permanent": true}
+    },
+    {
+      "id": "sm8-syn-007",
+      "jurisdiction": "ottawa_on",
+      "expected_determination": "REQUIRED",
+      "payload": {"uuid": "sm8-job-007", "status": "Quote", "job_address": "107 Example Ave, Ottawa, ON", "job_description": "Attached sunroom addition"},
+      "project": {"family": "addition", "floor_area_increase": true}
+    },
+    {
+      "id": "sm8-syn-008",
+      "jurisdiction": "gatineau_qc",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"uuid": "sm8-job-008", "status": "Quote", "job_address": "108 Example St, Gatineau, QC", "job_description": "Bathroom finish and existing fixture refresh"},
+      "materials": [{"job_uuid": "sm8-job-008", "name": "Bathroom fixture refresh", "item_description": "Existing fixture replacement"}],
+      "project": {"family": "kitchen_bath_plumbing", "action": "fixture_refresh", "estimated_cost_cad": 12000, "structural_change": false}
+    },
+    {
+      "id": "sm8-syn-009",
+      "jurisdiction": "toronto_on",
+      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "payload": {"uuid": "sm8-job-009", "status": "Quote", "job_address": "109 Example Rd, Toronto, ON", "job_description": "Same-size house window replacement"},
+      "project": {"family": "window_door", "action": "replace_same_size", "single_dwelling_house": true, "structural_change": false, "new_exit": false}
+    },
+    {
+      "id": "sm8-syn-010",
+      "jurisdiction": "toronto_on",
+      "expected_determination": "REQUIRED",
+      "payload": {"uuid": "sm8-job-010", "status": "Work Order", "job_address": "110 Example Rd, Toronto, ON", "job_description": "Basement finish with new plumbing rough-in"},
+      "project": {"family": "basement", "action": "finish_basement", "new_plumbing": true}
+    },
+    {
+      "id": "sm8-syn-011",
+      "jurisdiction": "mississauga_on",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
+      "payload": {"uuid": "sm8-job-011", "status": "Quote", "job_address": "111 Example Dr, Mississauga, ON", "job_description": "Deck at 605 mm height"},
+      "project": {"family": "deck_porch", "deck_height_mm": 605}
+    },
+    {
+      "id": "sm8-syn-012",
+      "jurisdiction": "vancouver_bc",
+      "expected_determination": "REQUIRED",
+      "payload": {"uuid": "sm8-job-012", "status": "Quote", "job_address": "112 Example St, Vancouver, BC", "job_description": "Create secondary suite"},
+      "project": {"family": "dwelling_change", "action": "add_secondary_suite", "dwelling_unit_change": true}
+    }
+  ]
+}
