@@ -12,7 +12,11 @@ This document intentionally separates three quantities:
 
 These quantities are not interchangeable. Unless explicitly sourced, percentages below are sensitivity variables, not forecasts.
 
-See also `docs/COVERED_MARKET_CALL_SENSITIVITY.md` for the currently covered-city issuance floor and paid-share analysis.
+See also:
+
+- `docs/COVERED_MARKET_CALL_SENSITIVITY.md` for the covered-city issuance floor and paid-share analysis;
+- `docs/REACHABLE_CONTRACTOR_DENOMINATOR.md` for the seven-city business-location floor;
+- `docs/TRADE_WORKLOAD_EVIDENCE.md` for direct-contractor versus platform-level cadence evidence.
 
 ## Two different commercial checkpoints
 
@@ -72,36 +76,58 @@ Conversely, total external preflights required to produce 10,000 paid calls are:
 
 The next external partner benchmarks therefore need to measure `address-aware share` and willingness to pay, not merely total workflow volume.
 
-## What 10k external calls/month could look like
+## Evidence-weighted shapes for 10k external calls/month
 
-Equivalent distribution shapes:
+The arithmetic shapes are still useful, but they no longer have equal evidentiary weight.
 
-| Distribution shape | Calls/customer/month | Customers/integrations needed | Total external calls/month |
-|---|---:|---:|---:|
-| High-volume contractor accounts | 80 | 125 | 10,000 |
-| Medium contractor accounts | 25 | 400 | 10,000 |
-| Property portfolios | 20 | 500 | 10,000 |
-| Strong SaaS integrations | 2,000 | 5 | 10,000 |
-| Mid-sized integrations | 500 | 20 | 10,000 |
-| One platform workflow | 10,000 | 1 | 10,000 |
+| Distribution shape | Calls/customer/month | Customers/integrations needed | Total external calls/month | Current evidence weight |
+|---|---:|---:|---:|---|
+| High-volume direct contractor accounts | 80 | 125 | 10,000 | **Aggressive / unproven as a repeatable Canadian distribution shape** |
+| Medium direct contractor accounts | 25 | 400 | 10,000 | Possible, but requires broad acquisition and cadence proof |
+| Property portfolios | 20 | 500 | 10,000 | Unproven until permit-sensitive work-order incidence is measured |
+| Strong SaaS / permit-ops integrations | 2,000 | 5 | 10,000 | **Primary commercial path** |
+| Mid-sized integrations / multi-account partners | 500 | 20 | 10,000 | **Primary commercial path** |
+| One platform workflow | 10,000 | 1 | 10,000 | **High-leverage path if bounded covered-geography volume exists** |
 
-The `80 calls/customer/month` row is comparable to a public iPermit Marketplace testimonial from a contractor reporting roughly 80+ permit jobs/month. It does not imply 125 such reachable contractors exist, nor that all of those jobs require a ProjectPermit preflight.
+Why the direct 80/month shape was downgraded:
 
-Source: https://marketplace.servicetitan.com/partner/ipermit
+- Vancouver 2024 public building-permit data shows corporate-like contractor tokens maxing at 47 permits/year across all building permits, 35/year for Addition/Alteration, and 20/year for residential renovation; the maximum observed single month was 8.
+- A public iPermit Marketplace testimonial does show one HVAC contractor sending roughly 80+ jobs/month to a permit-management vendor, proving that high-volume outliers exist.
+- One outlier does not establish that 125 similar reachable Canadian contractor accounts exist or that all 80 jobs/month would require a ProjectPermit applicability preflight.
+
+Therefore `125 × 80/month` remains arithmetic sensitivity only. It is not the base distribution plan.
+
+## Stable Toronto trade-workflow volume
+
+Toronto Open Data provides a much stronger signal for **aggregated workflow volume** than for individual-account cadence.
+
+Using Active + Cleared permit records, deduplicated by permit number + revision, Mechanical + Plumbing + Drain/Site Service issued revisions were:
+
+| Year | Combined trade permit revisions | Avg/month | Share of all issued revisions |
+|---:|---:|---:|---:|
+| 2023 | 20,085 | **1,673.8** | 53.20% |
+| 2024 | 20,013 | **1,667.8** | 53.44% |
+| 2025 | 20,733 | **1,727.8** | 54.13% |
+
+This is a persistent three-year band, not a one-year spike.
+
+Important boundary: permit revisions are workflow events, not unique projects or unique customers. Multiple Mechanical or Plumbing permits can be associated with a broader project. This evidence therefore supports the **platform/integration flow thesis**, not a 1:1 contractor-account model.
+
+A partner that aggregates a meaningful portion of Toronto's trade workflow could plausibly expose 500+ monthly candidate events. Whether those events occur early enough for ProjectPermit, and what fraction require applicability research, remains an external validation question.
 
 ## Covered-city activity floor
 
-A clean same-year first-party 2024 floor is currently established for Toronto, Ottawa, Mississauga, Laval and Vancouver:
+A clean same-year first-party 2024 floor previously established for Toronto, Ottawa, Mississauga, Laval and Vancouver is:
 
-- Toronto: 36,887 permits
-- Ottawa: 7,688 permits
-- Mississauga: 4,458 permits
-- Laval: 1,415 construction/improvement permits
-- Vancouver: 3,705 building-permit subtotal
+- Toronto: 36,887 permits in the earlier city issuance series;
+- Ottawa: 7,688 permits;
+- Mississauga: 4,458 permits;
+- Laval: 1,415 construction/improvement permits;
+- Vancouver: 3,705 building-permit subtotal.
 
 Combined: **54,153 issued permits/year = 4,512.75/month**.
 
-Vancouver source: https://vancouver.ca/files/cov/statement-of-building-permits-issued-dec-2025.pdf
+Do not silently merge that earlier issuance series with the Toronto Active+Cleared `permit revision` series above; they are useful for different questions and have different definitions.
 
 Gatineau and Longueuil remain excluded from this exact cumulative floor rather than being guessed.
 
@@ -116,48 +142,27 @@ If upstream candidate-preflight volume were:
 | 3.0x | 13,538 |
 | 5.0x | 22,564 |
 
-Thus the current geographic footprint does not need a huge top-of-funnel multiplier merely to reach the **10k external-call distribution checkpoint**. Roughly 2.22 candidate preflights per observed issued permit would be enough on this sensitivity model.
+The candidate/issued multiplier is not externally measured. It must not be treated as observed demand.
 
-But candidate/issued multiplier is not yet externally measured. It must not be treated as observed demand.
+## Reachable contractor denominator
 
-## ServiceTitan scale sensitivity — corrected
+Statistics Canada June 2026 CSD employer-location data gives a seven-city broad renovation-trade floor of **14,077 employer business locations** for NAICS 2361 + 2381 + 2382 + 2383.
 
-Current official ServiceTitan App Marketplace partner material states:
+Toronto + Ottawa + Mississauga account for about 70% of that observed broad employer-location floor. Province-level companion data also shows substantial without-employee contractor populations, especially in Ontario and British Columbia, but those provincial ratios must not be multiplied into city counts and presented as observed municipal SAM.
 
-- **12,000+ businesses served**;
-- **40M+ jobs completed annually**.
+This evidence says the business-account pool itself is not obviously too small. The harder variable is still **candidate permit-applicability events per account/integration per month**.
 
-Source: https://help.servicetitan.com/docs/servicetitan-overview-for-app-marketplace-partners
+## ServiceTitan scale sensitivity
 
-40M jobs/year is roughly 3.33M jobs/month. The relevant question is not whether total volume is large; it is what tiny fraction of those jobs creates an upstream permit-applicability decision that ProjectPermit can serve.
+Public ServiceTitan partner material has reported platform scale in the tens of millions of jobs annually. The relevant question is not total platform volume; it is what fraction of jobs creates an upstream permit-applicability decision in ProjectPermit's covered geographies.
 
-Because no credible public permit-decision incidence has been established, use a broad low-incidence sensitivity range rather than calling any value conservative:
-
-| Assumed permit-decision share | Candidate calls/year | Candidate calls/month |
-|---:|---:|---:|
-| 0.10% | 40,000 | ~3,333 |
-| 0.30% | 120,000 | ~10,000 |
-| 0.50% | 200,000 | ~16,667 |
-| 1.00% | 400,000 | ~33,333 |
-| 2.00% | 800,000 | ~66,667 |
-
-A whole-platform incidence of only about **0.30%** would theoretically expose 10k candidate calls/month.
-
-This does **not** mean ProjectPermit can currently capture them:
-
-- ServiceTitan volume is predominantly U.S.-oriented while ProjectPermit currently covers seven Canadian municipalities;
-- many jobs are in trades/scopes that may never require municipal permit research;
-- applicability may already be known before the relevant workflow point;
-- not every candidate call needs address/GIS data;
-- not every address-aware call will be paid.
-
-Therefore ServiceTitan is evidence that a sufficiently dense platform could support the call target, not evidence of current SAM.
+Use platform-wide incidence only as sensitivity, never as current SAM. The platform is predominantly U.S.-oriented while ProjectPermit currently covers seven Canadian municipalities, many jobs are low/no-permit, applicability may already be known, and not every address-aware call will be paid.
 
 Do not add U.S. municipalities speculatively. If a real partner identifies a bounded high-volume geography/workflow, that evidence should determine expansion priority.
 
 ## Jobber scale interpretation
 
-Jobber remains the strongest current commercial wedge because of Canadian relevance and the Request/Quote/Job + Property workflow.
+Jobber remains the strongest current Canadian commercial wedge because of its Request/Quote/Job + Property workflow.
 
 Platform-wide account/professional counts are useful only as a distribution ceiling. They are not candidate-call counts because Jobber spans many low/no-permit categories.
 
@@ -178,27 +183,11 @@ Large property-management platforms can provide very large unit denominators, bu
 
 Use the generic model:
 
-`units x maintenance/capex events per unit x permit-decision share x covered-geography share x address-aware share`
+`units × maintenance/capex events per unit × permit-decision share × covered-geography share × address-aware share`
 
 Every multiplier after `units` must be observed or explicitly labeled as a scenario.
 
 A platform with millions of units can still be a poor ProjectPermit market if only a tiny fraction of work orders have relevant construction scope or if applicability is already handled by vendors before the platform sees it.
-
-## Procore / construction-platform sensitivity
-
-Construction platforms provide potentially high-value project context and thousands of integration installs, but project count/customer and upstream permit-decision frequency are not public enough for a reliable denominator.
-
-Use partner-level thresholds instead:
-
-| Active integration accounts | External calls/account/month | Monthly external calls |
-|---:|---:|---:|
-| 100 | 10 | 1,000 |
-| 250 | 20 | 5,000 |
-| 500 | 20 | 10,000 |
-| 1,000 | 25 | 25,000 |
-| 2,000 | 25 | 50,000 |
-
-The key question is whether a permit decision exists **before** a full permit workflow begins.
 
 ## Partner-by-partner evidence questions
 
@@ -277,6 +266,8 @@ A city generating little paid usage but requiring several maintenance hours/mont
 - 1 partner/integration with 2,000+ candidate calls/month;
 - credible path to 10,000+ **external successful preflights/month**.
 
+The next search priority is explicitly a partner or integration capable of exposing **500+ bounded candidate events/month** in covered geographies, not another broad directory listing or another speculative adapter.
+
 ### Monetization proof
 
 Separately require evidence for:
@@ -302,12 +293,20 @@ A strong checkpoint is 10,000 paid address-aware calls/month, but lower volume c
 
 ProjectPermit does not need millions of customers. It needs a small number of integrations that generate repeated calls **and** a sufficiently large monetizable address-aware subset.
 
-The near-term model is therefore two-dimensional:
+Current public evidence now favors aggregation over direct-account volume:
+
+> **ordinary direct contractor:** useful for validation, weak as the main scale engine
+
+> **high-volume trade/permit operator:** plausible but must be specifically proven
+
+> **platform / multi-account integration:** current primary path to 10k monthly external calls
+
+The near-term model remains two-dimensional:
 
 > **distribution:** external successful preflights/month
 
 and
 
-> **economics:** paid address-aware calls/month x realized price - maintenance/infra cost
+> **economics:** paid address-aware calls/month × realized price − maintenance/infra cost
 
 Do not collapse those two metrics into one.
