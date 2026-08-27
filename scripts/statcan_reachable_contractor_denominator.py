@@ -28,14 +28,16 @@ from pathlib import Path
 TABLE_ID = "33101176"
 SOURCE_URL = f"https://www150.statcan.gc.ca/n1/en/tbl/csv/{TABLE_ID}-eng.zip"
 
+# Province/territory UID is embedded at the start of the 7-digit CSD UID,
+# which follows the DGUID's administrative-area schema A0005.
 TARGETS = {
-    "toronto_on": ("Toronto", "Ontario"),
-    "ottawa_on": ("Ottawa", "Ontario"),
-    "mississauga_on": ("Mississauga", "Ontario"),
-    "vancouver_bc": ("Vancouver", "British Columbia"),
-    "gatineau_qc": ("Gatineau", "Quebec"),
-    "laval_qc": ("Laval", "Quebec"),
-    "longueuil_qc": ("Longueuil", "Quebec"),
+    "toronto_on": ("Toronto", "35"),
+    "ottawa_on": ("Ottawa", "35"),
+    "mississauga_on": ("Mississauga", "35"),
+    "vancouver_bc": ("Vancouver", "59"),
+    "gatineau_qc": ("Gatineau", "24"),
+    "laval_qc": ("Laval", "24"),
+    "longueuil_qc": ("Longueuil", "24"),
 }
 
 LAYER_CODES = {
@@ -58,9 +60,11 @@ def _extract_code(label: str) -> str | None:
     return match.group(1) if match else None
 
 
-def _is_target_geo(geo: str, city: str, province: str) -> bool:
-    text = (geo or "").strip().lower()
-    return text.startswith(city.lower()) and province.lower() in text
+def _is_csd_dguid(dguid: str, province_uid: str) -> bool:
+    # DGUID structure: reference-year + geographic-area type/schema + UID.
+    # A0005 is the Census subdivision administrative-area schema. The CSD UID
+    # starts with the 2-digit province/territory UID.
+    return bool(re.fullmatch(rf"\d{{4}}A0005{re.escape(province_uid)}\d{{5}}", dguid or ""))
 
 
 def _download_rows() -> tuple[list[dict[str, str]], list[str]]:
@@ -93,7 +97,7 @@ def summarize() -> dict:
     naics_col = _find_column(fieldnames, "North American Industry Classification System")
     employment_col = _find_column(fieldnames, "Employment size")
     value_col = "VALUE" if "VALUE" in fieldnames else _find_column(fieldnames, "VALUE")
-    dguid_col = "DGUID" if "DGUID" in fieldnames else None
+    dguid_col = "DGUID" if "DGUID" in fieldnames else _find_column(fieldnames, "DGUID")
 
     employment_values = sorted({(row.get(employment_col) or "").strip() for row in rows})
     total_employment_values = [
@@ -110,52 +114,37 @@ def summarize() -> dict:
     total_employment = total_employment_values[0]
 
     results: dict[str, dict] = {}
-    diagnostics: dict[str, list[str]] = {}
+    diagnostics: dict[str, list[dict[str, str]]] = {}
 
-    for jurisdiction, (city, province) in TARGETS.items():
-        geo_candidates = sorted({
-            (row.get(geo_col) or "").strip()
-            for row in rows
-            if _is_target_geo(row.get(geo_col) or "", city, province)
-        })
-        diagnostics[jurisdiction] = geo_candidates
-        if not geo_candidates:
-            broad_matches = sorted({
-                (
-                    (row.get(geo_col) or "").strip(),
-                    (row.get(dguid_col) or "").strip() if dguid_col else "",
-                )
-                for row in rows
-                if city.lower() in (row.get(geo_col) or "").lower()
-            })
-            raise RuntimeError(
-                f"No StatCan geography matched {city}, {province}; "
-                f"city_name_matches={broad_matches[:50]}; "
-                f"geography_related_columns={[name for name in fieldnames if any(token in name.lower() for token in ('geo', 'dguid', 'census'))]}"
+    for jurisdiction, (city, province_uid) in TARGETS.items():
+        city_rows = {
+            (
+                (row.get(geo_col) or "").strip(),
+                (row.get(dguid_col) or "").strip(),
             )
+            for row in rows
+            if (row.get(geo_col) or "").strip().lower() == city.lower()
+        }
+        diagnostics[jurisdiction] = [
+            {"geo": geo, "dguid": dguid} for geo, dguid in sorted(city_rows)
+        ]
 
-        if len(geo_candidates) == 1:
-            chosen_geo = geo_candidates[0]
-        else:
-            csd = [g for g in geo_candidates if "census subdivision" in g.lower()]
-            if len(csd) == 1:
-                chosen_geo = csd[0]
-            else:
-                exactish = [g for g in geo_candidates if g.lower() in {
-                    f"{city}, {province}".lower(),
-                    f"{city} (city), {province}".lower(),
-                }]
-                if len(exactish) == 1:
-                    chosen_geo = exactish[0]
-                else:
-                    raise RuntimeError(
-                        f"Ambiguous geography for {jurisdiction}: {geo_candidates}"
-                    )
+        csd_candidates = [
+            (geo, dguid)
+            for geo, dguid in sorted(city_rows)
+            if _is_csd_dguid(dguid, province_uid)
+        ]
+        if len(csd_candidates) != 1:
+            raise RuntimeError(
+                f"Could not uniquely identify CSD for {jurisdiction}; "
+                f"city_rows={sorted(city_rows)}; csd_candidates={csd_candidates}"
+            )
+        chosen_geo, chosen_dguid = csd_candidates[0]
 
         by_code: dict[str, float] = {}
         labels: dict[str, str] = {}
         for row in rows:
-            if (row.get(geo_col) or "").strip() != chosen_geo:
+            if (row.get(dguid_col) or "").strip() != chosen_dguid:
                 continue
             if (row.get(employment_col) or "").strip() != total_employment:
                 continue
@@ -175,9 +164,17 @@ def summarize() -> dict:
 
         missing_codes = sorted({code for codes in LAYER_CODES.values() for code in codes} - set(by_code))
         if missing_codes:
+            nearby_labels = sorted({
+                (row.get(naics_col) or "").strip()
+                for row in rows
+                if (row.get(dguid_col) or "").strip() == chosen_dguid
+                and (row.get(employment_col) or "").strip() == total_employment
+                and any(token in (row.get(naics_col) or "").lower() for token in ("construction", "residential", "building equipment", "foundation"))
+            })
             raise RuntimeError(
                 f"{jurisdiction}: missing required NAICS codes {missing_codes}; "
-                f"available nearby={[c for c in sorted(by_code) if c.startswith(('23','236','238'))][:80]}"
+                f"parsed_nearby_codes={[c for c in sorted(by_code) if c.startswith(('23','236','238'))][:80]}; "
+                f"raw_nearby_labels={nearby_labels[:80]}"
             )
 
         layers = {
@@ -186,6 +183,7 @@ def summarize() -> dict:
         }
         results[jurisdiction] = {
             "geo": chosen_geo,
+            "dguid": chosen_dguid,
             "layers": layers,
             "component_naics": {
                 code: {"label": labels[code], "employer_locations": int(by_code[code])}
