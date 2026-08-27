@@ -1,0 +1,82 @@
+{
+  "dataset": "City of Mississauga Building Report - Detail, August 2026",
+  "dataset_url": "https://www.mississauga.ca/wp-content/uploads/2026/08/19093859/July-2026-Detailed-Building-Permit-Report.pdf",
+  "captured_at": "2026-08-27",
+  "source_note": "The City building-reports page currently links this file under the July 2026 detail-report label, while the PDF itself is headed August 2026 and shows run date 18 AUG 2026. Cases below follow the PDF content, not the link label.",
+  "purpose": "Technical false-negative backtest only. These permit-positive public records are not market-validation E3 evidence.",
+  "privacy_note": "Owner names and civic addresses from the public report are intentionally omitted. Permit numbers and summarized scopes remain for reproducibility against the official City report.",
+  "cases": [
+    {
+      "case_id": "mis-public-001",
+      "permit_number": "26 1890",
+      "scope_summary": "Interior alteration of office/shipping office with structural reinforcement for a new rooftop unit.",
+      "facts": {
+        "jurisdiction": "mississauga_on",
+        "project": {
+          "family": "interior_renovation",
+          "structural_change": true
+        }
+      }
+    },
+    {
+      "case_id": "mis-public-002",
+      "permit_number": "26 2377",
+      "scope_summary": "Structural reinforcement of warehouse concrete slab for a crane, interior alteration of office area and a new exterior door.",
+      "facts": {
+        "jurisdiction": "mississauga_on",
+        "project": {
+          "family": "interior_renovation",
+          "structural_change": true
+        }
+      }
+    },
+    {
+      "case_id": "mis-public-003",
+      "permit_number": "25 10585",
+      "scope_summary": "New interior second-floor addition and change of use for a commercial studio project.",
+      "facts": {
+        "jurisdiction": "mississauga_on",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "mis-public-004",
+      "permit_number": "24 805",
+      "scope_summary": "Interior alterations and a new interior second floor in an industrial building.",
+      "facts": {
+        "jurisdiction": "mississauga_on",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "mis-public-005",
+      "permit_number": "26 1889",
+      "scope_summary": "Demise one commercial unit into two units and complete a tenant fit-up in one of them.",
+      "facts": {
+        "jurisdiction": "mississauga_on",
+        "project": {
+          "family": "interior_renovation",
+          "action": "demise_unit_into_two"
+        }
+      }
+    },
+    {
+      "case_id": "mis-public-006",
+      "permit_number": "26 2052",
+      "scope_summary": "Interior alterations that merge two existing commercial units.",
+      "facts": {
+        "jurisdiction": "mississauga_on",
+        "project": {
+          "family": "interior_renovation",
+          "action": "merge_units"
+        }
+      }
+    }
+  ]
+}
