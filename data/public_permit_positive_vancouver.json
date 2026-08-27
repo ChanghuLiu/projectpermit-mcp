@@ -1,0 +1,150 @@
+{
+  "dataset": "City of Vancouver Issued building permits",
+  "dataset_url": "https://opendata.vancouver.ca/explore/dataset/issued-building-permits/",
+  "captured_at": "2026-08-27",
+  "purpose": "Technical false-negative backtest only. These permit-positive public records are not market-validation E3 evidence.",
+  "privacy_note": "Residential addresses, applicants, contractors, emails and phone numbers are intentionally omitted. Permit numbers and summarized scopes remain for reproducibility against the public City dataset.",
+  "cases": [
+    {
+      "case_id": "van-public-001",
+      "permit_number": "BP-2026-01587",
+      "issue_date": "2026-06-17",
+      "scope_summary": "Residential alteration: add walls to enclose a study as a bedroom, enlarge an existing window, replace/add doors and relocate laundry.",
+      "facts": {
+        "jurisdiction": "vancouver_bc",
+        "project": {
+          "family": "interior_renovation",
+          "modifies_walls": true,
+          "new_bedroom": true,
+          "new_opening": true
+        }
+      }
+    },
+    {
+      "case_id": "van-public-002",
+      "permit_number": "DB-2026-01136",
+      "issue_date": "2026-06-12",
+      "scope_summary": "Convert a single detached house to a house with secondary suite, validate rear-deck covers and a small floor-area addition.",
+      "facts": {
+        "jurisdiction": "vancouver_bc",
+        "project": {
+          "family": "dwelling_change",
+          "action": "add_secondary_suite",
+          "dwelling_unit_change": true,
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "van-public-003",
+      "permit_number": "BP-2026-01317",
+      "issue_date": "2026-06-09",
+      "scope_summary": "Construct a detached two-car garage at an existing single detached house.",
+      "facts": {
+        "jurisdiction": "vancouver_bc",
+        "project": {
+          "family": "accessory_structure",
+          "accessory_structure_kind": "garage",
+          "accessory_detached": true,
+          "accessory_permanent": true
+        }
+      }
+    },
+    {
+      "case_id": "van-public-004",
+      "permit_number": "DB-2026-01577",
+      "issue_date": "2026-06-11",
+      "scope_summary": "Exterior alterations at a detached house including a cover over the existing rear deck, front-porch work, doors, windows and siding.",
+      "facts": {
+        "jurisdiction": "vancouver_bc",
+        "project": {
+          "family": "deck_porch",
+          "action": "alter_deck",
+          "covered": true,
+          "connected_to_building": true
+        }
+      }
+    },
+    {
+      "case_id": "van-public-005",
+      "permit_number": "BP-2018-06499",
+      "issue_date": "2019-02-20",
+      "scope_summary": "Commercial tenant improvement: remove and construct interior partitions, glazing and doors; renovate staff kitchen; electrical and sprinkler work.",
+      "facts": {
+        "jurisdiction": "vancouver_bc",
+        "project": {
+          "family": "interior_renovation",
+          "modifies_walls": true
+        }
+      }
+    },
+    {
+      "case_id": "van-public-006",
+      "permit_number": "BP-2019-01274",
+      "issue_date": "2019-04-11",
+      "scope_summary": "Health-care office tenant improvement: remove partitions for a new layout and add new walls, plumbing, electrical and millwork.",
+      "facts": {
+        "jurisdiction": "vancouver_bc",
+        "project": {
+          "family": "interior_renovation",
+          "modifies_walls": true,
+          "plumbing_change": true
+        }
+      }
+    },
+    {
+      "case_id": "van-public-007",
+      "permit_number": "BP-2019-01192",
+      "issue_date": "2019-04-17",
+      "scope_summary": "Combine two office units by removing part of a demising wall and adding a new glass slider, plus electrical and sprinkler work.",
+      "facts": {
+        "jurisdiction": "vancouver_bc",
+        "project": {
+          "family": "interior_renovation",
+          "modifies_walls": true
+        }
+      }
+    },
+    {
+      "case_id": "van-public-008",
+      "permit_number": "DB-2025-04622",
+      "issue_date": "2026-06-16",
+      "scope_summary": "Detached-house exterior/interior alteration with a rear floor-area addition, new dormer, secondary suite, covered porch, deck, roofing/cladding and relocated stairs.",
+      "facts": {
+        "jurisdiction": "vancouver_bc",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true,
+          "dwelling_unit_change": true,
+          "structural_change": true
+        }
+      }
+    },
+    {
+      "case_id": "van-public-009",
+      "permit_number": "BP-2024-00058",
+      "issue_date": "2024-01-10",
+      "scope_summary": "Residential interior alteration limited in the public description to removal of interior finishes.",
+      "facts": {
+        "jurisdiction": "vancouver_bc",
+        "project": {
+          "family": "interior_renovation",
+          "action": "remove_interior_finishes"
+        }
+      }
+    },
+    {
+      "case_id": "van-public-010",
+      "permit_number": "BP-2026-01739",
+      "issue_date": "2026-06-18",
+      "scope_summary": "Interior alterations to improve an existing single detached house; public description does not enumerate the detailed alteration triggers.",
+      "facts": {
+        "jurisdiction": "vancouver_bc",
+        "project": {
+          "family": "interior_renovation",
+          "action": "residential_improvements_unspecified"
+        }
+      }
+    }
+  ]
+}
