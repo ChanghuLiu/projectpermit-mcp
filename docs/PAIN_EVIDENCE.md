@@ -6,6 +6,26 @@ This document separates **observed evidence** from assumptions. Community anecdo
 
 ## Strongest observed signals
 
+### 0. CHBA Spring 2026 renovator panel: permit processes are a measurable pre-renovation cost
+
+The Canadian Home Builders' Association Spring 2026 Renovation Market Index is based on a panel of renovation-focused member businesses. CHBA explicitly describes **pre-renovation processes and delays as a hard-to-quantify cost to renovators** and reports average building-permit application-to-approval time of about **9 weeks in Ontario** and **18 weeks in British Columbia**. Renovator comments indicated that timelines have gradually lengthened.
+
+Source: https://www.chba.ca/rmi/
+
+Why this matters:
+
+- this is current industry-panel evidence rather than a single anecdote;
+- it confirms that municipal permitting/regulatory process is materially present in professional renovation workflows in two of ProjectPermit's key provinces;
+- long downstream lead time increases the value of discovering permit/planning obligations early enough to account for them in quoting and scheduling.
+
+Critical boundary:
+
+- the published RMI statistic measures **application-to-approval delay**, not time spent deciding whether a permit is required;
+- it does not publish the share of renovation scopes that need a permit, the share where applicability is initially uncertain, or how often a permit decision changes a quote/scope/schedule;
+- therefore it supports pain intensity but **must not be converted into ProjectPermit call-volume/TAM or E3/E4 evidence**.
+
+An evidence request was sent to the CHBA RMI team asking whether aggregate data exists for the missing upstream measures.
+
 ### 1. ServiceTitan + iPermit: one contractor reports 80+ permit jobs/month
 
 ServiceTitan's public iPermit Marketplace listing includes a contractor testimonial stating that the company sends about **80 or more jobs per month** to iPermit across residential change-outs, light commercial and other work.
@@ -97,4 +117,4 @@ The evidence above is sufficient to justify conversations, but not to prove a bu
 - whether `$0.20-$0.50` per address-aware call is acceptable;
 - whether one integration can realistically produce 1k, 10k or 100k monthly calls.
 
-Until those are measured, community anecdotes should not be converted into TAM claims.
+Until those are measured, industry-panel delay evidence and community anecdotes should not be converted into ProjectPermit TAM claims.
