@@ -20,12 +20,12 @@ python scripts/run_partner_e3_cases.py path/to/partner_cases.csv
 
 This writes `partner_cases.evaluated.csv` by default and refuses to overwrite the source file.
 
-### Free hosted MCP — no platform integration required
+### Free hosted HTTP preview — no platform integration required
 
-A partner can benchmark historical cases against the live developer-validation endpoint without an API key, wallet, Jobber/ServiceM8 adapter, or other platform integration:
+A partner can benchmark historical cases against the live developer-validation endpoint without an API key, wallet, MCP client, Jobber/ServiceM8 adapter, or other platform integration:
 
 ```bash
-pip install -e '.[mcp]'
+pip install -e .
 python scripts/run_remote_historical_benchmark.py path/to/partner_cases.csv \
   --output path/to/partner_cases.evaluated.csv \
   --client-tag partner-pilot-01
@@ -33,7 +33,7 @@ python scripts/run_remote_historical_benchmark.py path/to/partner_cases.csv \
 
 Use a stable non-PII `--client-tag`. The server hashes it before telemetry is written; do not use a customer/person name, email, civic address, account id, or other identifying value.
 
-The hosted runner intentionally sends `resolve_address=false`. Historical benchmark CSVs must not contain exact civic addresses. If a rule depends on address-derived facts, resolve them in the partner's authorized workflow and retain only the de-identified facts needed to reproduce the decision in `property_facts_json`.
+The hosted runner uses the free HTTP route `POST /v1/preview-project-requirements`. That route's schema does not accept `address` or `resolve_address`, so historical benchmark files cannot accidentally trigger a civic-address/GIS lookup. If a rule depends on address-derived facts, resolve them in the partner's authorized workflow and retain only the de-identified facts needed to reproduce the decision in `property_facts_json`.
 
 Both evaluation paths fill deterministic ProjectPermit result fields such as:
 
