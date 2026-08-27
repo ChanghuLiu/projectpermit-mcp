@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'market_research/cross_jurisdiction_scope_matrix.py'
+      - 'market_research/cross_jurisdiction_strict_audit.py'
       - '.github/workflows/cross-jurisdiction-scope-matrix.yml'
 
 permissions:
@@ -22,8 +23,12 @@ jobs:
         run: pip install -e .
       - name: Compare identical scopes across supported jurisdictions
         run: python market_research/cross_jurisdiction_scope_matrix.py --output cross_jurisdiction_scope_matrix.json
+      - name: Apply strict REQUIRED vs LIKELY_NOT_REQUIRED audit
+        run: python market_research/cross_jurisdiction_strict_audit.py --output cross_jurisdiction_strict_audit.json
       - uses: actions/upload-artifact@v4
         with:
           name: cross-jurisdiction-scope-matrix
-          path: cross_jurisdiction_scope_matrix.json
+          path: |
+            cross_jurisdiction_scope_matrix.json
+            cross_jurisdiction_strict_audit.json
           if-no-files-found: error
