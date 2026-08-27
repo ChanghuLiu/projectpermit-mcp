@@ -1,0 +1,27 @@
+name: Vancouver Market Workload
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'market_research/vancouver_contractor_permit_workload.py'
+      - '.github/workflows/vancouver-market-workload.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  workload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Aggregate public permit workload without emitting identities
+        run: python market_research/vancouver_contractor_permit_workload.py --output vancouver_contractor_permit_workload_2024.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vancouver-contractor-permit-workload-2024
+          path: vancouver_contractor_permit_workload_2024.json
+          if-no-files-found: error
