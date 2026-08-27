@@ -1,0 +1,29 @@
+name: Cross Jurisdiction Scope Matrix
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'market_research/cross_jurisdiction_scope_matrix.py'
+      - '.github/workflows/cross-jurisdiction-scope-matrix.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  scope-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install ProjectPermit
+        run: pip install -e .
+      - name: Compare identical scopes across supported jurisdictions
+        run: python market_research/cross_jurisdiction_scope_matrix.py --output cross_jurisdiction_scope_matrix.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-jurisdiction-scope-matrix
+          path: cross_jurisdiction_scope_matrix.json
+          if-no-files-found: error
