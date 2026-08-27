@@ -5,7 +5,6 @@ on:
   push:
     paths:
       - 'market_research/vancouver_contractor_permit_workload.py'
-      - 'market_research/vancouver_foi_subtrade_schema.py'
       - '.github/workflows/vancouver-market-workload.yml'
 
 permissions:
@@ -25,37 +24,4 @@ jobs:
         with:
           name: vancouver-contractor-permit-workload-2024
           path: vancouver_contractor_permit_workload_2024.json
-          if-no-files-found: error
-
-  foi-subtrade-schema:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - run: pip install 'openpyxl>=3.1,<4'
-      - name: Fetch official Vancouver FOI workbook
-        run: |
-          curl --fail --location --retry 2 \
-            --user-agent 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/151 Safari/537.36' \
-            --referer 'https://vancouver.ca/your-government/freedom-of-information.aspx' \
-            --output /tmp/vancouver-foi.xlsx \
-            --write-out 'http_code=%{http_code}\ncontent_type=%{content_type}\nsize_download=%{size_download}\n' \
-            'https://vancouver.ca/files/cov/2024-671-release2.XLSX'
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('/tmp/vancouver-foi.xlsx')
-          data = p.read_bytes()
-          print(f'file_size={len(data)}')
-          print(f'zip_magic={data[:4] == bytes.fromhex("504b0304")}')
-          if not data.startswith(bytes.fromhex('504b0304')):
-              raise SystemExit('Downloaded payload is not an XLSX/ZIP file')
-          PY
-      - name: Probe only workbook sheets and column headers
-        run: python market_research/vancouver_foi_subtrade_schema.py --input-file /tmp/vancouver-foi.xlsx --output vancouver_foi_schema.json
-      - uses: actions/upload-artifact@v4
-        with:
-          name: vancouver-foi-subtrade-schema
-          path: vancouver_foi_schema.json
           if-no-files-found: error
