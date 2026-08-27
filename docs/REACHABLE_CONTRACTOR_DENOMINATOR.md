@@ -6,7 +6,7 @@ Purpose: estimate a defensible **covered-geography business denominator** for Pr
 
 ## Primary source
 
-Use Statistics Canada's latest current table:
+Statistics Canada:
 
 **Table 33-10-1176-01 — Canadian Business Counts, with employees, census metropolitan areas and census subdivisions, June 2026**
 
@@ -15,67 +15,97 @@ Release date: 2026-08-14.
 Source page:
 https://www150.statcan.gc.ca/n1/en/type/data?freq=11&geoname=S0503%2CA0005
 
-Statistics Canada documents that the Business Counts table provides location counts with employees by employment-size range, NAICS and both census metropolitan area (CMA) and census subdivision (CSD).
+Reproducible extractor:
 
-## Geography rule
+```bash
+python scripts/statcan_reachable_contractor_denominator.py
+```
 
-ProjectPermit rules are municipal, so the primary denominator must use **census subdivision**, not the full CMA.
+The dedicated GitHub Actions workflow downloads the current official StatCan CSV ZIP and fails closed if geography, employment-size or NAICS parsing becomes ambiguous.
 
-Use CSD rows corresponding as closely as possible to the seven currently supported municipalities:
+## Geography rule and verification
 
-- Gatineau, Quebec
-- Ottawa, Ontario
-- Toronto, Ontario
-- Mississauga, Ontario
-- Laval, Quebec
-- Longueuil, Quebec
-- Vancouver, British Columbia
+ProjectPermit rules are municipal, so the denominator uses **census subdivision (CSD)**, not the full census metropolitan area (CMA).
 
-Do not use the Ottawa-Gatineau, Toronto, Montreal or Vancouver CMA totals as the primary covered denominator because those geographies contain municipalities ProjectPermit does not currently support.
+The StatCan CSV can contain the same `GEO` label for a municipality and its CMA. For example, `Toronto` appears with both:
 
-CMA totals may be retained as an expansion ceiling only.
+- `2021A00053520005` — Toronto CSD;
+- `2021S0503535` — Toronto CMA.
 
-## Industry scope
+The extractor therefore selects the administrative-area CSD DGUID schema `A0005` plus the expected province UID rather than relying on name matching alone.
 
-Do not use all NAICS 23 Construction businesses as the main SAM denominator. That would include many civil/infrastructure/commercial activities unrelated to the current residential/light-building rule families.
+No Ottawa-Gatineau, Toronto, Montreal or Vancouver CMA total is substituted for a supported municipality.
 
-Build three nested denominators instead.
+## Observed June 2026 employer-location denominator
 
-### A. Narrow residential-builder floor
+These are **employer business locations**, not platform users and not estimates.
 
-Start with:
+Industry layers:
 
-- NAICS 23611 — Residential building construction
+- **A — residential building:** NAICS `2361`, Residential building construction.
+- **B core — permit-sensitive building trades:** `2361 + 2381 + 2382` (residential building + foundation/structure/exterior + building equipment contractors).
+- **B broad — renovation-trade working pool:** B core + `2383` Building finishing contractors.
+- **C — all construction ceiling:** NAICS `23`; never use this as the main SAM.
 
-This is a conservative account pool with strong scope overlap but misses specialty contractors who independently create permit-sensitive jobs.
+| Supported municipality | A residential | B core | B broad | C all construction |
+|---|---:|---:|---:|---:|
+| Toronto | 1,944 | 4,239 | 5,443 | 6,906 |
+| Ottawa | 756 | 1,821 | 2,389 | 2,970 |
+| Mississauga | 567 | 1,524 | 2,025 | 2,539 |
+| Vancouver | 729 | 1,253 | 1,643 | 2,185 |
+| Laval | 493 | 1,131 | 1,378 | 1,791 |
+| Gatineau | 222 | 475 | 605 | 771 |
+| Longueuil | 213 | 445 | 594 | 715 |
+| **Seven-city total** | **4,924** | **10,888** | **14,077** | **17,877** |
 
-### B. Permit-sensitive trade pool
+The corresponding CSD DGUIDs are:
 
-Add specialty-trade classes where ProjectPermit's existing families plausibly appear, such as:
+- Toronto `2021A00053520005`
+- Ottawa `2021A00053506008`
+- Mississauga `2021A00053521005`
+- Vancouver `2021A00055915022`
+- Laval `2021A00052465005`
+- Gatineau `2021A00052481017`
+- Longueuil `2021A00052458227`
 
-- structural/foundation/framing contractors;
-- electrical contractors;
-- plumbing/HVAC contractors;
-- glass/window/door contractors;
-- other building-equipment / building-envelope trades where municipal permits can be relevant.
+## What the 10k-call account shapes now imply
 
-Exact 6-digit NAICS membership must be documented before summing; do not silently include all specialty trades.
+Using the observed seven-city employer-location pools:
 
-### C. Broad construction ceiling
+| Account target | A residential penetration | B core penetration | B broad penetration | Calls/account/month needed for 10k external calls |
+|---:|---:|---:|---:|---:|
+| 125 | 2.539% | 1.148% | **0.888%** | 80 |
+| 400 | 8.123% | 3.674% | **2.842%** | 25 |
+| 500 | 10.154% | 4.592% | **3.552%** | 20 |
 
-Use NAICS 23 only as an upper bound.
+This is a materially better result than an ungrounded national-platform denominator: **125 high-volume accounts would be less than 1% of the observed broad employer-location pool**.
 
-The commercial model should report A / B / C separately rather than choosing the largest number.
+But the difficult variable is still cadence. The table does not say that 125 of those locations each have 80 unresolved permit decisions per month. That must be established through E2/E4 workflow evidence.
+
+## Geographic concentration
+
+The broad employer pool is not evenly distributed:
+
+- Toronto + Ottawa + Mississauga: **9,857 / 14,077 ≈ 70.0%**
+- Vancouver: **1,643 / 14,077 ≈ 11.7%**
+- Laval + Gatineau + Longueuil: **2,577 / 14,077 ≈ 18.3%**
+
+Validation outreach should therefore be weighted toward Ontario rather than spread equally across all seven municipalities. Vancouver is the next distinct regional test; the three Quebec municipalities remain a meaningful third cohort.
+
+This is an evidence-acquisition priority, not a claim that Ontario contractors have a higher permit-decision rate.
 
 ## Employer-location limitation
 
-Table 33-10-1176-01 is explicitly **with employees**. It therefore misses businesses without employees / many owner-operators.
+Table 33-10-1176-01 is explicitly **with employees**. It misses businesses without employees / many owner-operators.
 
-For ProjectPermit this means:
+Statistics Canada's June 2026 companion table for businesses **without employees** is available at Canada/province level, but the current public CSD/CMA table is with-employees only. Therefore:
 
-- the CSD employer-location count is a defensible **floor**, not the full contractor universe;
-- do not inflate the CSD count using province-wide non-employer ratios unless the adjustment is clearly labeled as a scenario;
-- platform-reported 'pros' counts must not be added to Statistics Canada business locations because the units are different and may overlap.
+- the 4,924 / 10,888 / 14,077 counts are a defensible municipal **employer-location floor**;
+- do not apply a province-wide non-employer ratio to a city and present it as an observed city count;
+- if a provincial non-employer ratio is used later, label it explicitly as sensitivity analysis only;
+- platform-reported `pros` counts must not be added to StatCan business locations because units differ and may overlap.
+
+Also note that a **business location is not necessarily a unique company/account**. A multi-location company can contribute more than one location, while excluding non-employers moves the denominator in the opposite direction. This dataset is therefore a defensible market-structure proxy, not an exact count of potential paying accounts.
 
 ## Conversion from business denominator to call denominator
 
@@ -89,7 +119,7 @@ Then separately estimate monetization:
 
 `external preflights × address-aware share × paid conversion × realized price`
 
-The important unknowns are therefore not only number of contractors, but:
+The important unknowns remain:
 
 - jobs/month/business;
 - share of jobs in ProjectPermit's 8 current families;
@@ -98,27 +128,11 @@ The important unknowns are therefore not only number of contractors, but:
 - adoption/integration penetration;
 - realized price.
 
-## Why this matters for the 125 / 400 account scenarios
-
-The existing call-threshold model contains examples such as:
-
-- 125 high-volume accounts × 80 calls/month = 10,000 external calls/month;
-- 400 medium accounts × 25 calls/month = 10,000 external calls/month.
-
-The Statistics Canada CSD extraction will let us calculate what fraction of the actual covered employer-location pool those account counts represent.
-
-Examples of the question to answer after extraction:
-
-- If the permit-sensitive employer pool is 20,000 businesses, 125 accounts is only 0.625% penetration.
-- If it is 2,000 businesses, 125 accounts is 6.25% penetration and direct acquisition becomes much harder.
-
-These examples are arithmetic illustrations only; the actual denominator still needs to be extracted from the current table.
-
 ## Evidence boundary
 
 Business Counts is **market structure evidence**, not E3/E4/E5 validation.
 
-It can improve TAM/SAM discipline, but it does not prove:
+It improves SAM discipline but does not prove:
 
 - a repeated permit-preflight workflow;
 - ProjectPermit accuracy on representative historical cases;
