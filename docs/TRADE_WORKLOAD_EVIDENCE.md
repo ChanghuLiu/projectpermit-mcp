@@ -57,6 +57,30 @@ Toronto Open Data documentation notes that multiple Mechanical and Plumbing perm
 
 Interpretation: Toronto provides strong evidence that trade-permit workflow volume is large and persistent at the **city/platform level**, even though Vancouver building-permit data suggests ordinary direct contractor cadence is much lower than 80/month.
 
+## Mississauga 2023–2025 — visible sub-trade floor
+
+Source: City of Mississauga official `Issued_Building_Permits` ArcGIS FeatureServer. The research script uses server-side grouped statistics on `APP_DETAIL` and `ISSUE_DATE`; it does not request row-level addresses, descriptions, applicant or contractor fields.
+
+Focus categories are Plumbing Only + Heating Only + Mechanical Only + Drain Only + Site Servicing.
+
+| Year | Total issued records | Visible trade-focus records | Avg/month | Share of all issued records |
+|---:|---:|---:|---:|---:|
+| 2023 | 4,333 | **496** | **41.3** | 11.45% |
+| 2024 | 4,409 | **709** | **59.1** | 16.08% |
+| 2025 | 4,225 | **612** | **51.0** | 14.49% |
+
+2024 focus detail:
+
+- Plumbing Only: **633**
+- Site Servicing: **67**
+- Heating Only: **7**
+- Drain Only: **2**
+- Mechanical Only: **0**
+
+Important limitation: most Mississauga records have blank `APP_DETAIL`, and some trade work can be embedded in broader building permits. Therefore 41–59/month is a **visible application-type floor**, not a complete Mississauga mechanical/plumbing universe.
+
+Even with that limitation, the comparison reinforces that the cleanest measured high-density trade-event pool is Toronto rather than an even distribution across covered Ontario municipalities.
+
 ## External high-volume example
 
 ServiceTitan Marketplace's iPermit listing includes a testimonial from ACTION Air Conditioning / Heating / Solar stating that it sends about **80 or more jobs per month** to iPermit. iPermit also states that it has pulled more than 1 million permits over its history.
@@ -76,7 +100,8 @@ Accordingly:
 - keep `125 × 80/month` only as an **aggressive direct-account scenario**, not a base case;
 - keep `20 integrations × 500/month`, `5 × 2,000/month`, and a platform workflow as primary distribution shapes;
 - prioritize E2/E3/E4 evidence from integrations, permit-operations vendors, consultants, and high-volume HVAC/plumbing operators over ordinary one-city general contractors;
-- use Toronto/Ontario first for workflow validation because both contractor employer density and observed trade-permit event density are highest among the currently studied covered geographies;
+- make **Toronto/GTA estimate/quote workflows** the first bounded-volume validation target; Toronto's measured issued trade-event density is much higher than the visible Mississauga sub-trade floor;
+- do not fabricate an Ottawa trade denominator: its public construction/demolition/pool dataset is not equivalent to Toronto's Mechanical/Plumbing permit-type series;
 - do not expand municipalities merely to increase denominator size until a partner/workflow identifies the missing geography.
 
 ## Next measurement
