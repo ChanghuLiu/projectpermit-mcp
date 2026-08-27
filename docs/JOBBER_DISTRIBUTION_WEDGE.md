@@ -2,84 +2,129 @@
 
 Updated: 2026-08-27
 
-## Why Jobber moved to the top tier
+## Why Jobber is the top current distribution experiment
 
-Jobber is a stronger distribution surface for ProjectPermit than many generic construction platforms because its core workflow already contains the three things a permit preflight needs:
+Jobber's Request / Quote / Job workflow can contain the three inputs a permit preflight needs before work is committed:
 
-1. a **property address**;
-2. a **request / quote / job scope**;
-3. a repeated decision point before work is scheduled or committed.
+1. property address;
+2. title / line-item scope;
+3. a repeated decision point around request, quote or job creation.
 
-It also has a public GraphQL API, OAuth 2.0, webhooks, custom fields, a developer test-account path, and an App Marketplace review process.
+Current official Jobber docs expose a GraphQL API, OAuth 2.0, developer test accounts, webhooks, custom fields and an App Marketplace. The Developer Center says Jobber serves 300,000+ Home Service Pros; treat that as a distribution indicator, not an independent-business TAM denominator.
 
-Current official Jobber material says more than 400,000 home-service professionals use the product across 50+ industries. The Developer Center currently describes 300,000+ Home Service Pros/customers as the distribution audience for Marketplace apps. These numbers are user/pro distribution indicators, not a count of independent businesses, so they must not be used directly as TAM accounts.
+## Preferred product wedge
 
-## Relevant official API objects
+`Jobber Request/Quote -> property + title/line items -> structured ProjectPermit facts -> permit preflight -> proposed routing metadata`
 
-The current Developer Center exposes:
+Quote-time remains the preferred first surface because permit uncertainty can affect price, schedule, fee assumptions and escalation before the customer accepts the work.
 
-- `Request`: title, line items, property, status, source;
-- `Quote`: title, line items, property, custom fields, status;
-- `Job`: title, line items, property, custom fields, linked request/quote;
-- `Property`: structured address, client, requests, quotes, jobs;
-- `Account`: country code and industry.
+ProjectPermit must not automatically block work. It should return deterministic evidence plus explicit uncertainty.
 
-This is enough data in principle to construct a ProjectPermit input without asking the contractor to retype the address or project scope.
+## Integration feasibility verified from official docs
 
-Jobber also supports app-configured custom fields on properties, quotes, jobs and other objects. A plausible integration could write back fields such as:
+Verified 2026-08-27:
 
-- `Permit preflight`: `REQUIRED / LIKELY_NOT_REQUIRED / CONFIRM`;
-- `Permit confidence`;
-- `Permit evidence URL` or compact evidence reference;
-- `Last checked at`;
-- `ProjectPermit rule version`.
+- GraphQL endpoint: `https://api.getjobber.com/api/graphql`
+- OAuth 2.0 Bearer authorization
+- required `X-JOBBER-GRAPHQL-VERSION` header
+- latest active public GraphQL version: `2025-04-16`
+- 90-day developer testing account path
+- Draft app / GraphiQL testing-token path
+- custom integrations can remain Draft for up to 5 paying Jobber accounts; more than 5 requires approval
+- Request / Quote / Job expose property + scope-related fields in the public object overview
+- custom fields can be app-configured when the relevant scopes are approved
+- webhooks are supported; Marketplace apps must handle disconnects
+- query-cost rate limiting makes shallow paginated queries preferable
 
-## Candidate workflow
+## Important customer-testing constraint
 
-Preferred wedge:
+Jobber's current **Testing Your Application** guidance says that, for an app intended for Marketplace publication, developers should **not engage existing Jobber customers to test the application before first coordinating with a Jobber developer representative**.
 
-`Jobber Request/Quote -> extract address + line items/title -> ProjectPermit -> write preflight result to Quote/Job custom fields -> contractor decides whether to escalate into a full permit workflow`
+Therefore:
 
-Potential trigger points:
+- do **not** connect the prepared Canadian operator cohort to ProjectPermit yet;
+- do **not** treat the `up to 5 paying accounts in Draft` rule as permission to skip Jobber's Marketplace-testing coordination guidance;
+- internal Developer Center / test-account work continues now without waiting for support;
+- the API-support email already sent remains useful for customer-pilot and Marketplace coordination, but is **not** a sandbox-development gate.
 
-1. **Request created** — earliest lead/intake check;
-2. **Quote created or edited** — probably best first product surface because scope is more structured and money is about to be committed;
-3. **Job created** — useful fallback when quote data is absent;
-4. **Webhook event** — asynchronous re-check when a relevant work object changes.
+See `docs/JOBBER_DEVELOPER_BOOTSTRAP.md`.
 
-The initial connector should avoid automatically blocking work. It should add deterministic routing metadata and explicit uncertainty.
+## What is already implemented
 
-## Why quote-time is probably the best wedge
+- `src/projectpermit/jobber_adapter.py`
+  - extracts only source id, property civic address and scope-relevant title/line-item text;
+  - excludes client/contact, billing, payment and assignee data;
+  - requires a caller/agent to supply the structured ProjectPermit `project.family` + facts;
+  - produces a proposed custom-field write-back payload without mutation.
 
-Jobber's 2026 home-service report says quoting is one of the most time-consuming daily tasks reported by service businesses. Permit-sensitive trades such as plumbing, roofing, electrical, HVAC and general contracting are represented in Jobber's customer base. This does **not** prove permit research itself is a major Jobber pain point, but it identifies the workflow stage where a fast permit signal could matter.
+- `src/projectpermit/jobber_client.py`
+  - minimal GraphQL transport;
+  - current active API version default `2025-04-16`;
+  - locally rejects `mutation` and `subscription` operations;
+  - avoids echoing bearer tokens or raw HTTP error bodies.
 
-A quote-time result is also commercially attractive because it can affect:
+- `scripts/jobber_readonly_probe.py`
+  - accepts `JOBBER_ACCESS_TOKEN` via environment variable;
+  - runs Jobber's documented `account { id name }` sanity query;
+  - prints no token or raw response body.
 
-- price and scope assumptions;
-- schedule promises;
-- whether permit fees/lead time need to be included;
-- whether a contractor should escalate to a permit service before customer approval.
+- `data/historical_benchmark_template.csv`
+  - E3 real historical benchmark structure.
 
-## Integration feasibility already supported by public docs
+## Validation sequence
 
-Verified from current official Jobber docs on 2026-08-27:
+### J0 — Internal Jobber sandbox
 
-- GraphQL API over HTTPS;
-- OAuth 2.0 authorization;
-- developer testing accounts with a 90-day test window;
-- Marketplace app publication and review;
-- custom integrations can connect to up to 5 paying accounts while still in Draft state; more than 5 requires approval;
-- webhooks are available and Marketplace apps must handle app disconnect events;
-- app-configured custom fields can be created through the API when scopes are approved;
-- Request/Quote/Job objects expose property and structured scope-related fields.
+No support reply required.
 
-This means a real 1–5-account design-partner pilot can be tested before a full Marketplace launch, assuming Jobber approves the required scopes and the participating accounts authorize the app.
+1. create Jobber developer testing account;
+2. create Developer Center Draft app;
+3. enable the smallest required read scopes;
+4. use GraphiQL to verify the current schema;
+5. obtain a testing token;
+6. run `scripts/jobber_readonly_probe.py`.
+
+### J1 — Read-only work-object integration
+
+After GraphiQL confirms the exact current fields, add shallow paginated queries for Request / Quote / Job that fetch only:
+
+- object id;
+- property civic address;
+- title;
+- line-item name/description fields needed for scope normalization.
+
+Do not query customer contact, billing or payment data.
+
+### J2 — Synthetic/de-identified integration benchmark
+
+Use 20+ representative sandbox work objects to test:
+
+`Jobber GraphQL -> extract_jobber_work_object -> caller normalization -> build_preflight_facts -> ProjectPermit -> proposed write-back`
+
+This proves the integration pipeline but is **not market E3**.
+
+### J3 — Real E3 historical benchmark
+
+Only after the Jobber customer-testing route is coordinated appropriately, obtain representative anonymized historical cases from independent Canadian operators. Samples must be chronological/reproducible, not hand-picked permit-problem cases.
+
+True E3 asks whether permit applicability actually required research/escalation and whether the result changed quote, schedule, fee or routing behavior.
+
+### J4 — E4 repeat-use pilot
+
+With proper authorization, measure real external successful preflight usage:
+
+- first signal: 20+ calls from one workflow/account;
+- next: 100+ aggregate pilot calls;
+- meaningful small channel: 500+ candidate calls/month;
+- strong integration: 2,000+ candidate calls/month.
+
+### J5 — Marketplace investment only after evidence
+
+Do not spend meaningful effort on listing/certification merely because the API works. Marketplace work should follow E3/E4 evidence and a credible repeated-volume path.
 
 ## Call-volume model
 
-Do not infer call volume directly from 400,000+ professionals. The account denominator and permit-sensitive work share are unknown.
-
-Use integration-level scenarios instead:
+Do not infer call volume from Jobber's published user/pro count. Use observed integration volumes.
 
 | Connected contractor businesses | Candidate preflights/business/month | Monthly calls |
 |---:|---:|---:|
@@ -88,64 +133,26 @@ Use integration-level scenarios instead:
 | 250 | 20 | 5,000 |
 | 500 | 20 | 10,000 |
 | 125 | 80 | 10,000 |
-| 1,000 | 20 | 20,000 |
 
-These are scenarios, not forecasts. The `20/month` and `80/month` assumptions must be replaced with observed Jobber partner/account data before using them commercially.
+These are scenarios, not forecasts. `20/month` and `80/month` must be replaced with observed E2–E4 evidence.
 
-The important implication is that ProjectPermit does **not** need a large percentage of Jobber's published user footprint to cross the first 10,000-calls/month checkpoint.
+## Main business risk
 
-## Validation plan
+The biggest unresolved risk is not API feasibility. It is whether experienced home-service contractors already know permit applicability essentially for free at quote time.
 
-### Stage 1 — API eligibility
+If representative historical samples show that manual permit research/escalation is rare, Jobber may be a very large platform with a weak paid ProjectPermit wedge.
 
-Ask Jobber API support to confirm the intended Marketplace pattern and required scopes:
+That question must be answered by E3/E4 evidence, not friendly replies.
 
-- read Request/Quote/Job + Property address/line items;
-- configure/write ProjectPermit custom fields on Quote/Job;
-- react to relevant webhook changes;
-- call an external deterministic rules API from the integration backend.
+## Official sources
 
-A support answer is technical evidence only and should be checked against the live GraphQL schema/test account.
-
-### Stage 2 — developer prototype
-
-Create a Jobber developer test account and implement a thin adapter that:
-
-1. accepts a Jobber object ID;
-2. queries property address + title/line items;
-3. maps scope into ProjectPermit's existing project-family input;
-4. calls the existing `run_preflight` service;
-5. returns a write-back payload without mutating Jobber by default.
-
-No new permit rules are required for this step.
-
-### Stage 3 — historical benchmark
-
-Find 1–5 Canadian Jobber contractor accounts in permit-sensitive trades and obtain 20+ anonymized historical quotes/jobs. Compare ProjectPermit to their prior permit decisions.
-
-This is E3 evidence under `VALIDATION_EVIDENCE_STANDARD.md`.
-
-### Stage 4 — repeat-use pilot
-
-With explicit account authorization, run the connector on live or recent work objects and measure observed external calls. The first meaningful signal is 20+ calls from one account/workflow, then 100+ aggregate external pilot calls.
-
-### Stage 5 — Marketplace only after evidence
-
-Do not invest in Marketplace submission work merely because the integration is technically possible. Submit when E3/E4 evidence shows repeated permit-sensitive volume and at least one credible path toward 500+ monthly calls.
-
-## Key risk
-
-The strongest unresolved question is not API feasibility. It is whether Jobber contractors already know permit applicability without material research at quote time. If historical samples show the answer is usually obvious from trade experience, Jobber may be a large distribution surface with a weak paid wedge.
-
-That question must be answered with historical cases and observed behavior, not positive outreach replies.
-
-## Current official sources
-
-- Jobber Developer Center: https://developer.getjobber.com/docs/
-- Jobber custom fields: https://developer.getjobber.com/docs/using_jobbers_api/custom_fields/
-- Jobber webhooks: https://developer.getjobber.com/docs/using_jobbers_api/setting_up_webhooks/
-- Jobber custom integrations: https://developer.getjobber.com/docs/custom_integrations/
-- Jobber App Marketplace listing docs: https://developer.getjobber.com/docs/publishing_your_app/app_listing_details/
-- Jobber 2026 Home Service Trends Report: https://www.getjobber.com/home-service-trends-report/
-- Jobber feature/customer footprint page: https://www.getjobber.com/features/
-- API support: api-support@getjobber.com
+- Developer Center: https://developer.getjobber.com/docs/
+- Getting Started: https://developer.getjobber.com/docs/getting_started/
+- Custom integrations: https://developer.getjobber.com/docs/custom_integrations/
+- Testing your app: https://developer.getjobber.com/docs/building_your_app/testing_your_app/
+- API queries / mutations: https://developer.getjobber.com/docs/using_jobbers_api/api_queries_and_mutations/
+- API versioning: https://developer.getjobber.com/docs/using_jobbers_api/api_versioning/
+- API rate limits: https://developer.getjobber.com/docs/using_jobbers_api/api_rate_limits/
+- Custom fields: https://developer.getjobber.com/docs/using_jobbers_api/custom_fields/
+- Webhooks: https://developer.getjobber.com/docs/using_jobbers_api/setting_up_webhooks/
+- API support: `api-support@getjobber.com`
