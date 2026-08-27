@@ -1,0 +1,49 @@
+name: Private E3 Market Smoke
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'market_research/private_e3_aggregate.py'
+      - '.github/workflows/private-e3-market-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Export aggregate from repository example fixture
+        run: |
+          python market_research/private_e3_aggregate.py \
+            data/historical_benchmark_template.csv \
+            --output /tmp/private_e3_summary.json
+      - name: Verify redaction boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('/tmp/private_e3_summary.json').read_text())
+          assert data['report'] == 'ProjectPermit_private_E3_aggregate'
+          assert 'input_sha256' in data and len(data['input_sha256']) == 64
+          rendered = json.dumps(data)
+          for forbidden in (
+              'REPLACE_ME',
+              'EXAMPLE-001',
+              'Build a residential rear deck',
+              'project_facts_json',
+              'property_facts_json',
+              'scope_summary',
+              'case_id',
+          ):
+              assert forbidden not in rendered, forbidden
+          assert data['rows_recorded'] == 1
+          assert data['canonical_e3_validator_qualified'] is False
+          print('private_e3_redaction_smoke=PASS')
+          PY
