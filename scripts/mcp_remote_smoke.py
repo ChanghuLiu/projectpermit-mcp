@@ -14,6 +14,26 @@ URL = os.getenv(
 )
 INTERNAL_CONTEXT = {"client_tag": "projectpermit-ci"}
 
+EXPECTED_JURISDICTIONS = {
+    "gatineau_qc",
+    "ottawa_on",
+    "toronto_on",
+    "mississauga_on",
+    "laval_qc",
+    "longueuil_qc",
+    "vancouver_bc",
+}
+EXPECTED_PROJECT_FAMILIES = {
+    "window_door",
+    "interior_renovation",
+    "basement",
+    "dwelling_change",
+    "deck_porch",
+    "accessory_structure",
+    "addition",
+    "kitchen_bath_plumbing",
+}
+
 CASES = [
     ("ottawa_on", {"family": "window_door", "action": "replace_same_size"}, {"heritage": False}, "LIKELY_NOT_REQUIRED"),
     ("gatineau_qc", {"family": "addition", "floor_area_increase": True}, {}, "REQUIRED"),
@@ -57,8 +77,25 @@ async def main() -> None:
             tools = await session.list_tools()
             names = [tool.name for tool in tools.tools]
             print(f"tools={names}")
+            if "projectpermit_info" not in names:
+                raise SystemExit("ProjectPermit info tool not found")
             if "check_project_requirements" not in names:
-                raise SystemExit("ProjectPermit tool not found")
+                raise SystemExit("ProjectPermit preflight tool not found")
+
+            info_result = await session.call_tool("projectpermit_info", {})
+            if info_result.is_error:
+                raise SystemExit(f"ProjectPermit info tool returned error: {info_result}")
+            info = _structured_or_text(info_result)
+            jurisdictions = set(info.get("jurisdictions") or [])
+            families = set(info.get("project_families") or [])
+            example = info.get("example") or {}
+            if jurisdictions != EXPECTED_JURISDICTIONS:
+                raise SystemExit(f"Unexpected info jurisdictions: {sorted(jurisdictions)}")
+            if families != EXPECTED_PROJECT_FAMILIES:
+                raise SystemExit(f"Unexpected info project families: {sorted(families)}")
+            if example.get("jurisdiction") != "ottawa_on":
+                raise SystemExit(f"Starter example missing/invalid: {example}")
+            print("remote_mcp_info=PASS")
 
             for jurisdiction, project, property_facts, expected in CASES:
                 result = await session.call_tool(
