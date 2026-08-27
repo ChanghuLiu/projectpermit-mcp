@@ -69,6 +69,12 @@ def _normalize_text(value: object) -> str:
     return text
 
 
+def _display_text(value: object) -> str:
+    text = unicodedata.normalize("NFKC", str(value or "")).strip()
+    text = re.sub(r"\s+", " ", text)
+    return text or "(blank)"
+
+
 def _contractor_token(value: object) -> str | None:
     token = _normalize_text(value)
     if not token or token in GENERIC_CONTRACTOR_TOKENS:
@@ -214,6 +220,25 @@ def _analyze_cohort(rows: list[dict], corporate_only: bool) -> dict:
     }
 
 
+def _aggregate_label_counts(rows: list[dict]) -> dict:
+    work = Counter(_display_text(row.get("typeofwork")) for row in rows)
+    category = Counter(_display_text(row.get("permitcategory")) for row in rows)
+    pairs = Counter(
+        (_display_text(row.get("typeofwork")), _display_text(row.get("permitcategory")))
+        for row in rows
+    )
+    return {
+        "type_of_work_counts": dict(sorted(work.items(), key=lambda item: (-item[1], item[0]))),
+        "permit_category_counts": dict(sorted(category.items(), key=lambda item: (-item[1], item[0]))),
+        "work_category_counts": [
+            {"type_of_work": work_label, "permit_category": category_label, "count": count}
+            for (work_label, category_label), count in sorted(
+                pairs.items(), key=lambda item: (-item[1], item[0][0], item[0][1])
+            )
+        ],
+    }
+
+
 def summarize() -> dict:
     rows = _fetch_records()
     scopes = {}
@@ -231,12 +256,15 @@ def summarize() -> dict:
         "reference_year": int(REFERENCE_YEAR),
         "privacy_boundary": (
             "No applicant/address/contractor-address fields requested. Contractor strings are used only "
-            "in runner memory and are not emitted or hashed into output."
+            "in runner memory and are not emitted or hashed into output. City type-of-work and permit-category "
+            "labels are emitted only as aggregate counts."
         ),
         "evidence_boundary": (
             "Issued-permit workload is downstream technical market evidence, not permit-preflight incidence, "
-            "not E3/E4/E5, and not a count of unique companies."
+            "not E3/E4/E5, and not a count of unique companies. Aggregate labels are diagnostic and must not "
+            "be mapped to ProjectPermit families unless the City label is unambiguous."
         ),
+        "aggregate_labels": _aggregate_label_counts(rows),
         "scopes": scopes,
     }
 
