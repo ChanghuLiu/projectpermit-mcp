@@ -5,6 +5,10 @@ This tool does not run the permit engine. It audits the evidence record produced
 *after* anonymized partner cases have been normalized and evaluated. Its purpose
 is to prevent incomplete, hand-picked, or non-reproducible samples from being
 counted as E3 market evidence.
+
+Optional commercial-differentiation fields are summarized when present but never
+participate in E3 qualification. This keeps accuracy evidence separate from the
+question of whether municipality-specific logic adds incremental workflow value.
 """
 from __future__ import annotations
 
@@ -67,7 +71,10 @@ def _usable(row: Mapping[str, Any]) -> bool:
 
 
 def _group_key(row: Mapping[str, Any]) -> tuple[str, str]:
-    return (_text(row.get("partner")) or "<missing-partner>", _text(row.get("source_platform")) or "<missing-platform>")
+    return (
+        _text(row.get("partner")) or "<missing-partner>",
+        _text(row.get("source_platform")) or "<missing-platform>",
+    )
 
 
 def _case_errors(row: Mapping[str, Any]) -> list[str]:
@@ -122,6 +129,11 @@ def _case_errors(row: Mapping[str, Any]) -> list[str]:
     if sampling in BIASED_SAMPLING:
         errors.append("biased_sampling_method")
 
+    # municipality_specificity_changed_generic_answer is deliberately OPTIONAL.
+    # If populated, require a recognizable boolean so the commercial metric is not
+    # silently distorted. Invalid optional values are reported separately below and
+    # do not make the benchmark fail E3.
+
     return errors
 
 
@@ -136,8 +148,14 @@ def summarize(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
 
     for (partner, platform), group_rows in sorted(grouped.items()):
         usable_rows = [row for row in group_rows if _usable(row)]
-        ids = [_text(row.get("case_id")) for row in usable_rows if _text(row.get("case_id"))]
-        duplicate_case_ids = sorted({case_id for case_id in ids if ids.count(case_id) > 1})
+        ids = [
+            _text(row.get("case_id"))
+            for row in usable_rows
+            if _text(row.get("case_id"))
+        ]
+        duplicate_case_ids = sorted(
+            {case_id for case_id in ids if ids.count(case_id) > 1}
+        )
 
         invalid_cases: list[dict[str, Any]] = []
         agreement_count = 0
@@ -147,10 +165,17 @@ def summarize(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
         confirm_outputs = 0
         out_of_scope_outputs = 0
 
+        specificity_recorded = 0
+        specificity_material = 0
+        specificity_not_material = 0
+        specificity_invalid_optional_values: list[str] = []
+
         for row in usable_rows:
             errors = _case_errors(row)
             if errors:
-                invalid_cases.append({"case_id": _text(row.get("case_id")), "errors": errors})
+                invalid_cases.append(
+                    {"case_id": _text(row.get("case_id")), "errors": errors}
+                )
 
             agreement = _bool(row.get("agreement"))
             if agreement is True:
@@ -170,12 +195,38 @@ def summarize(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
             if projectpermit == "OUT_OF_SCOPE":
                 out_of_scope_outputs += 1
 
-        sampling_methods = sorted({_text(row.get("sampling_method")) for row in usable_rows if _text(row.get("sampling_method"))})
+            specificity_raw = _text(
+                row.get("municipality_specificity_changed_generic_answer")
+            )
+            if specificity_raw:
+                specificity = _bool(specificity_raw)
+                if specificity is None:
+                    specificity_invalid_optional_values.append(
+                        _text(row.get("case_id"))
+                    )
+                else:
+                    specificity_recorded += 1
+                    if specificity:
+                        specificity_material += 1
+                    else:
+                        specificity_not_material += 1
+
+        sampling_methods = sorted(
+            {
+                _text(row.get("sampling_method"))
+                for row in usable_rows
+                if _text(row.get("sampling_method"))
+            }
+        )
         sample_windows = sorted(
             {
-                (_text(row.get("sample_window_start")), _text(row.get("sample_window_end")))
+                (
+                    _text(row.get("sample_window_start")),
+                    _text(row.get("sample_window_end")),
+                )
                 for row in usable_rows
-                if _text(row.get("sample_window_start")) or _text(row.get("sample_window_end"))
+                if _text(row.get("sample_window_start"))
+                or _text(row.get("sample_window_end"))
             }
         )
 
@@ -197,12 +248,25 @@ def summarize(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
                 "rows_recorded": len(group_rows),
                 "usable_cases": len(usable_rows),
                 "comparable_cases": comparable,
-                "agreement_rate": round(agreement_count / comparable, 4) if comparable else None,
+                "agreement_rate": round(agreement_count / comparable, 4)
+                if comparable
+                else None,
                 "disagreements": disagreement_count,
                 "material_disagreements": material_disagreements,
                 "false_likely_not_required": false_likely_not_required,
                 "municipal_confirmation_outputs": confirm_outputs,
                 "out_of_scope_outputs": out_of_scope_outputs,
+                "municipality_specificity_cases_recorded": specificity_recorded,
+                "municipality_specificity_material_cases": specificity_material,
+                "municipality_specificity_not_material_cases": specificity_not_material,
+                "municipality_specificity_material_rate": round(
+                    specificity_material / specificity_recorded, 4
+                )
+                if specificity_recorded
+                else None,
+                "municipality_specificity_invalid_optional_case_ids": sorted(
+                    specificity_invalid_optional_values
+                ),
                 "sampling_methods": sampling_methods,
                 "sample_windows": [list(window) for window in sample_windows],
                 "duplicate_case_ids": duplicate_case_ids,
@@ -216,7 +280,13 @@ def summarize(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
         "rows_recorded": len(materialized),
         "partner_benchmarks": partner_benchmarks,
         "qualified_partner_benchmarks": qualified_count,
-        "note": "E3 qualification audits representative/reproducible historical evidence. OUT_OF_SCOPE cases remain in the sample as negative evidence; E3 still does not imply E4 usage or E5 economic evidence.",
+        "note": (
+            "E3 qualification audits representative/reproducible historical evidence. "
+            "OUT_OF_SCOPE cases remain in the sample as negative evidence; E3 still "
+            "does not imply E4 usage or E5 economic evidence. Optional municipality-"
+            "specificity fields diagnose incremental commercial value and never affect "
+            "E3 qualification."
+        ),
     }
 
 
@@ -227,7 +297,9 @@ def load_rows(path: Path) -> list[dict[str, str]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("csv_path", nargs="?", default="data/historical_benchmark_template.csv")
+    parser.add_argument(
+        "csv_path", nargs="?", default="data/historical_benchmark_template.csv"
+    )
     args = parser.parse_args()
 
     summary = summarize(load_rows(Path(args.csv_path)))
