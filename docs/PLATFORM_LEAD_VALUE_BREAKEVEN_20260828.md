@@ -30,24 +30,44 @@ Current/public Quebec renovation lead economics do not support using one univers
 
 An older official SoumissionRénovation article states that the platform did not charge a percentage of a contractor's signed job and instead charged a small amount when connecting a contractor with a customer, described as approximately **C$5–C$50 per connection**.
 
-The current contractor signup surface still advertises no membership fee, but a current public per-connection tariff was not found in the latest review.
+Reproducible official sources:
+
+- `https://soumissionrenovation.ca/fr/blogue/comment-eviter-arnaque-renovation`
+- `https://soumissionrenovation.ca/fr/blogue/pourquoi-soumission-renovation-plus-facile`
+
+The current contractor signup surface advertises:
+
+- **100,000 projects submitted/year**;
+- **no membership fee**;
+- no credit card required at signup.
+
+Source:
+
+- `https://soumissionrenovation.ca/fr/formulaire/formulaire-entrepreneur`
+
+A current public per-connection SoumissionRénovation tariff was **not** found in the latest review.
 
 Therefore:
 
 - C$5–C$50 is useful as a **historical official range**;
-- it must not be presented as the platform's current tariff.
+- it must not be presented as the platform's current tariff;
+- `no membership fee` must not be converted into `free leads`.
 
-### Current independent Quebec lead-market signals
+### Current independent lead-market signal
 
-Current public lead-provider / acquisition examples reviewed on 2026-08-28 include renovation-lead pricing and acquisition costs in roughly the **C$30–C$68** range in several cases, while some campaign examples are lower.
+A current Canadian home-improvement lead provider, CHISA Home Leads, publicly lists a flexible **C$45/lead** option alongside subscription plans.
 
-These examples show that C$50 is a plausible sensitivity point, but they do **not** justify treating every marketplace lead as worth C$50.
+Source:
 
-For a deliberately broad sensitivity, this note therefore uses three lead-value anchors:
+- `https://chisa.ca/forcontractors`
 
-- **C$5** — low-value / low-priced connection;
-- **C$25** — mid-case;
-- **C$50** — higher-value shared renovation lead / acquisition-cost proxy.
+CHISA is not SoumissionRénovation and its GTA-oriented pricing is not a Quebec market average. It is only a current proof that a renovation/home-improvement lead can be sold at a price in the tens of Canadian dollars.
+
+For a deliberately broad sensitivity, this note therefore uses three anchors:
+
+- **C$5** — low-value / low-priced connection anchor grounded in SoumissionRénovation's historical official range;
+- **C$25** — deliberately constructed midpoint sensitivity, not an observed tariff;
+- **C$50** — upper historical SoumissionRénovation connection anchor and broadly comparable to a current C$45 public lead listing.
 
 The anchors are not TAM inputs and are not ProjectPermit willingness-to-pay evidence.
 
@@ -79,7 +99,7 @@ Interpretation:
 - at C$5/connection, the same call requires a much more material **5%** value effect;
 - a C$0.50-equivalent call is especially demanding in low-value lead channels.
 
-This is why ProjectPermit should not justify pricing by citing a single C$50 lead example.
+This is why ProjectPermit should not justify pricing by citing a single high lead-price example.
 
 ---
 
