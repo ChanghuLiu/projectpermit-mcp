@@ -1,6 +1,6 @@
 # ProjectPermit Monthly Call Thresholds
 
-Updated: 2026-08-27
+Updated: 2026-08-28
 
 The core business question is not how many municipalities can be coded. It is whether ProjectPermit can reach enough **repeated external workflow calls**, and then monetize enough of the higher-value address-aware calls, through a small number of distribution partners.
 
@@ -82,20 +82,21 @@ The arithmetic shapes are still useful, but they no longer have equal evidentiar
 
 | Distribution shape | Calls/customer/month | Customers/integrations needed | Total external calls/month | Current evidence weight |
 |---|---:|---:|---:|---|
-| High-volume direct contractor accounts | 80 | 125 | 10,000 | **Aggressive / unproven as a repeatable Canadian distribution shape** |
-| Medium direct contractor accounts | 25 | 400 | 10,000 | Possible, but requires broad acquisition and cadence proof |
+| High-volume direct contractor accounts | 80 | 125 | 10,000 | **Arithmetic only; unsupported as a repeatable current-family residential-builder cadence** |
+| Medium direct contractor accounts | 25 | 400 | 10,000 | **Arithmetic only; current direct-account evidence does not support assuming this cadence** |
 | Property portfolios | 20 | 500 | 10,000 | Unproven until permit-sensitive work-order incidence is measured |
 | Strong SaaS / multi-account integrations | 2,000 | 5 | 10,000 | **Primary arithmetic path, but current-family fit remains unproven** |
 | Mid-sized integrations / multi-account partners | 500 | 20 | 10,000 | **Primary arithmetic path, but current-family fit remains unproven** |
 | One platform workflow | 10,000 | 1 | 10,000 | High leverage only if bounded covered-geography **current-family** volume exists |
 
-Why the direct 80/month shape was downgraded:
+### Why the direct-account 25/month and 80/month shapes are downgraded
 
 - Vancouver 2024 public building-permit data shows corporate-like contractor tokens maxing at 47 permits/year across all building permits, 35/year for Addition/Alteration, and 20/year for residential renovation; the maximum observed single month was 8.
-- A public iPermit Marketplace testimonial does show one HVAC contractor sending roughly 80+ jobs/month to a permit-management vendor, proving that high-volume outliers exist.
-- One outlier does not establish that 125 similar reachable Canadian contractor accounts exist, and ProjectPermit's current families do not cover the full high-frequency HVAC/electrical/mechanical universe.
+- Buildertrend's 2026 Modern Builder Playbook reports that **67% of surveyed builders manage more than six projects per year**. The survey covers established Buildertrend users with more than $1M annual revenue, and its concrete scaled design-build example, Cardinal Crest Homes, completes **15–20 custom homes/year**. This does **not** provide a Canadian average, and a completed project is not the same thing as a ProjectPermit call, but it provides a useful cadence sanity check: the public first-party evidence is framed in projects/year, not tens of current-family projects/month per ordinary builder account. Source: `https://buildertrend.com/ebooks/modern-builder-playbook-2026/`.
+- A public iPermit Marketplace testimonial does show one HVAC contractor sending roughly 80+ jobs/month to a permit-management vendor, proving that high-volume trade-service outliers exist. That workflow is not evidence for ordinary residential builder/remodeler current-family cadence.
+- One project could theoretically trigger more than one preflight decision. That multiplier is currently **unmeasured**. Do not turn projects/year into calls/month by assuming repeated calls per project; require an E2 bounded workflow claim or E4 observed usage first.
 
-Therefore `125 × 80/month` remains arithmetic sensitivity only. It is not the base distribution plan.
+Therefore both `400 × 25/month` and `125 × 80/month` remain arithmetic sensitivity only. Direct builders/remodelers remain valuable for E3 accuracy benchmarks and early E4 pilots, but they are **not the base commercial scale engine** unless a real partner demonstrates materially higher repeated current-family call cadence.
 
 ## Toronto: broad workflow density vs current-family fit
 
@@ -197,6 +198,23 @@ This evidence says the business-account pool itself is not obviously too small. 
 - whether permit applicability is unresolved at Request/assessment/quote time;
 - address-aware share;
 - willingness to pay.
+
+### Direct residential builder cadence sanity check
+
+The 14,077-location employer floor answers `how many businesses exist`, not `how many ProjectPermit calls each business can generate`.
+
+Buildertrend's April 2026 first-party report provides a useful but limited cadence check:
+
+- 67% of surveyed builders manage more than six projects/year;
+- the survey population is not Canada-only and consists of established Buildertrend users generating more than $1M in annual revenue;
+- one highlighted scaled design-build company completes 15–20 custom homes/year;
+- Buildertrend states that more than 20,000 construction companies use the platform.
+
+Do not convert these values directly into ProjectPermit calls. Projects, estimates, quotes and preflight decisions are different event types. The correct inference is narrower:
+
+> **ordinary direct-account project cadence does not currently justify assuming 25–80 current-family calls/account/month.**
+
+If a builder project contains several meaningful permit-applicability decision events, that repeated-call multiplier must be measured in a real workflow. Until then, the scale strategy should favor platform/multi-account aggregation over hundreds of one-by-one contractor integrations.
 
 ## ServiceTitan scale sensitivity
 
@@ -340,7 +358,7 @@ ProjectPermit does not need millions of customers. It needs a small number of in
 
 Current public evidence says:
 
-> **ordinary direct contractor:** useful for validation, weak as the main scale engine
+> **ordinary direct contractor:** useful for E3/E4 validation, weak as the main scale engine; current builder cadence evidence does not support assuming 25–80 current-family calls/account/month
 
 > **broad HVAC/plumbing/mechanical trade flow:** real and high-frequency, but mostly not safely countable as current ProjectPermit demand
 
