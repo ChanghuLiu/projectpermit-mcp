@@ -10,7 +10,7 @@ The remaining rescue thesis must be narrower:
 
 > a contractor/software-facing, upstream `project/address -> permit applicability` machine contract that buyers prefer to purchase externally rather than reproduce inside existing municipal or contractor platforms.
 
-This note records two additional supply-side pressures: **Munia** and **Cloudpermit**.
+This note records three important supply-side pressures: **Munia**, **PG Solutions / AccèsCité Territoire**, and **Cloudpermit**.
 
 ---
 
@@ -20,16 +20,7 @@ This note records two additional supply-side pressures: **Munia** and **Cloudper
 
 Munia / Carange Solutions publicly positions Munia as a Quebec municipal AI platform used by **120+ municipalities, MRCs and public organizations**.
 
-Current public capabilities include:
-
-- municipal/regulatory research;
-- sourced answers against Quebec municipal/legal material;
-- municipality-specific assistants trained on local rules and archives;
-- custom assistants without code;
-- API / OAuth / custom-schema connectivity;
-- connection of assistants into existing software and workflows;
-- Microsoft 365 integration;
-- automation through tools such as Make and Zapier.
+Current public capabilities include municipal/regulatory research, sourced answers, municipality-specific assistants trained on local rules and archives, custom assistants, API/OAuth/custom-schema connectivity, Microsoft 365 integration and automation through external tools.
 
 Sources:
 
@@ -40,14 +31,9 @@ Sources:
 
 ### Independent delivery/adoption evidence
 
-Munia's scale claim is not supported only by vendor marketing. Public municipal council records show real licence procurement.
+Public municipal council records independently show real Munia licence procurement.
 
-Examples reviewed on 2026-08-28 include:
-
-- **McMasterville**: council procurement of Munia municipal AI software;
-- **Pincourt**: council award for Munia licences, with a maximum cost of C$6,500 including taxes;
-- **Napierville**: council approval of a Munia organizational annual licence at C$10,920 plus taxes, plus a separate training engagement;
-- other municipal records show additional annual Munia licence purchases and grouped training/licence arrangements.
+Examples reviewed on 2026-08-28 include McMasterville, Pincourt and Napierville, including municipal licence and training purchases.
 
 Representative sources:
 
@@ -61,53 +47,101 @@ Interpretation:
 
 ### Urbanism / permit relevance
 
-Munia publicly includes an urbanism use case for **preliminary review of permit files** and regulatory research. Its core platform supports assistants grounded in a municipality's own regulations and archives.
+Munia publicly includes an urbanism use case for **preliminary review of permit files** and regulatory research, and supports assistants grounded in a municipality's own regulations and archives.
 
 Source:
 
 - `https://munia.ai/formation-ia-urbanisme-quebec/`
 
-This does **not** prove Munia currently provides ProjectPermit's exact upstream output.
-
-The reviewed public materials do not demonstrate a standardized external machine contract such as:
+This does **not** prove a standardized external contract such as:
 
 `address + residential scope -> REQUIRED / LIKELY_NOT_REQUIRED / CONFIRMATION_REQUIRED + municipal evidence`
 
 for contractor/proptech products across many Quebec municipalities.
 
-### Why Munia still matters strategically
-
-Munia removes several weaker ProjectPermit differentiation stories:
-
-- `municipal AI is hard to deploy`;
-- `Quebec municipalities will not buy AI tied to local regulations`;
-- `connecting local regulatory assistants into existing software is unusual`;
-- `source-grounded municipal knowledge cannot be reused across multiple municipalities`.
-
-Those claims are no longer defensible.
-
-The remaining distinction is **buyer side + workflow stage + normalized decision contract**:
-
-- Munia primarily sells to municipalities/public organizations;
-- ProjectPermit is testing a third-party contractor/software buyer;
-- Munia's public use cases are regulatory assistance / municipal operations / preliminary file review;
-- ProjectPermit's target is a pre-quote/pre-job applicability decision before an application workflow begins.
-
 Munia therefore becomes a **high-priority API/buyer-boundary competitor**, not an exact substitute yet.
 
 ---
 
-## 2. Cloudpermit: mature Canadian permitting software already combines local-code AI, requirements and APIs
+## 2. PG Solutions / AccèsCité Territoire: the strongest Quebec permit-system boundary found so far
 
-Cloudpermit is a mature Canadian local-government permitting platform. Its current Building Permitting product publicly supports:
+### Scale and product position
 
-- configurable permit/application requirements;
-- public/contractor municipal portals;
-- AI-powered assistance through NoVa;
-- uploading a municipality's own codes so NoVa can answer local-regulation questions;
-- automatic issuance for eligible routine permit types once required information/payment are present;
-- GIS/property integration;
-- API access for third-party system integration.
+PG Solutions publicly states that it has served Quebec municipal/MRC software for more than **45 years** and has **1,000+ active clients** across Quebec.
+
+Source:
+
+- `https://pgsolutions.com/`
+
+Its AccèsCité Territoire suite explicitly includes:
+
+- **Permis** — management of permit/certificate requests and issued permits;
+- **Urbanisme** — management of urbanism applications, specification grids, usages and standards;
+- online permit requests;
+- municipal/citizen portal integration through Voilà!;
+- automated permit issuance/payment in configured online workflows.
+
+Sources:
+
+- `https://pgsolutions.com/logiciels/`
+- `https://pgsolutions.com/2024/02/16/hausse-de-demandes-de-permis-a-prevoir/`
+
+Voilà! is publicly described as allowing citizens to submit municipal permit requests when connected to AccèsCité.
+
+Sources:
+
+- `https://play.google.com/store/apps/details?id=com.pgsolutions.smartcity`
+- `https://www.valdavid.com/services-aux-citoyens/voila/`
+
+### Independent deployment evidence
+
+Public municipal procurement records confirm real permit-module deployment. Examples include municipalities/MRCs purchasing AccèsCité Territoire and online-permit modules, including a 2025 MRC contract for the permit/inspection software and multiple municipal renewals/implementations.
+
+Representative sources:
+
+- `https://www.nouvellebeauce.com/wp-content/uploads/2025/09/001-3100-PV-2025-06-18-sans-signature.pdf`
+- `https://saintpaul.quebec/storage/app/media/proces-verbaux/pv-2022/pv-2022-02-07-vf.pdf`
+- `https://www.veniseenquebec.ca/storage/app/media/municipalite/conseil-municipal/proces-verbaux/2021/2021-04%20%20Proc%C3%A8s%20verbal%20assembl%C3%A9e%20ordinaire%20du%206%20avril%202021.pdf`
+
+### API / interoperability evidence
+
+The reviewed public material shows that PG Solutions permit data/workflows can participate in third-party integrations.
+
+A 2026 GetApp review for eZsign explicitly cites an **API with PG Solutions for permits in AccèsCité Territoire**, and the vendor response acknowledges the permit integration.
+
+Source:
+
+- `https://www.getapp.ca/software/2079711/ezsign`
+
+PG Solutions contract/support materials also reference exports/bridges to external systems and broader modernization with third-party APIs.
+
+Important boundary:
+
+> current public evidence proves **permit-system integration**, not a public upstream applicability/requirements endpoint.
+
+The scan did **not** find public documentation showing that third-party contractor software can call:
+
+`municipality/address + work scope -> whether a permit is required + relevant permit type/rule`
+
+before a permit request/dossier exists.
+
+### Why PG Solutions is especially important
+
+PG Solutions is more strategically relevant than a general municipal AI vendor because it is already a **Quebec permit/urbanism system of record** at substantial scale.
+
+If its existing APIs can expose configured permit/urbanism rules or required permit categories before application creation, the Quebec rescue thesis would weaken sharply: the authoritative municipal platform could already supply the same layer directly.
+
+A direct boundary question was sent to `ventes@pgsolutions.com` on 2026-08-28 asking whether current APIs expose pre-application permit applicability/requirements or mainly integrate existing permit dossiers/workflows.
+
+Until that is verified, PG Solutions is classified as:
+
+> **HIGH-PRIORITY QUEBEC EXACT-BOUNDARY TARGET — NOT YET A CONFIRMED UPSTREAM SUBSTITUTE**.
+
+---
+
+## 3. Cloudpermit: mature Canadian permitting software already combines local-code AI, requirements and APIs
+
+Cloudpermit is a mature Canadian local-government permitting platform. Its Building Permitting product publicly supports configurable permit/application requirements, public/contractor portals, AI assistance through NoVa, municipality-specific code content, automatic issuance for eligible routine permit types, GIS/property integration and API access.
 
 Sources:
 
@@ -115,7 +149,7 @@ Sources:
 - `https://cloudpermit.ca/products/planning`
 - `https://cloudpermit.ca/customers`
 
-Cloudpermit's Land Use Permits product can also require/bridge land-use permits before a building-permit application and configures the correct forms/attachments from permit category/work type.
+Cloudpermit's Land Use Permits product bridges land-use permits and building permits and configures forms/attachments from permit category/work type.
 
 Sources:
 
@@ -124,31 +158,32 @@ Sources:
 
 ### API boundary
 
-Cloudpermit clearly has APIs, but the reviewed public API descriptions emphasize application/workspace/inspection/property/billing data exchange rather than a public third-party `should this project require a permit?` endpoint.
+Cloudpermit's public API one-pager documents these API families:
 
-The current public API examples include:
+- Workspaces;
+- Attachments;
+- Inspections;
+- Property;
+- Payments.
 
-- querying workspaces;
-- accessing inspection data;
-- reading property attributes from municipal GIS;
-- attachments/metadata;
-- bills and fees.
+API service is contract-enabled and supports training/test integration before production.
 
-Therefore Cloudpermit is **not yet evidence of an exact external preflight API**.
+Sources:
+
+- `https://cloudpermit.ca/hubfs/US%20One-Pagers/What%20Cloudpermits%20API%20Can%20Do%20for%20You.pdf?hsLang=en-ca`
+- `https://cloudpermit.ca/products/building-permitting`
+
+The current public documentation does **not** show a pre-workspace `should this project require a permit?` endpoint.
+
+A direct question was sent to a publicly listed Cloudpermit sales contact on 2026-08-28 asking whether configured requirements or NoVa local-code knowledge can be called before an application/workspace exists.
 
 ### Quebec-specific boundary
 
-The current focused search did not identify a public Quebec municipality customer in Cloudpermit's published customer material. Its Canadian customers shown publicly are concentrated in Ontario, British Columbia, Manitoba and other non-Quebec jurisdictions.
-
-Cloudpermit nevertheless supports English/French/Spanish user experiences and is structurally capable of local-code configuration.
-
-Interpretation:
-
-> Cloudpermit is a strong **future/platform substitution pressure**, but current public evidence does not justify classifying it as an already-deployed Quebec exact competitor.
+The focused search did not identify a public Quebec municipality customer in Cloudpermit's current customer material. It remains a strong **future/platform substitution pressure**, not a demonstrated Quebec exact competitor.
 
 ---
 
-## 3. Citadel is not an exact permit competitor
+## 4. Citadel is not an exact permit competitor
 
 Citadel is Quebec-developed municipal SaaS with a secure, documented REST API that lets third-party applications interact with municipal data.
 
@@ -163,7 +198,7 @@ Citadel therefore proves that Quebec municipalities already operate open/integra
 
 ---
 
-## 4. What this does to the Quebec rescue thesis
+## 5. What this does to the Quebec rescue thesis
 
 The rescue thesis can no longer rely on any of these claims:
 
@@ -171,43 +206,38 @@ The rescue thesis can no longer rely on any of these claims:
 - municipalities cannot maintain local-rule AI;
 - source-grounded regulatory answers are scarce;
 - API connectivity into municipal software is unusual;
+- permit-system interoperability is absent;
 - cross-municipality reuse of regulatory-assistant technology is inherently difficult.
-
-Those are already falsified by Munia, Vantage, BuilderAI, municipal assistants and broader permitting platforms.
 
 The only remaining plausible value proposition is:
 
-> **a reusable external contractor/software API that turns a normalized renovation scope + municipality/address into a conservative permit-applicability decision, with evidence/versioning/unknown-state safety, and that is cheaper or safer for buyers than extending their own existing AI/regulatory stack.**
+> **a reusable external contractor/software API that turns a normalized renovation scope + municipality/address into a conservative permit-applicability decision, with evidence/versioning/unknown-state safety, and that is cheaper or safer for buyers than extending their own existing AI/regulatory stack or integrating directly with municipal systems of record.**
 
 That proposition is still unvalidated.
 
 ---
 
-## 5. New rescue falsification questions
+## 6. New rescue falsification questions
+
+### PG Solutions
+
+Can a third-party contractor/proptech product call the configured AccèsCité Permit/Urbanisme logic **before a permit dossier exists** and obtain required permit/approval information?
+
+Negative/kill signal:
+
+- yes, at practical economics/coverage across many Quebec municipalities.
+
+Positive/rescue signal:
+
+- APIs remain record/workflow integrations only, and independent software buyers still identify an upstream decision gap.
 
 ### Munia
 
-Ask whether municipality-specific regulatory assistants / permit-related logic can be exposed to **third-party contractor, marketplace or proptech products**, rather than only municipality-owned workflows.
-
-Negative signal:
-
-- Munia already offers practical third-party embedding of municipal permit applicability across many municipalities.
-
-Positive/rescue signal:
-
-- Munia is municipality-side only, and an independent contractor/software buyer still prefers an external cross-city preflight contract.
+Can municipality-specific regulatory assistants / permit-related logic be exposed to third-party contractor, marketplace or proptech products rather than municipality-owned workflows?
 
 ### Cloudpermit
 
-Ask whether NoVa/local-code configuration or application-category/requirements logic can be called programmatically by **external contractor software before an application workspace exists**.
-
-Negative signal:
-
-- Cloudpermit exposes practical pre-application requirement/applicability output through API/partner integration at acceptable economics.
-
-Positive/rescue signal:
-
-- its API remains downstream/workspace-oriented and independent software buyers still identify an upstream gap.
+Can NoVa/local-code configuration or permit-category/requirements logic be called programmatically by external contractor software before an application workspace exists?
 
 ---
 
@@ -217,13 +247,14 @@ Positive/rescue signal:
 
 ProjectPermit remains **50/100, PAUSE / RE-SCOPE**.
 
-Competitive headroom is already at **0/10**, so Munia/Cloudpermit cannot reduce that dimension further. The evidence does not yet justify another defensibility downgrade because neither currently proves the exact third-party upstream deterministic contract.
+Competitive headroom is already at **0/10**. The evidence does not yet justify another defensibility downgrade because PG Solutions, Munia and Cloudpermit still do not publicly prove the exact third-party upstream deterministic contract.
 
-However, the rescue burden is now higher:
+However, the rescue burden is materially higher:
 
 - source citations are not a moat;
 - municipal AI is not a moat;
 - API integration is not a moat;
+- permit-system interoperability is not a moat;
 - reusable local-regulation technology is not a moat.
 
 Only **validated external buyer preference for the narrow upstream contract** can rescue the project.
@@ -232,7 +263,9 @@ Only **validated external buyer preference for the narrow upstream contract** ca
 
 Quebec still contains a public-market gap, but it is now extremely specific.
 
-Do not restart engineering because Munia or Cloudpermit leave a schema-level difference.
+The highest-priority exact competitor check is now **PG Solutions / AccèsCité Territoire**, followed by Munia and Cloudpermit API boundaries.
+
+Do not restart engineering because these products leave a schema-level difference.
 
 The next decisive evidence must be one of:
 
