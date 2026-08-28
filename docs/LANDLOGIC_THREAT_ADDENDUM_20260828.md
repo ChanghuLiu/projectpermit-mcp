@@ -38,6 +38,28 @@ This means ProjectPermit **cannot** claim `API integration`, `machine-ready prop
 
 The remaining potentially meaningful distinction is **self-serve permit-specific access**, not API availability in general.
 
+#### Public delivery model is explicitly tailored and assisted
+
+LandLogic's current API FAQ gives stronger evidence about how the integration is sold and delivered:
+
+- APIs are described as **flexible and configurable** around the partner's required data categories, geography and outputs;
+- LandLogic says it **works with the customer to shape the API around the customer's requirements**;
+- integration begins by understanding the intelligence needed and intended use;
+- the **LandLogic team handles setup, configuration and integration support**;
+- the public call to action is `Get a demo` / `Contact us`.
+
+The same public API page reviewed on 2026-08-28 did not expose self-serve pricing, API-key issuance, public endpoint documentation or an ordinary developer signup flow.
+
+Source: `https://www.landlogic.ai/integration`
+
+Important interpretation:
+
+> this does **not** mean LandLogic is hard to integrate or cannot support small customers. It means the currently published delivery model is a tailored partner engagement rather than a demonstrated self-serve developer product.
+
+That makes `low-friction developer procurement/onboarding` a more evidence-grounded ProjectPermit delivery hypothesis than simply claiming LandLogic lacks an API.
+
+It is still **unvalidated customer value**. A buyer may prefer LandLogic's assisted implementation, especially when broader property intelligence is required.
+
 ### 3. Parcella has entered the permit-applicability question directly
 
 LandLogic's Parcella materials explicitly use questions such as:
@@ -83,7 +105,7 @@ not merely a land-intelligence adjacency.
 
 The only ProjectPermit wedge still publicly distinguishable in Ontario is the combination of:
 
-1. **developer self-service**, rather than demo / partner implementation;
+1. **developer self-service**, rather than demo / tailored partner implementation;
 2. a **building-permit-specific machine contract**, rather than broad property/land intelligence;
 3. an evidence-linked deterministic output such as `REQUIRED / LIKELY_NOT_REQUIRED / CONFIRMATION_REQUIRED` with rule/source versioning;
 4. very lightweight per-call economics suitable for automated quote/work-order/agent invocation;
@@ -101,11 +123,15 @@ The current public review still did **not** find evidence that LandLogic offers 
 
 across Ontario municipalities as an ordinary metered API product.
 
-Its public API/integration workflow remains partner/demo-led, and the API pages emphasize property/zoning/planning intelligence rather than a published permit-determination schema.
+Its public API/integration workflow is explicitly partner/demo-led and tailored, and the API pages emphasize property/zoning/planning intelligence rather than a published permit-determination schema.
 
-This is now the narrowest defensible public-market gap for ProjectPermit in Ontario.
+The current public page also does not publish ordinary developer pricing, endpoint documentation or API-key signup.
 
-Do not assume this gap is durable. LandLogic can plausibly add it.
+This is now the narrowest defensible public-market gap for ProjectPermit in Ontario:
+
+> **permit-specific deterministic contract + low-friction developer delivery**, not superior general property intelligence.
+
+Do not assume this gap is durable. LandLogic can plausibly add it, and a buyer may prefer its broader assisted product today.
 
 ## New falsification test
 
