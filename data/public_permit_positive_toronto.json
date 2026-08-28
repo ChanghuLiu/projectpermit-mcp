@@ -1,0 +1,329 @@
+{
+  "dataset": "City of Toronto Open Data — Building Permits Active + Cleared",
+  "dataset_urls": [
+    "https://ckan0.cf.opendata.inter.prod-toronto.ca/datastore/dump/6d0229af-bc54-46de-9c2b-26759b01dd05",
+    "https://ckan0.cf.opendata.inter.prod-toronto.ca/datastore/dump/a96c0ba4-3026-402b-b09d-5b1268b8f810"
+  ],
+  "captured_at": "2026-08-28",
+  "source_workflow_run_id": 33210793390,
+  "source_artifact_id": 9701497745,
+  "source_artifact_sha256": "b4e406593049e1cad02522b9057489bb53fffcb6c7620e353f1db206e69f32b1",
+  "source_candidate_window": {
+    "start_date": "2026-06-01",
+    "end_date": "2026-08-28",
+    "candidate_sample_size": 60,
+    "eligible_unique_low_rise_residential_building_permits": 2000
+  },
+  "purpose": "Technical false-negative backtest only. These permit-positive public records are not market-validation E3 evidence, do not measure upstream permit uncertainty, and are not a demand or SAM denominator.",
+  "privacy_note": "Civic addresses, postal codes, applicants, owners, contractors, emails and phone numbers are intentionally omitted. Permit numbers, issue dates and paraphrased/sanitized scopes remain for reproducibility against the official City dataset.",
+  "curation_rule": "Start from the first 60 deterministic chronological low-rise residential BLD candidates produced by the sampler. Skip New Building work because the current commercial wedge is renovation/preflight. When two rows explicitly describe the same related project, keep only the first candidate. Accept candidates in chronological order until 20 remain. Map only facts directly supported by City WORK/DESCRIPTION text: explicit addition -> addition + floor_area_increase; explicit dwelling-unit creation/conversion/combination -> dwelling_change + dwelling_unit_change; explicit load-bearing/beam/structural work -> structural_change (and modifies_walls only when a wall is explicit); explicit plumbing work -> plumbing_change. Where decisive facts are not explicit, keep a sparse family/literal action instead of inferring permit triggers.",
+  "direct_required_case_ids": [
+    "tor-public-001",
+    "tor-public-002",
+    "tor-public-004",
+    "tor-public-005",
+    "tor-public-006",
+    "tor-public-007",
+    "tor-public-008",
+    "tor-public-009",
+    "tor-public-010",
+    "tor-public-011",
+    "tor-public-014",
+    "tor-public-015",
+    "tor-public-016",
+    "tor-public-017",
+    "tor-public-018",
+    "tor-public-019"
+  ],
+  "sparse_fail_safe_case_ids": [
+    "tor-public-003",
+    "tor-public-012",
+    "tor-public-013",
+    "tor-public-020"
+  ],
+  "cases": [
+    {
+      "case_id": "tor-public-001",
+      "permit_number": "22 240932 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Second-storey and rear addition with interior alterations and deck revisions.",
+      "mapping_basis": "City scope explicitly says second-storey and rear addition.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-002",
+      "permit_number": "23 237220 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Two-storey rear addition with interior alterations, underpinning and rear deck work.",
+      "mapping_basis": "City scope explicitly says two-storey rear addition.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-003",
+      "permit_number": "24 179485 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Basement walkout with work near an existing deck.",
+      "mapping_basis": "Basement/walkout is explicit, but the public text does not provide the current Toronto basement decision facts; keep the mapping sparse.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "basement",
+          "action": "basement_walkout"
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-004",
+      "permit_number": "25 214639 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Second-floor addition with interior alterations and underpinning to an existing semi-detached dwelling.",
+      "mapping_basis": "City scope explicitly says second-floor addition.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-005",
+      "permit_number": "25 228822 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Two-storey addition and interior alterations to create a four-unit dwelling.",
+      "mapping_basis": "City scope explicitly says two-storey addition; use the addition trigger without inferring further unit details.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-006",
+      "permit_number": "25 267227 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Rear third-storey addition converting attic space to habitable area; scope also references conversion to two units.",
+      "mapping_basis": "City scope explicitly says rear third-storey addition.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-007",
+      "permit_number": "25 269170 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Interior alterations, underpinning and garage addition.",
+      "mapping_basis": "City scope explicitly says garage addition.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-008",
+      "permit_number": "26 106387 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Legalize an existing duplex and convert it to a triplex using a basement suite, with underpinning and rear basement walk-up work.",
+      "mapping_basis": "City scope explicitly describes duplex-to-triplex conversion.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "dwelling_change",
+          "dwelling_unit_change": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-009",
+      "permit_number": "26 109064 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Combine two existing units into one dwelling through interior alterations and a new interior stair; related companion permit omitted from the fixture.",
+      "mapping_basis": "City scope explicitly describes combining two units into one dwelling.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "dwelling_change",
+          "dwelling_unit_change": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-010",
+      "permit_number": "26 131373 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Rear addition to an existing dwelling.",
+      "mapping_basis": "City scope explicitly says rear addition.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-011",
+      "permit_number": "26 150620 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Ground-floor rear addition with interior alterations to the ground and second floors.",
+      "mapping_basis": "City scope explicitly says ground-floor rear addition.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "addition",
+          "floor_area_increase": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-012",
+      "permit_number": "26 150668 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Interior alterations affecting kitchen, bathrooms, powder room, stairs and room layouts.",
+      "mapping_basis": "The City text says interior alterations but does not explicitly establish the current deterministic wall/structural/plumbing trigger facts; keep the mapping sparse.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "interior_renovation",
+          "action": "interior_alterations"
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-013",
+      "permit_number": "26 151812 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "New rooftop wood deck.",
+      "mapping_basis": "Deck is explicit but height/required-exit facts are absent, so no height or exit assumption is supplied.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "deck_porch",
+          "action": "new_rooftop_deck"
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-014",
+      "permit_number": "26 152139 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Interior alterations with new beams, footings and a rear deck.",
+      "mapping_basis": "New beams and footings explicitly establish structural work.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "interior_renovation",
+          "structural_change": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-015",
+      "permit_number": "26 157073 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Detached garden suite with an integrated garage in the rear yard.",
+      "mapping_basis": "A proposed garden suite explicitly creates an additional dwelling unit.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "dwelling_change",
+          "action": "add_garden_suite",
+          "dwelling_unit_change": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-016",
+      "permit_number": "26 164345 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Remove an existing load-bearing wall and install new beams and a post.",
+      "mapping_basis": "Load-bearing wall removal explicitly establishes both wall modification and structural change.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "interior_renovation",
+          "modifies_walls": true,
+          "structural_change": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-017",
+      "permit_number": "26 166536 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Create a second unit and change use to two dwelling units.",
+      "mapping_basis": "City scope explicitly describes creation of a second dwelling unit.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "dwelling_change",
+          "dwelling_unit_change": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-018",
+      "permit_number": "26 167161 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Basement remodel to an existing dwelling including plumbing work.",
+      "mapping_basis": "City scope explicitly says the remodel includes plumbing; do not infer whether fixtures are new beyond plumbing-system change.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "basement",
+          "plumbing_change": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-019",
+      "permit_number": "26 167213 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Interior alterations involving removal of a load-bearing wall.",
+      "mapping_basis": "Load-bearing wall removal explicitly establishes both wall modification and structural change.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "interior_renovation",
+          "modifies_walls": true,
+          "structural_change": true
+        }
+      }
+    },
+    {
+      "case_id": "tor-public-020",
+      "permit_number": "26 167324 BLD",
+      "issue_date": "2026-06-01",
+      "scope_summary": "Basement bench-footing work with interior alterations.",
+      "mapping_basis": "The City text establishes basement/bench-footing work but the current request schema has no direct bench-footing decision field; keep the mapping sparse rather than inferring structural_change.",
+      "facts": {
+        "jurisdiction": "toronto_on",
+        "project": {
+          "family": "basement",
+          "action": "bench_footing"
+        }
+      }
+    }
+  ]
+}
