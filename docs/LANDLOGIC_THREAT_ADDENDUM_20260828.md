@@ -95,6 +95,29 @@ Sources:
 
 One Ontario already lets users describe projects in plain language, discuss project requirements and request permits through the Parcella experience.
 
+### 5. Geographic overlap is strong in Toronto/Mississauga but not yet province-complete
+
+LandLogic's public municipal-coverage page, last updated **2026-08-12**, lists more than 80 supported Ontario municipalities. The list includes **Toronto** and **Mississauga**. It does **not** list **Ottawa** in the current coverage table, and the public page does not show Quebec municipalities.
+
+Source:
+
+- `https://www.landlogic.ai/municipal-coverage-and-zoning-report-1`
+
+This matters because ProjectPermit's seven-city footprint is not uniformly threatened:
+
+- **Toronto / Mississauga:** direct LandLogic overlap is high;
+- **Ottawa:** ProjectPermit currently has a public geographic gap relative to LandLogic's listed coverage;
+- **Gatineau / Laval / Longueuil:** current LandLogic public coverage does not show Quebec penetration;
+- **Vancouver:** outside the Ontario-focused public coverage surface.
+
+Do **not** convert those gaps into demand evidence. They only mean the competitive pressure is geographically uneven.
+
+The correct implication is:
+
+> Ontario/GTA should be treated as a high-competition validation market, while Ottawa/Quebec/Vancouver remain potential geographic wedges that still require independent call-volume and willingness-to-pay evidence.
+
+No new municipality should be added merely to chase uncovered geography.
+
 ## Revised Ontario competitive classification
 
 LandLogic / One Ontario should now be classified as:
@@ -167,6 +190,8 @@ As of 2026-08-28:
 
 > Ontario remains useful for validation because ProjectPermit already has rules and covered-city workflows there, but it should be treated as a **high-competition validation market, not the default expansion market**.
 
+> Ottawa/Quebec/Vancouver remain competitive gaps only, not validated market opportunities. They become strategically meaningful only if external software/workflow evidence shows repeated call density and a concrete reason to prefer ProjectPermit over local internal logic.
+
 > New Ontario engineering should occur only after both the existing distribution gate and the LandLogic-specific differentiation test are passed.
 
-> Quebec remains strategically interesting mainly because LandLogic's current public terms/coverage do not show the same penetration there, but that whitespace is not demand evidence and must be tested against maintenance cost and software-channel size.
+> Quebec remains strategically interesting mainly because LandLogic's current public coverage does not show the same penetration there, but that whitespace is not demand evidence and must be tested against maintenance cost and software-channel size.
