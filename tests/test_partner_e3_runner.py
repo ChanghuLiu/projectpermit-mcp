@@ -32,7 +32,10 @@ def row(**overrides: str) -> dict[str, str]:
                 "structural_change": False,
             }
         ),
-        "property_facts_json": "{}",
+        # These tests exercise agreement/disagreement accounting, not unresolved
+        # property-overlay behavior. Make the no-overlay state explicit so the
+        # expected exemption is based on resolved facts rather than omission.
+        "property_facts_json": json.dumps({"piia": False, "heritage": False}),
         "usable_case": "yes",
         "address_resolution_needed": "no",
         "historical_determination": "LIKELY_NOT_REQUIRED",
