@@ -4,23 +4,21 @@
 
 BuilderAI materially weakened the assumption that contractor software must buy a separate ProjectPermit-style API. Its delivered urbanism capability shows that a vertical estimating SaaS can embed municipal regulatory reasoning directly in its quote workflow.
 
-This scan tests whether BuilderAI is already part of a broader Canadian pattern or remains an isolated exact substitute.
+A later targeted scan found **GoBuild** as a second, even closer publicly documented embedded case. The conclusion is therefore stronger than the original scan:
 
-Current conclusion:
+> **At least two independent Canadian contractor-software products now publicly embed pre-quote / in-job permit intelligence rather than exposing permit logic as a separate purchased ProjectPermit-style API dependency.**
 
-> **BuilderAI is the only exact publicly observed pre-quote municipal permit/urbanism embedded case found in this targeted scan. Adjacent Canadian contractor products internalize regional compliance or downstream permit information, but they do not yet establish a second exact `scope + municipality -> permit applicability before quote` substitute.**
+This does not prove those products maintain every rule internally, and it does not establish their accuracy or adoption. It does prove that `permit applicability/intelligence inside the contractor OS` is no longer an isolated product pattern.
 
-This means the build-vs-buy risk is real, but the current evidence does **not** justify treating vertical internalization as an already ubiquitous industry pattern.
+## Exact case 1: BuilderAI
 
-## Exact case: BuilderAI
-
-BuilderAI is the current exact embedded substitute because it publicly shows:
+BuilderAI is an exact embedded substitute because it publicly shows:
 
 - project/plan analysis;
 - estimating and quotation;
 - municipal `rapport urbanisme` before quote delivery;
 - a Laval example concluding no permit is required for the shown interior bathroom renovation;
-- municipal urbanism regulation tooling listed as `Livré` on its public roadmap.
+- municipal urbanism regulation tooling listed as delivered on its public roadmap.
 
 Sources:
 
@@ -28,7 +26,62 @@ Sources:
 - `https://www.builder-ai.ca/demo`
 - `https://www.builder-ai.ca/roadmap`
 
+The Laval bathroom demo was independently checked against current City of Laval guidance and the shown `no permit` conclusion is consistent with Laval's published rule for renovation of an existing bathroom when the relevant trigger conditions are absent. This is a concrete example where the embedded vertical product is not merely displaying generic Ontario/Quebec text.
+
 See also `docs/BUILDERAI_QUEBEC_THREAT_ADDENDUM_20260828.md`.
+
+## Exact case 2: GoBuild — permit prediction + cited current local code inside contractor OS
+
+GoBuild is a broader construction-management product for GCs, home builders, remodelers and specialty trades. Its public product pages explicitly advertise:
+
+- inline estimates and proposals;
+- an `AI permit & zoning intelligence` feature;
+- prediction of **the permits and drawings a job needs**;
+- zoning checking against **current local code**;
+- **cited sources**;
+- an inspections tracker;
+- job-command-center permit status embedded with the rest of project operations.
+
+A public command-center example shows:
+
+`Building permit — likely required (City of Toronto)`
+
+Sources:
+
+- `https://www.gobuild.ca/features`
+- `https://www.gobuild.ca/`
+- `https://www.gobuild.ca/pricing`
+
+GoBuild's pricing page says every feature is included in one plan and specifically lists `Permits & compliance tracker`; the permit/zoning intelligence is not presented as a separately metered external API purchase by the contractor.
+
+Important limits:
+
+- GoBuild does not publicly disclose the internal data/provider architecture behind the permit feature;
+- no representative accuracy benchmark was found;
+- no public customer/adoption denominator for the permit feature was found;
+- no public third-party permit-intelligence API/white-label contract was found in the current scan.
+
+Even with those limits, GoBuild is materially closer to ProjectPermit's intended output than a permit-document repository or simple search tool because it explicitly predicts required permits using local code and cited sources inside the contractor workflow.
+
+## Adjacent case: Jobtract — multi-city permit search/compliance inside quote software
+
+Jobtract is a Canadian AI-first field-service / contractor platform. Its current public product advertises:
+
+- AI quoting;
+- `Permits Search` with AI-assisted permit search and form filling;
+- `Permit search · 30+ cities`;
+- a four-agent quote society in which intake, materials, pricing and **compliance** specialists build a quote before QA;
+- a public MCP server exposing its own business tool catalog.
+
+Source:
+
+- `https://jobtract.ca/`
+
+The current public text does **not** clearly prove that Jobtract produces a deterministic `required / not required` municipal building-permit decision before quote, so it is not counted as a third exact ProjectPermit substitute.
+
+It is nevertheless strong architectural evidence that Canadian contractor software vendors are willing to internalize multi-city permit-related functionality rather than leave it entirely to a separate permit system.
+
+A build-vs-buy question was sent to Jobtract's verified public support address on 2026-08-28 asking whether its permit layer is maintained internally or relies on an external provider, and whether material-volume economics would favor metered API, fixed license, or in-house logic. Until a human reply arrives, this is E0 outreach only.
 
 ## Adjacent case: Contrax — permit-set interpretation, not permit applicability
 
@@ -57,7 +110,7 @@ Important boundary:
 
 > this is **downstream permit-document interpretation**. The permit/drawing set already exists. It is not public evidence that Contrax independently determines whether a permit is required before the permit process starts.
 
-Therefore Contrax must not be counted as a second exact BuilderAI-like competitor.
+Therefore Contrax must not be counted as an exact BuilderAI/GoBuild-like competitor.
 
 ### Why Contrax is still a high-value falsification target
 
@@ -99,7 +152,7 @@ This proves permits are a first-class downstream project artifact in contractor 
 
 It does **not** show that Chronly determines permit applicability before quote approval.
 
-Therefore Chronly is workflow-adjacency evidence only, not a second embedded permit-intelligence competitor.
+Therefore Chronly is workflow-adjacency evidence only, not an embedded permit-intelligence competitor.
 
 ## Adjacent case: TradeDesk — Ontario compliance internalized, but not municipal permit applicability
 
@@ -126,8 +179,6 @@ But the current public scan found no municipal `permit required / not required` 
 
 So TradeDesk is **build-in-house propensity evidence**, not exact permit-applicability competition.
 
-No outreach was sent because the current public review did not identify a verified public email address; no address was guessed.
-
 ## Adjacent case: Markup — trade permit fee/compliance inside quote, not municipal applicability
 
 Markup's Canadian HVAC quoting product shows Ontario-specific trade/compliance context inside quotes, including TSSA contractor licence information and a permit/inspection fee line item in a sample installation quote.
@@ -140,43 +191,48 @@ This again demonstrates that vertical contractor software can internalize regula
 
 It does not establish a municipal building-permit applicability engine for residential renovation scope.
 
-## Current interpretation
+## Revised interpretation
 
-The scan supports four distinct categories that must not be conflated:
+The scan now supports five distinct categories:
 
-1. **Exact pre-quote permit/urbanism determination** — BuilderAI is the one current exact public case identified here.
-2. **Downstream permit-document interpretation** — Contrax.
-3. **Permit/project artifact management after quote approval** — Chronly.
-4. **Regional/trade compliance embedded in vertical SaaS** — TradeDesk, Markup.
+1. **Exact/near-exact embedded permit determination/intelligence** — BuilderAI and GoBuild.
+2. **Multi-city permit search/compliance internalized in contractor software** — Jobtract.
+3. **Downstream permit-document interpretation** — Contrax.
+4. **Permit/project artifact management after quote approval** — Chronly.
+5. **Regional/trade compliance embedded in vertical SaaS** — TradeDesk, Markup.
 
-Only category 1 directly substitutes for ProjectPermit's core output.
+Category 1 directly pressures ProjectPermit's core output.
 
-Categories 2-4 matter because they show vertical SaaS vendors have the technical and product incentive to internalize adjacent regulatory functions.
+Categories 2-5 matter because they show multiple independent vendors have the technical/product incentive to internalize regulatory functions rather than default to an external specialized API.
 
 ## Score implication
 
-This scan does **not** justify another automatic score reduction below the current 53/100.
+The original scan did not justify a score reduction because BuilderAI was the only exact public case.
 
-Why:
+GoBuild changes that conclusion. It independently demonstrates the same broad product pattern in another contractor OS and adds two details especially close to ProjectPermit:
 
-- BuilderAI confirms one real exact internalization path;
-- no second exact public Canadian pre-quote municipal permit-applicability case was found in this targeted scan;
-- LandLogic's third-party API is broad property/zoning intelligence, while the exact narrow permit-applicability API contract remains publicly unverified;
-- external buyers have not yet answered whether maintaining municipal permit rules internally is cheaper/preferable to buying a shared service.
+- permit-needs prediction from job context;
+- cited current-local-code sources.
 
-Therefore the next score movement should come from **build-vs-buy buyer evidence**, not inference from adjacent features.
+Therefore **competitive headroom should fall from 2/10 to 1/10**.
+
+This is not a claim that GoBuild's output is more accurate, has broad Canadian municipal coverage, or is available as an external API. It is a recognition that the remaining whitespace for a standalone embedded permit capability is now extremely narrow.
+
+No additional defensibility reduction is applied from this evidence alone because defensibility is already 2/10 and buyer preference/build-vs-buy economics still require external confirmation.
 
 ## Kill / upgrade conditions
 
 ### Strong negative / kill pressure
 
-Downgrade ProjectPermit materially if Contrax, Elper, BuilderAI or another credible software buyer says:
+Downgrade ProjectPermit materially if Contrax, Jobtract, Elper, BuilderAI or another credible software buyer says:
 
 - municipal permit applicability is straightforward enough to build with their existing AI/RAG stack;
 - they prefer owning the data/rules/product experience internally;
 - external API cost/latency/dependency outweighs maintenance savings;
 - deterministic rule IDs/source versioning do not matter to their workflow;
 - the pre-quote question is too rare to justify either build or buy.
+
+Also downgrade if GoBuild, LandLogic or another competitor exposes a low-friction third-party permit-specific API with comparable workflow coverage/economics.
 
 ### Positive differentiation evidence
 
@@ -187,15 +243,15 @@ Upgrade only if software buyers independently say an external capability is pref
 - reproducibility/evidence/version history matters;
 - they need conservative unresolved-property handling;
 - they want the same capability across many cities/products/workflows;
-- external per-call economics beat internal maintenance;
+- external economics beat internal maintenance;
 - they would allocate integration resources or pay for a real pilot.
 
 ## Bottom line
 
-BuilderAI makes `we can put permit guidance in the quote workflow` non-differentiating.
+BuilderAI and GoBuild make `we can put municipality-aware permit intelligence with sources into the contractor workflow` non-differentiating.
 
-The remaining ProjectPermit question is now narrower and more valuable:
+The remaining ProjectPermit question is now extremely narrow:
 
-> **Will vertical software vendors buy a shared, maintained, deterministic municipal permit capability instead of building a narrower RAG feature themselves?**
+> **Will software/agent buyers pay for a shared, self-serve, maintained, deterministic cross-city permit capability instead of using their own embedded AI/RAG, an assisted platform such as LandLogic, or bundled permit intelligence already inside their operating software?**
 
-The Contrax outreach is designed to answer exactly that question.
+Only external build-vs-buy + E3/E4/E5 evidence can rescue that thesis.
