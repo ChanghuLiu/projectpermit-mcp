@@ -55,26 +55,63 @@ Sources:
 - `https://www.soumissionsmaison.com/inscription-comme-partenaire/`
 - `https://www.soumissionsmaison.com/obtenez-de-nouveaux-clients/`
 
-This is stronger insertion-point evidence than generic claims about lead generation.
+### Renovation itself is inside an operator-handled workflow
 
-It establishes that at least this public Soumissions Maison workflow has a real operator-controlled decision stage **after intake and before partner delivery**.
+A current Soumissions Maison renovation page is directly relevant to ProjectPermit's existing families. It includes renovation work such as:
 
-That stage is conceptually where a ProjectPermit result could matter, for example by influencing:
+- doors/windows;
+- bathroom work;
+- additions/house extensions;
+- garage work;
+- other interior/exterior renovation.
 
-- which partner category receives the request;
-- whether a request needs more human validation;
-- whether it is held, redirected or considered unsuitable;
-- whether additional project information is required before delivery.
+Its live form captures fields including:
 
-However, public evidence still does **not** establish that:
+- unique request ID;
+- full civic address;
+- city and postal code;
+- property type;
+- type/nature of work;
+- owner status;
+- planned date;
+- required detailed work description.
 
-- Soumissions Cuisine and Soumissions Plomberie use exactly this same triage centre/process;
-- all Oolong-controlled renovation funnels converge into one shared lead record;
-- permit applicability is currently considered during triage;
-- permit information would materially change any triage decision;
-- current-family permit uncertainty occurs frequently enough to matter.
+The page says the **Soumissions Maison team identifies the renovation contractors that best match the consumer's criteria and needs**, and its service description says submitted information is handled by the team and sent to three regional renovation contractors.
 
-Therefore this finding strengthens the **insertion-point hypothesis**, not the denominator, fact-sufficiency, material-effect or buy-preference evidence.
+Source:
+
+- `https://www.soumissionsmaison.com/renovation-et-travaux/`
+
+This removes a material ambiguity from the earlier review: team handling is not documented only for real-estate/professional-service leads; there is a directly current-family-adjacent **renovation intake -> team matching -> contractor delivery** workflow.
+
+It also makes this renovation funnel one of the strongest public fact-sufficiency candidates found so far because the intake already includes address plus structured work attributes and free text.
+
+### Ownership / technical identity boundary still matters
+
+The current Soumissions Maison terms describe Soumissions Maison itself as collecting/managing/transmitting submitted data. They do **not** directly name Oolong Media Inc. as the current legal owner/data controller of `soumissionsmaison.com`.
+
+At the same time, current Soumissions Maison pages:
+
+- credit site creation to Oolong Media;
+- contain partner testimonials describing business with Oolong Media;
+- include author/team biographies stating Oolong Media staff participate in management of companies partnered with Soumissions Maison.
+
+Sources:
+
+- `https://www.soumissionsmaison.com/conditions-utilisation/`
+- `https://www.soumissionsmaison.com/annoncez-avec-nous/`
+- `https://www.soumissionsmaison.com/obtenez-de-nouveaux-clients/`
+
+These are strong operational-link signals, but they are **not substituted for a direct current legal-ownership statement**.
+
+Keep two evidence chains separate:
+
+1. **Soumissions Maison renovation triage / team handling** — directly evidenced on current Soumissions Maison pages;
+2. **Oolong ownership/data control of Soumissions Cuisine and Soumissions Plomberie** — independently evidenced in those sites' terms.
+
+The unresolved commercial/technical question is whether those chains converge into the same current internal lead record/CRM/triage infrastructure.
+
+Therefore this finding strengthens the **insertion-point and fact-sufficiency hypotheses**, not the denominator, shared-topology, material-effect or buy-preference evidence.
 
 ---
 
@@ -144,9 +181,25 @@ Source:
 
 - `https://soumissionscuisine.ca/`
 
-These field surfaces support the idea that ProjectPermit could be inserted after form capture without creating a completely new consumer questionnaire for every case.
+### Soumissions Maison renovation
 
-They do not reveal the server-side form processor or prove one shared technical endpoint.
+Current renovation intake exposes a particularly strong operator-side candidate surface:
+
+- unique ID;
+- full address, city and postal code;
+- property type;
+- type and nature of work;
+- ownership;
+- timing;
+- detailed description.
+
+Source:
+
+- `https://www.soumissionsmaison.com/renovation-et-travaux/`
+
+These field surfaces support the idea that ProjectPermit could be evaluated **after existing form capture** rather than require a wholly new consumer questionnaire for every case.
+
+They do not reveal the server-side processor or prove one shared technical endpoint.
 
 ---
 
@@ -156,6 +209,7 @@ The current operator model is more important than the exact WordPress plugin:
 
 - Oolong lets partners choose the **type**, **territory** and **quantity** of leads;
 - Soumissions Maison publicly documents a **pre-delivery team triage stage**;
+- the Soumissions Maison renovation funnel itself uses team matching and already captures address/scope facts;
 - requests can be redirected when unsuitable for a particular partner;
 - Oolong publicly frames the business as lead-to-deal performance marketing rather than independent site hosting.
 
@@ -167,9 +221,9 @@ The key question is no longer simply:
 
 It is:
 
-> `Do the relevant Oolong-controlled renovation funnels converge into one operator-side lead/triage record where a permit signal can be evaluated before partner delivery?`
+> `Do the relevant Oolong-controlled renovation funnels converge into the same operator-side lead/triage record evidenced by the Soumissions Maison renovation workflow, where a permit signal can be evaluated before partner delivery?`
 
-Only Oolong can confirm that boundary.
+Only Oolong/Soumissions Maison can confirm that boundary.
 
 ---
 
@@ -177,19 +231,20 @@ Only Oolong can confirm that boundary.
 
 Public evidence supports:
 
-- `CENTRAL_OPERATOR_CONTROL = YES`
+- `CENTRAL_OPERATOR_CONTROL = YES_FOR_OOLONG_VERIFIED_FUNNELS`
 - `PRE_DELIVERY_TRIAGE_STAGE = YES_FOR_PUBLIC_SOUMISSIONS_MAISON_WORKFLOW`
-- `MULTI_FUNNEL_DATA_COLLECTION = YES`
+- `RENOVATION_TEAM_MATCHING_STAGE = YES_FOR_SOUMISSIONS_MAISON_RENOVATION`
+- `RENOVATION_STRUCTURED_ADDRESS_SCOPE_INTAKE = YES`
 - `PUBLIC_PARTNER_DELIVERY = EMAIL_FIRST`
 - `HISTORICAL_SHARED_FORM_INFRASTRUCTURE = YES`
 - `CURRENT_SHARED_CRM_OR_DATABASE = UNVERIFIED`
-- `CURRENT_FAMILY_FUNNELS_SHARE_DOCUMENTED_TRIAGE_STAGE = UNVERIFIED`
+- `OOLONG_VERIFIED_CURRENT_FAMILY_FUNNELS_SHARE_SOUMISSIONS_MAISON_TRIAGE = UNVERIFIED`
 - `PUBLIC_PARTNER_API_OR_WEBHOOK = NOT_FOUND`
 - `ONE_INTEGRATION_ACROSS_CURRENT_FAMILY_FUNNELS = UNVERIFIED`
 
 Therefore the correct current ProjectPermit integration classification remains:
 
-> **UNKNOWN — a real pre-delivery operator triage point is documented, but a shared current-family technical insertion point is not externally demonstrated.**
+> **UNKNOWN — a real current renovation pre-delivery team-matching point and strong intake surface are documented, but convergence with Oolong-verified current-family funnels into one technical insertion point is not externally demonstrated.**
 
 Do not mark Oolong as `CENTRAL_SINGLE_INTEGRATION` or `CENTRAL_WITH_SITE_MAPPING` until a human/operator or direct technical artifact confirms it.
 
@@ -201,13 +256,13 @@ This boundary cuts both ways.
 
 ### Positive
 
-A centralized operator already has a qualification/routing stage, so ProjectPermit may not need to invent a new operational step.
+A renovation operator workflow already has human/team matching after structured intake, so ProjectPermit may not need to invent a new operational step.
 
 If one internal enrichment point reaches several relevant funnels, integration cost `I` can be amortized across a larger `N`.
 
 ### Negative
 
-Because the public partner product is email-first rather than an exposed API ecosystem, a ProjectPermit pilot likely requires **Oolong's internal engineering/operations cooperation**.
+Because the public partner product is email-first rather than an exposed API ecosystem, a ProjectPermit pilot likely requires **internal engineering/operations cooperation**.
 
 That cooperation is itself valuable evidence:
 
@@ -221,14 +276,14 @@ Therefore an integration discussion should be treated as part of E5/resource val
 
 ## 8. Highest-value human questions
 
-If Oolong responds, ask only after the bounded denominator/workflow questions:
+If Oolong/Soumissions Maison responds, ask only after the bounded denominator/workflow questions:
 
-1. Do Soumissions Cuisine, Soumissions Plomberie and the other relevant renovation funnels pass through the same pre-delivery triage/routing process described publicly by Soumissions Maison?
-2. Do those funnels converge into one internal lead record/CRM/routing process before partner email delivery?
-3. What decisions does the triage team currently make, and would knowing `permit required / likely not / municipal confirmation needed` change any of them?
+1. Does the current Soumissions Maison renovation workflow and Oolong-controlled funnels such as Soumissions Cuisine / Soumissions Plomberie converge into one internal lead record/CRM/triage process before partner email delivery?
+2. How many **unique** renovation/current-family requests crossed that process in the most recent complete month, and how many would actually be candidates for permit preflight?
+3. At triage, how often is permit applicability unresolved, and what decision would `required / likely-not / municipal-confirmation-needed` actually change?
 4. Can one enrichment step see leads from multiple funnels, or would each site need separate work?
 5. Could a shadow permit-preflight result be attached before partner routing without changing homeowner-facing behavior?
-6. Would Oolong rather call an externally maintained service or implement municipal permit logic inside its existing shared stack?
+6. Would the operator rather call an externally maintained service or implement municipal permit logic inside its existing shared stack?
 
 Do not build a Gravity Forms plugin or webhook before these answers exist.
 
@@ -238,22 +293,25 @@ Do not build a Gravity Forms plugin or webhook before these answers exist.
 
 **No score change. ProjectPermit remains 50/100, PAUSE / RE-SCOPE.**
 
-This review now proves more than generic centralization: a real public pre-delivery triage stage exists in the Soumissions Maison workflow.
+This review now establishes two commercially useful structural facts:
+
+- a real public pre-delivery triage/team-matching stage exists;
+- a current-family-adjacent renovation funnel already captures a strong address + structured-scope input surface before contractor delivery.
 
 But it still does not establish:
 
 - current-family candidate volume;
 - unresolved permit incidence;
-- shared current-family triage/CRM topology;
+- convergence of Oolong-verified funnels with the Soumissions Maison renovation triage/backend;
 - material effect of permit information;
 - external buy/resource commitment.
 
-That makes Oolong a better **validation target**, not a validated integration.
+That makes the route a better **validation target**, not a validated integration.
 
 ## Bottom line
 
-The operator route should now be stated precisely:
+The integration thesis should now be stated precisely:
 
-> Oolong/Soumissions Maison publicly documents an operator-controlled triage step between form intake and partner delivery, while Oolong historically used reusable WordPress/Gravity Forms infrastructure. ProjectPermit therefore has a plausible existing insertion point, but no current public API/webhook or confirmed shared current-family CRM/triage integration has been found.
+> Soumissions Maison publicly demonstrates a current renovation intake -> team matching/triage -> contractor delivery workflow with strong address/scope facts, while separate terms prove Oolong ownership/data control for current-family funnels such as Soumissions Cuisine and Soumissions Plomberie. The unresolved proof is whether these surfaces converge into one current technical lead/triage layer that can be enriched once.
 
-The next proof must come from Oolong's workflow/technical response, not more speculative engineering.
+The next proof must come from operator workflow/technical evidence, not more speculative engineering.
