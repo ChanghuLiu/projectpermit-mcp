@@ -59,6 +59,34 @@ The platform explicitly lists project categories overlapping ProjectPermit's cur
 - cuisine / salle de bain;
 - rénovation générale.
 
+### Permit-applicability is already visible inside the platform's content funnel
+
+This target is stronger than a generic quote marketplace because Québec Rénovation itself publishes permit guidance for several current-family-like projects.
+
+Examples reviewed on 2026-08-28:
+
+- **detached garage:** its sample cost breakdown includes a municipal construction permit as an explicit line item, while the FAQ says a permit is generally required and local rules vary by municipality;
+- **window replacement:** it says same-size replacement generally does not require a permit in many municipalities, while changing/adding the opening or façade does;
+- **basement finishing:** it says a permit is often required for significant work depending on the municipality and exact scope;
+- **patio:** its FAQ says permit need can depend on municipality, height, size and whether the patio is attached to the residence;
+- the homepage explicitly markets guides covering `les permis requis` alongside quote comparison.
+
+Sources:
+
+- `https://quebecrenovation.com/prix-garage-detache/`
+- `https://quebecrenovation.com/prix-remplacement-de-fenetres/`
+- `https://quebecrenovation.com/prix-sous-sol/`
+- `https://quebecrenovation.com/author/ool_ppr/`
+- `https://quebecrenovation.com/`
+
+Interpretation:
+
+> permit applicability is demonstrably relevant to the questions this platform addresses **before or around quote planning**.
+
+However, the public guidance remains generic and repeatedly directs the user to verify with the municipality. It does not prove city-specific automated determination, call volume, or willingness to buy an external API.
+
+This is therefore **workflow relevance evidence**, not E2 demand evidence.
+
 ### Why the arithmetic is promising enough to ask
 
 12,000 requests/year is about **1,000 requests/month** across all categories.
