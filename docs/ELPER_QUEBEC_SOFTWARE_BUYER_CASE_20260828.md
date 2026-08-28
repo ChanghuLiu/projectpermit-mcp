@@ -76,7 +76,13 @@ Elper must answer this directly.
 
 ## SoumissionRénovation adjacency
 
-SoumissionRénovation has publicly announced a partnership with Elper. That matters because SoumissionRénovation is currently ProjectPermit's strongest observed Quebec high-volume renovation-platform candidate.
+SoumissionRénovation publicly announced a partnership with Elper in July 2024 and describes Elper as supporting the construction workflow from quotation through invoicing. The same partnership page says accepted quotations can be converted into detailed projects.
+
+Source:
+
+- `https://soumissionrenovation.ca/fr/blogue/engagement-continu-pour-nos-entrepreneurs-nouveau-partenariat-avec-elper`
+
+That matters because SoumissionRénovation is currently ProjectPermit's strongest observed Quebec high-volume renovation-platform candidate.
 
 The partnership shows that Elper is not isolated from Quebec renovation lead/project ecosystems and that software partnership is a plausible operating model.
 
