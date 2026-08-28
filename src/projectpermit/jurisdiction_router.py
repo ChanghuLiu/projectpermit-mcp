@@ -5,6 +5,7 @@ from typing import Any
 
 from .engine import evaluate_project as evaluate_phase0_project
 from .expansion_rules import evaluate_expansion_project
+from .overlay_safety import apply_unknown_overlay_safety
 from .quebec_expansion_rules import evaluate_quebec_expansion_project
 from .vancouver_rules import evaluate_vancouver_project
 
@@ -20,13 +21,11 @@ SUPPORTED_JURISDICTIONS = (
 
 
 def evaluate_project(facts: dict[str, Any]) -> dict[str, Any]:
-    expanded = evaluate_expansion_project(facts)
-    if expanded is not None:
-        return expanded
-    expanded_qc = evaluate_quebec_expansion_project(facts)
-    if expanded_qc is not None:
-        return expanded_qc
-    expanded_bc = evaluate_vancouver_project(facts)
-    if expanded_bc is not None:
-        return expanded_bc
-    return evaluate_phase0_project(facts)
+    result = evaluate_expansion_project(facts)
+    if result is None:
+        result = evaluate_quebec_expansion_project(facts)
+    if result is None:
+        result = evaluate_vancouver_project(facts)
+    if result is None:
+        result = evaluate_phase0_project(facts)
+    return apply_unknown_overlay_safety(facts, result)
