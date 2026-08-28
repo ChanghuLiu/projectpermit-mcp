@@ -16,7 +16,8 @@ See also:
 
 - `docs/COVERED_MARKET_CALL_SENSITIVITY.md` for the covered-city issuance floor and paid-share analysis;
 - `docs/REACHABLE_CONTRACTOR_DENOMINATOR.md` for the seven-city business-location floor;
-- `docs/TRADE_WORKLOAD_EVIDENCE.md` for direct-contractor, broad trade-flow and current-family-like workflow evidence.
+- `docs/TRADE_WORKLOAD_EVIDENCE.md` for direct-contractor, broad trade-flow and current-family-like workflow evidence;
+- `docs/COMPETITIVE_LANDSCAPE.md` for the competitor matrix and differentiation gate that must be satisfied in addition to call-volume gates.
 
 ## Two different commercial checkpoints
 
@@ -330,6 +331,21 @@ A city generating little paid usage but requiring several maintenance hours/mont
 
 The next search priority is explicitly a partner or integration capable of exposing bounded **current-family** Request/Assessment/Quote volume, not another broad directory listing, trade-volume statistic or speculative adapter.
 
+### Differentiation proof
+
+Call volume alone is no longer enough. `docs/COMPETITIVE_LANDSCAPE.md` documents direct overlap from One Ontario/LandLogic, Clariti Guide, QwikScope Greenlight, Permitech and PermitMint, plus province-level infrastructure in B.C.
+
+Before materially expanding coverage or building production adapters, require evidence that a real software/integration buyer needs the **specific ProjectPermit delivery model**, not merely permit guidance in general.
+
+A credible differentiation proof should include at least one of:
+
+- **two independent third-party software/integration buyers** explicitly identify why existing municipal portals, One Ontario/LandLogic, Clariti, permit-service vendors, or other permit-intelligence products do not fit their pre-quote / work-order workflow;
+- one bounded partner workflow where the existing alternative requires municipality procurement, custom implementation, manual research, or human permit operations, while a lightweight ProjectPermit-style API can be invoked directly;
+- one external pilot where the **same integration** uses ProjectPermit across multiple municipalities and would otherwise need separate municipal integrations or manual rule research;
+- an E5 buyer accepts a concrete per-call or paid-pilot term specifically for the machine-readable evidence-linked applicability result.
+
+Do **not** treat the following as differentiation by themselves: Canada coverage, address resolution, GIS, citations, conversational AI, cross-jurisdiction data, or having an API. Competitors already demonstrate those capabilities individually.
+
 ### Monetization proof
 
 Separately require evidence for:
@@ -350,11 +366,14 @@ A strong checkpoint is 10,000 paid address-aware calls/month, but lower volume c
 - address-aware share or willingness to pay is too low to support monetization;
 - partners mainly want full submission/expediting rather than preflight;
 - nearly every call requires manual expert research;
-- required data becomes dominated by expensive licensed sources.
+- required data becomes dominated by expensive licensed sources;
+- LandLogic / One Ontario or another provider exposes a self-serve Canadian permit-requirement API that satisfies the same third-party workflow at competitive economics;
+- target SaaS/integrators repeatedly report that an existing municipal portal, land-intelligence provider, permit-intelligence vendor, or permit-service partner already solves the decision well enough;
+- the only remaining distinction is `cheaper`, without enough E4/E5 paid volume to justify ongoing rule maintenance.
 
 ## Bottom line
 
-ProjectPermit does not need millions of customers. It needs a small number of integrations that generate repeated **current-family** calls and a sufficiently large monetizable address-aware subset.
+ProjectPermit does not need millions of customers. It needs a small number of integrations that generate repeated **current-family** calls and a sufficiently large monetizable address-aware subset **that existing alternatives do not already satisfy**.
 
 Current public evidence says:
 
@@ -366,12 +385,16 @@ Current public evidence says:
 
 > **platform / multi-account integration:** still the most plausible aggregation path, but current-family upstream incidence is unproven
 
-The near-term model remains two-dimensional:
+> **generic permit-guide / permit-intelligence capability:** already crowded; a narrower Canadian developer/agent API delivery model is the remaining hypothesis, not a proven moat
+
+The near-term model is now three-dimensional:
 
 > **distribution:** external successful current-family preflights/month
+
+> **differentiation:** why the target buyer cannot or will not use an existing alternative
 
 and
 
 > **economics:** paid address-aware calls/month × realized price − maintenance/infra cost
 
-Do not collapse those metrics or substitute broad permit volume for current-product demand.
+Do not collapse those metrics, substitute broad permit volume for current-product demand, or pass the scale gate without also passing the differentiation gate.
