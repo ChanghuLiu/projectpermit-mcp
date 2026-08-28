@@ -1,0 +1,10 @@
+claim,public_evidence,independent_evidence,decision_use
+"Automatically determines required permits from new project","PlanEdge workflow page explicitly states automatic determination and intelligent intake","None found in current public search","Exact functional overlap; high priority"
+"Requirements based on project type + municipality + scope","Smart Checklists public copy","None found","Exact input-shape overlap with ProjectPermit"
+"444+ Canadian municipalities","Vendor website and municipality-guide counts","No independent coverage verification found","Do not treat as proven scale until corroborated"
+"Open REST API","Vendor integration page","No public API docs/endpoints found","Critical unresolved boundary: status/data sync vs requirement-engine access"
+"National contractor/homebuilder customers","Anonymous vendor testimonials","No independently named customer found","Do not count as E2/E4 adoption evidence"
+"Founded Toronto 2022","Vendor story page","Current indexed LinkedIn footprint is very small; older domain snapshot was much simpler","Treat company/product existence as plausible but delivery history unverified"
+"Thousands of permit applications used for analytics","Vendor analytics page","No external dataset/customer corroboration found","Do not use as volume denominator"
+"Dedicated permit specialist assigned","Vendor contact/enterprise copy","Consistent with managed-service model","Weakens self-serve substitution inference; supports human-assisted delivery hypothesis"
+"Homeowner free assessment identifies every required permit","Vendor homeowner page","No independent assessment output found","Strong product overlap but not API proof"
