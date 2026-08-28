@@ -160,6 +160,31 @@ No integration-cost dollar amount is assumed here.
 
 That omission is deliberate. Public website/API research cannot establish a partner's actual internal integration cost.
 
+### SoumissionRénovation integration-surface boundary
+
+The current public contractor workflow says:
+
+- a contractor joins the network;
+- dedicated account managers discuss the project types the contractor wants;
+- matching projects are sent **by email**;
+- the contractor can accept projects at its convenience.
+
+Official source:
+
+- `https://www.soumissionrenovation.ca/fr/comment-ca-fonctionne?contractor=true`
+
+A focused public search did **not** find ordinary external developer documentation for a SoumissionRénovation API, webhook, partner feed or CRM connector.
+
+A recent third-party job listing attributed to SoumissionRenovation.ca seeks a CRM specialist who understands data flows and integrations including **APIs and webhooks**, with Zoho CRM as a major asset. This is evidence that API/webhook concepts exist in the company's internal CRM/integration environment, but it is **not evidence of a public or partner-facing ProjectPermit insertion surface**.
+
+Third-party context source:
+
+- `https://www.simplyhired.ca/job/GJ_VeZlHdKVqdmxUAvP-XkxYRRNIDJCp6Akr1Ax0nDniW3KdhlN0QA`
+
+Therefore:
+
+> SoumissionRénovation appears integration-capable internally, but external integration availability and partner integration cost remain unverified.
+
 Consequences:
 
 - low-volume pilots can look uneconomic even when the raw metered call is cheap because `I/N` is large;
