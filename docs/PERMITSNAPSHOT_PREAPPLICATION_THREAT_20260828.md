@@ -66,6 +66,24 @@ That is useful guidance, but it does not publicly demonstrate all municipality-s
 
 This is not evidence that PermitSnapshot's paid reports are wrong; it only means public evidence does not yet establish the same deterministic municipal granularity ProjectPermit is trying to provide.
 
+## Traction check
+
+A 2026-08-28 public-web scan did **not** find independent evidence of material PermitSnapshot traction such as:
+
+- third-party customer reviews;
+- named builder/realtor case studies;
+- partner announcements;
+- independent usage/revenue figures;
+- external product integrations.
+
+The visible scale/usage language is currently vendor-published. The site also advertises a newsletter audience of 500+ Ontario homeowners/builders/real-estate professionals, but this is not a paid-customer denominator and is not independently verified.
+
+Therefore PermitSnapshot should currently be treated as:
+
+> **high conceptual/product overlap, unproven commercial traction.**
+
+This is sufficient to reduce defensibility because it demonstrates easy independent product convergence, but it is **not** sufficient to claim that buyers have already chosen PermitSnapshot at scale.
+
 ## Direct falsification outreach
 
 A short email was sent on 2026-08-28 to the contact address published in PermitSnapshot's own disclaimer (`Jackie605324@icloud.com`).
