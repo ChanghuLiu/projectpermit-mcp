@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'market_research/toronto_trade_permit_volume.py'
+      - 'market_research/toronto_public_positive_control_sampler.py'
       - '.github/workflows/toronto-market-workload.yml'
 
 permissions:
@@ -29,4 +30,24 @@ jobs:
         with:
           name: toronto-trade-permit-volume-2023-2025
           path: toronto_trade_permit_volume_*.json
+          if-no-files-found: error
+
+  public-positive-control-candidates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build deterministic privacy-minimized residential permit-positive candidate sample
+        run: |
+          python market_research/toronto_public_positive_control_sampler.py \
+            --start-date 2026-06-01 \
+            --end-date 2026-08-28 \
+            --limit 60 \
+            --output toronto_public_positive_control_candidates.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toronto-public-positive-control-candidates-2026
+          path: toronto_public_positive_control_candidates.json
           if-no-files-found: error
