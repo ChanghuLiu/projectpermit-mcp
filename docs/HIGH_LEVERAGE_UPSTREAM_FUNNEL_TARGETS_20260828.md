@@ -18,16 +18,7 @@ RenoAssistance currently reports:
 - a workflow where the customer first describes the project, then works with an advisor and receives up to three contractor quotes;
 - service in Quebec and Ontario, with current public pages explicitly showing Greater Ottawa, Toronto / Greater Toronto, and Outaouais in relevant service lines.
 
-Current public service content includes ProjectPermit-relevant work such as:
-
-- complete kitchen renovation;
-- complete bathroom renovation;
-- basement renovation;
-- window and door replacement;
-- balcony/patio renovation;
-- home/garage expansion;
-- home conversion;
-- home and garage construction.
+Current public service content includes ProjectPermit-relevant work such as kitchens, bathrooms, basements, windows/doors, balcony/patio renovation, additions, conversions and garage/home construction.
 
 Sources:
 
@@ -49,27 +40,12 @@ Recipient: `info@renoassistance.ca`
 
 Asked for one recent complete month across Greater Ottawa + Greater Toronto + Outaouais:
 
-1. residential renovation intake-project count bucket:
-   - `<100`
-   - `100-249`
-   - `250-499`
-   - `500-999`
-   - `1,000+`
-2. share still requiring someone to determine municipal permit applicability before/during quote preparation:
-   - `<10%`
-   - `10-24%`
-   - `25-49%`
-   - `50%+`
+1. residential renovation intake-project count bucket: `<100 / 100-249 / 250-499 / 500-999 / 1,000+`;
+2. share still requiring someone to determine municipal permit applicability before/during quote preparation: `<10% / 10-24% / 25-49% / 50%+`.
 
 No client names, addresses, records or confidential data requested.
 
 Evidence state: **no qualifying reply yet**.
-
-### Why this target can move the score
-
-If RenoAssistance reports `>=500` current-family candidate projects/month with a meaningful unresolved permit share, it would establish a credible path to the first 500+/month integration gate from one upstream workflow.
-
-If it reports permit applicability is almost always resolved before intake/quote, that is strong negative E2 evidence against the target insertion point.
 
 ## Priority B — HomeStars
 
@@ -81,17 +57,7 @@ HomeStars' current workflow is explicitly:
 2. suitable pros receive/respond to the lead;
 3. homeowner shortlists pros and then discusses/collects quotes.
 
-HomeStars currently exposes service coverage in Toronto, Ottawa, Mississauga and Vancouver and lists many ProjectPermit-current-family jobs, including:
-
-- basement renovation;
-- decking;
-- sheds/outbuildings;
-- garages;
-- porches;
-- kitchens;
-- bathrooms;
-- windows;
-- general contracting and renovation.
+HomeStars currently exposes service coverage in Toronto, Ottawa, Mississauga and Vancouver and lists many ProjectPermit-current-family jobs including basements, decking, sheds/outbuildings, garages, porches, kitchens, bathrooms, windows and general renovation.
 
 Sources:
 
@@ -103,33 +69,96 @@ A current public lead sample also visibly contains scope that maps to ProjectPer
 
 ### E2 request sent
 
-Recipient: `service@homestars.com` (public professional-contact address)
+Recipient: `service@homestars.com`
 
 Asked for one recent complete month across Toronto + Ottawa + Mississauga + Vancouver:
 
-1. number of residential project postings in renovation/building categories where municipal permit applicability could plausibly matter:
-   - `<100`
-   - `100-499`
-   - `500-1,999`
-   - `2,000-9,999`
-   - `10,000+`
-2. share arriving before permit applicability had already been established:
-   - `<10%`
-   - `10-24%`
-   - `25-49%`
-   - `50%+`
+1. candidate residential renovation/building posting volume: `<100 / 100-499 / 500-1,999 / 2,000-9,999 / 10,000+`;
+2. share arriving before permit applicability had already been established: `<10% / 10-24% / 25-49% / 50%+`.
 
 No homeowner names, addresses, job records or confidential data requested.
 
 Evidence state: **no qualifying reply yet**.
 
-### Why this target can move the score
+## Priority C — GoQuotes
 
-HomeStars can potentially expose the exact object ProjectPermit wants to enrich: a project description before pros quote.
+### Why it is high leverage
 
-If a covered current-family monthly posting denominator is large and permit certainty is frequently missing, this is more commercially meaningful than dozens of single-contractor interviews because one integration could supply repeated calls across many contractors.
+GoQuotes' public workflow starts with the homeowner describing a renovation project and then routes the project to an average of approximately three contractors for quotes.
 
-If permit status is already internally known or current-family candidate volume is small, downgrade the platform hypothesis.
+Current public geography includes **Gatineau, Laval, Ottawa and Toronto**, all inside ProjectPermit's current footprint, as well as other Canadian cities.
+
+Public categories overlap strongly with current families, including:
+
+- home additions;
+- garage construction;
+- patio/balcony/deck work;
+- basement renovation;
+- doors/windows;
+- kitchen/bathroom renovation;
+- general contracting.
+
+Sources:
+
+- https://goquotes.ca/
+
+### E2 request sent
+
+Recipient: `info@goquotes.ca`
+
+Asked for one recent complete month across Gatineau + Laval + Ottawa + Toronto:
+
+1. current-family project count bucket: `<100 / 100-249 / 250-499 / 500-999 / 1,000+`;
+2. share reaching intake before permit applicability had already been established: `<10% / 10-24% / 25-49% / 50%+`.
+
+Evidence state: **no qualifying reply yet**.
+
+### Why it matters
+
+GoQuotes has unusually clean geography overlap with ProjectPermit's already-built rules. If a current-family unresolved-intake denominator reaches >=500/month, it can test distribution without speculative municipality expansion.
+
+## Priority D — JobDeck
+
+### Why it is diagnostically useful
+
+JobDeck currently exposes two different workflow layers:
+
+1. Ontario homeowners post a renovation job, after which local contractors are notified and typically 2-4 contact the homeowner;
+2. contractors can access public municipal building-permit data for prospecting/business intelligence.
+
+This creates a useful product-boundary test:
+
+> Is issued-permit data only downstream intelligence after a permit event already exists, while a separate `does this new posted job require a permit?` question remains unresolved upstream?
+
+Current public site reports **1,100+ renovation projects tracked across Ontario**, but the timeframe and exact definition are not clear enough to count as a monthly E2 denominator.
+
+Source:
+
+- https://jobdeck.ca/
+
+### E2 request sent
+
+Recipient: `jonathan@jobdeck.ca`
+
+Asked for one recent complete month across Toronto + Ottawa + Mississauga:
+
+1. homeowner-posted current-family-like renovation jobs: `<100 / 100-249 / 250-499 / 500+`;
+2. share where permit applicability was not already established at posting: `<10% / 10-24% / 25-49% / 50%+`;
+3. whether JobDeck's public permit-data feed is mainly downstream/prospecting intelligence or already determines permit applicability for newly posted work.
+
+Evidence state: **no qualifying reply yet**.
+
+## Strategic adjacent target — RealCraft
+
+RealCraft is not being treated as a volume target yet because its public client marketplace is still Beta / founding-member stage.
+
+It matters for **build-vs-buy falsification** instead: RealCraft already bundles a free municipal Permit Navigator/Advisor into the pre-hire quote funnel and independently maintains city permit guidance.
+
+A direct message asked whether RealCraft maintains those rules internally and whether it would consider an external deterministic/evidence-linked permit API as it expands.
+
+See `docs/REALCRAFT_PERMIT_NAVIGATOR_THREAT_20260828.md`.
+
+Evidence state: **no qualifying reply yet**.
 
 ## Secondary watch — TrustedPros
 
@@ -142,13 +171,11 @@ Sources:
 
 However, the current scan did **not** identify a verified public company email suitable for this research request.
 
-Do not guess an email address. Keep as a future E2 target if a verified business contact route is found.
-
-Also do not treat cumulative `Ontario homeowners helped` or project-value figures as a recent monthly denominator.
+Do not guess an email address. Keep as a future E2 target if a verified business contact route is found. Also do not treat cumulative `Ontario homeowners helped` or project-value figures as a recent monthly denominator.
 
 ## Priority interpretation
 
-These targets are now **higher learning priority** than another generic single contractor because they combine:
+RenoAssistance, HomeStars, GoQuotes and JobDeck are now higher learning priority than another generic single contractor because they combine some or all of:
 
 - project scope before quote/selection;
 - multi-contractor distribution leverage;
@@ -159,7 +186,7 @@ They are **not** automatically higher engineering priority because no API/integr
 
 ## Build rule
 
-Do not build RenoAssistance or HomeStars adapters/speculative connectors yet.
+Do not build platform-specific adapters/speculative connectors yet.
 
 Engineering begins only if one of these occurs:
 
@@ -174,6 +201,9 @@ As of 2026-08-28:
 
 - RenoAssistance E2 request: **sent**;
 - HomeStars E2 request: **sent**;
+- GoQuotes E2 request: **sent**;
+- JobDeck E2/boundary request: **sent**;
+- RealCraft build-vs-buy request: **sent**;
 - TrustedPros: **watch / no verified email found**;
 - qualifying E2 from these upstream funnels: **0**;
 - E3: **0 / 2**;
