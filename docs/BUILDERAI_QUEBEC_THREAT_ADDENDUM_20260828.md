@@ -2,11 +2,18 @@
 
 ## Classification
 
-> **DIRECT PRODUCT-THESIS THREAT IN QUEBEC — LOW OBSERVED DISTRIBUTION, HIGH WORKFLOW OVERLAP**
+> **DIRECT PRODUCT-THESIS THREAT IN QUEBEC — DELIVERED EMBEDDED URBANISM, LOW OBSERVED DISTRIBUTION**
 
 BuilderAI is not currently a demonstrated high-scale distribution competitor. Its public site says the product has been tested on **74 real estimates/projects** since launch.
 
-However, it materially changes ProjectPermit's Quebec differentiation thesis because it publicly embeds municipal `urbanisme` analysis directly inside a Quebec contractor estimating and quotation workflow.
+However, it materially changes ProjectPermit's Quebec differentiation thesis because it embeds municipal `urbanisme` analysis directly inside a Quebec contractor estimating and quotation workflow.
+
+This is not merely a roadmap concept. BuilderAI's public product roadmap, last updated 2026-07-01, lists **`Règlements d'urbanisme municipaux (outil Bob)` under `Livré`**.
+
+Sources:
+
+- `https://www.builder-ai.ca/fr`
+- `https://www.builder-ai.ca/roadmap`
 
 ## Public workflow overlap
 
@@ -61,7 +68,7 @@ Therefore BuilderAI's public bathroom-demo conclusion is directionally consisten
 
 ## Evidence-quality boundary
 
-Do **not** treat the BuilderAI demo as equivalent to ProjectPermit's deterministic/evidence-linked contract yet.
+Do **not** treat BuilderAI's delivered urbanism module as equivalent to ProjectPermit's deterministic/evidence-linked contract yet.
 
 The public demo labels its displayed regulatory excerpt as indicative and says the application uses an urbanism RAG internally.
 
@@ -75,7 +82,7 @@ The current public review did not establish that BuilderAI exposes:
 - public third-party developer API;
 - broad verified municipality coverage.
 
-These are unresolved competitive questions, not proven differentiators.
+These are unresolved competitive questions, not proven ProjectPermit differentiators.
 
 ## Scale boundary
 
@@ -95,7 +102,7 @@ Do not infer:
 - current-family permit-check volume;
 - 500+ monthly permit decisions.
 
-BuilderAI is presently more important as a **product architecture signal** than a scale signal.
+BuilderAI is presently more important as a **product architecture and substitution signal** than a scale signal.
 
 ## Why this changes ProjectPermit's differentiation gate
 
@@ -107,7 +114,7 @@ could look like strong differentiation evidence for ProjectPermit.
 
 That is no longer sufficient.
 
-BuilderAI demonstrates that a vertical estimating SaaS can embed an urbanism/RAG feature directly inside its own quote workflow.
+BuilderAI demonstrates that a vertical estimating SaaS can ship an urbanism/RAG feature directly inside its own quote workflow.
 
 ProjectPermit must therefore prove that buying an external capability is superior to each SaaS building a narrow internal RAG.
 
@@ -127,13 +134,14 @@ A short competitive-falsification email was sent on 2026-08-28 to the official c
 
 Questions:
 
-1. whether the urbanism module already covers multiple Quebec municipalities or is limited/pilot;
+1. whether the delivered urbanism module already covers multiple Quebec municipalities or remains narrow in practical coverage;
 2. whether it returns permit applicability plus municipal-source evidence or mainly a RAG zoning/urbanism summary;
 3. whether the capability is internal-only or available through API/integration/partnership.
 
-Official contact source:
+Official contact sources:
 
 - `https://www.builder-ai.ca/politique-confidentialite`
+- `https://www.builder-ai.ca/roadmap`
 
 No customer data was requested.
 
@@ -149,7 +157,7 @@ Threat: residents/contractors may not need a separate product for a single munic
 
 ### Embedded vertical software
 
-Example: BuilderAI.
+Example: BuilderAI, with municipal urbanism tooling publicly marked as delivered.
 
 Threat: contractor software can internalize permit/urbanism checking directly in the quote workflow.
 
