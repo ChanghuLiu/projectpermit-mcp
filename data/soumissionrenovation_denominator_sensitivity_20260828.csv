@@ -1,0 +1,7 @@
+public_activity_signal,annual_activity,monthly_activity,current_family_share_assumption,relevant_monthly_activity,unresolved_share_needed_for_500_calls,unresolved_share_needed_for_2000_calls,evidence_class
+"Contractor signup page: 100,000 projects submitted/year",100000,8333,0.25,2083,0.240,0.960,"vendor claim / sensitivity only"
+"Contractor signup page: 100,000 projects submitted/year",100000,8333,0.50,4167,0.120,0.480,"vendor claim / sensitivity only"
+"Contractor signup page: 100,000 projects submitted/year",100000,8333,0.75,6250,0.080,0.320,"vendor claim / sensitivity only"
+"2025/2026 report: 155,000 projects in 2025",155000,12917,0.25,3229,0.155,0.619,"vendor report; metric wording ambiguous / upper sensitivity"
+"2025/2026 report: 155,000 projects in 2025",155000,12917,0.50,6458,0.077,0.310,"vendor report; metric wording ambiguous / upper sensitivity"
+"2025/2026 report: 155,000 projects in 2025",155000,12917,0.75,9688,0.052,0.206,"vendor report; metric wording ambiguous / upper sensitivity"
