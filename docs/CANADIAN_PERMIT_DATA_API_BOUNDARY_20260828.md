@@ -26,10 +26,25 @@ Sources:
 
 ### RenoIntel
 
-RenoIntel says it aggregates/normalizes renovation and construction permit data from **200+ Canadian municipalities**, with daily updates, geocoding, category enrichment and API access for CRM/marketing workflows.
+RenoIntel says it aggregates/normalizes Canadian renovation and construction permit/project intelligence, including early-stage and issued activity, geocoding/category enrichment and API access for CRM/marketing workflows.
 
-Source:
-- https://renointel.ca/therenointelhousingreport/complete-guide-renovation-permit-data-canada
+Current 2026 product pages advertise a live Canadian project database, permit/project-stage signals and API delivery to builders, suppliers and other commercial users.
+
+Sources:
+- https://renointel.ca/
+- https://renointel.ca/for/builder-programs.html
+
+### SiteWire
+
+SiteWire currently advertises Canadian permit intelligence across **31 cities**, including filed/pre-permit signals in major cities, normalized permit/project feeds, REST API access, webhooks and up to 10,000 API requests/day on its national Pro tier.
+
+Its commercial purpose is explicitly sales/project intelligence: discover permit applications and issued projects early, filter them, and push those records into contractor/CRM workflows.
+
+Sources:
+- https://sitewire.ca/
+- https://sitewire.ca/enterprise
+
+This is strong evidence that Canadian **permit-record / filed-application intelligence** is already a real API market. It is not evidence of the separate pre-application applicability contract ProjectPermit is testing.
 
 ### BuildPermitData
 
@@ -51,11 +66,13 @@ Sources:
 Do **not** position ProjectPermit around any of the following as a unique moat:
 
 - historical permit records;
+- filed / pre-permit application feeds;
 - permit counts / market activity;
 - normalized issued-permit taxonomy;
 - address-keyed permit history;
 - permit status/lifecycle data;
 - basic geocoding or property enrichment;
+- permit-data CRM feeds / alerts / webhooks;
 - municipal application/workspace infrastructure.
 
 Those layers can already be sourced commercially and, in many cities, ultimately derive from open municipal records.
@@ -84,7 +101,7 @@ The product thesis must stay at the **pre-application decision layer**:
 
 not:
 
-`address -> what permits were historically issued?`
+`address -> what permits were historically issued / filed?`
 
 The latter is already a competitive data market.
 
@@ -99,17 +116,18 @@ Any paid dependency must first show one of:
 - lower total cost than maintaining the equivalent first-party adapter;
 - a credible external workflow large enough to justify recurring spend.
 
-ProjectPermit currently has no reason to incur a $299+/month data bill solely for validation.
+ProjectPermit currently has no reason to incur a paid permit-data dependency solely for validation.
 
 ## Score implication
 
-**No Go/No-Go score change; remains 51/100.**
+**No Go/No-Go score change; canonical score remains 50/100, PAUSE / RE-SCOPE.**
 
 Reason:
 
-- the canonical scorecard currently rates competitive headroom at **1/10** after the later GoBuild review; this document must not override that canonical rating;
+- the canonical scorecard now rates competitive headroom at **0/10** after the later Parcella / One Ontario delivery review;
 - permit-record normalization is adjacent/downstream and was never the remaining claimed moat;
-- the scan makes the scope boundary clearer but does not prove demand for pre-application applicability.
+- the refreshed SiteWire/RenoIntel evidence strengthens the conclusion that this adjacent data layer is commoditized, but it does not prove demand for pre-application applicability;
+- no new Canadian public API with ProjectPermit's exact pre-application deterministic contract was found in this refresh.
 
 A newly discovered Canadian API with the exact pre-application deterministic contract and viable pricing would be materially different and should trigger an explicit score/re-scope review.
 
