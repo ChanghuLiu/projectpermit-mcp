@@ -8,7 +8,7 @@ Decision status:
 
 This is not a product-quality score. It is a commercial evidence score for whether ProjectPermit deserves more independent-developer time/cash.
 
-## Current score: 53 / 100
+## Current score: 52 / 100
 
 | Dimension | Weight | Current rating | Weighted points | Why |
 |---|---:|---:|---:|---|
@@ -16,15 +16,15 @@ This is not a product-quality score. It is a commercial evidence score for wheth
 | Willingness to pay / monetization fit | 15 | 4/10 | 6.0 | Filing/permit-ops buyers pay, but ProjectPermit's narrower `$0.20-$0.50` preflight hypothesis has **no E5 evidence**. More importantly, only 2/5 address-adapter jurisdictions currently consume property facts, so the assumed premium `address-aware` unit has a narrower present value base than previously believed. |
 | Addressable call volume | 15 | 6/10 | 9.0 | Contractor/platform denominators are material, but Toronto broad MEP flow cannot be mapped safely to the current eight families. Toronto + Mississauga's strongest reproducible current-family-like public issued signal is only ~618-639/month, and even that is not upstream candidate volume. |
 | Repeat frequency | 10 | 5/10 | 5.0 | Ordinary contractor building-permit cadence appears modest; aggregated workflow can be larger. **E4 remains 0.** |
-| Distribution fit | 10 | 6/10 | 6.0 | Real quote-first contractor workflows exist, but permit-first workflows also exist. No production integration partner yet. |
+| Distribution fit | 10 | 5/10 | 5.0 | Real quote-first workflows exist, but no production integration partner exists. Registry/Bazaar/x402 payment plumbing proves discoverability and settlement capability, not buyer demand; a 2026 population-scale study also cautions that raw x402 settlement counts are heavily concentrated and often internal/fictitious. ProjectPermit itself still has E4=0 despite being discoverable. |
 | Competitive headroom | 10 | 2/10 | 2.0 | LandLogic/Parcella now occupies a broad Ontario property/permit-intelligence + partner-API layer, while BuilderAI has delivered pre-quote municipal urbanism inside Quebec estimating and ConstructAI publicly claims a Toronto embedded permit checker in beta. The remaining self-serve deterministic permit-specific API gap is narrow and unvalidated. |
 | Defensibility | 10 | 2/10 | 2.0 | Local rule replication is demonstrably cheap enough for focused checkers/vertical SaaS, and the build-vs-buy audit shows Toronto/Mississauga scope-only logic can currently be grounded in one primary rule/guidance source per city. Defensibility must come from externally valued cross-city maintenance, evidence/versioning, safety, accuracy history or embedded distribution—not rule ownership itself. |
 | Cash-cost fit | 5 | 9/10 | 4.5 | Deterministic rules + first-party/open municipal data; no paid LLM/property-data/human-review dependency required by default. |
 | Technical feasibility | 5 | 9/10 | 4.5 | Seven jurisdictions, address adapters, HTTP/MCP/x402, tests and production services already work. |
 | Evidence maturity | 5 | 3/10 | 1.5 | No independent representative E3 completed; E4 = 0; E5 = 0. |
-| **Total** | **100** |  | **52.5 -> 53** |  |
+| **Total** | **100** |  | **51.5 -> 52** |  |
 
-## Why the score moved 61 -> 59 -> 58 -> 57 -> 56 -> 53
+## Why the score moved 61 -> 59 -> 58 -> 57 -> 56 -> 53 -> 52
 
 ### 61 -> 59: current-family volume correction
 
@@ -124,6 +124,18 @@ Accordingly:
 - **defensibility falls from 3/10 to 2/10**;
 - total commercial score falls **56 -> 53**.
 
+### 53 -> 52: x402 discovery/payment is not validated long-tail distribution
+
+ProjectPermit already has working paid MCP/x402 plumbing, Registry/Bazaar discovery metadata and repeated external unpaid 402 probes, but **E4 remains 0**.
+
+A July 2026 population-scale arXiv study of x402 activity on Base reported very high settlement counts while also finding extreme concentration and large internal/fictitious components; the authors explicitly caution that raw settlement count cannot be read directly as independent agent adoption.
+
+See `docs/X402_DISTRIBUTION_REALITY_CHECK_20260828.md`.
+
+This matters because build-vs-buy economics make high-volume vertical SaaS buyers more likely to consider internalizing a local checker. A natural fallback thesis would be that Registry/Bazaar/agent marketplaces aggregate lower-volume variable-geography buyers. That remains technically plausible, but there is currently no ProjectPermit E4 evidence and no reliable basis for assuming passive marketplace discovery will create meaningful independent paid volume.
+
+Accordingly **distribution fit falls from 6/10 to 5/10**. x402 remains useful payment infrastructure; it should not be counted as validated distribution.
+
 ## Municipality-specific technical value still exists
 
 A separate synthetic discrimination audit should not be confused with this monetization/competition downgrade.
@@ -192,6 +204,7 @@ The critical commercial facts remain missing:
 6. How often does derived address/property context materially change safe routing?
 7. Will anyone pay the proposed price or commit integration resources?
 8. Can accuracy stay high without a staffed expert operation?
+9. If high-volume software buyers prefer internalization, can variable-geography agent/long-tail channels produce meaningful independent repeated usage rather than merely discovery/probes?
 
 Until those are answered, expanding cities/features only increases maintenance burden.
 
@@ -207,7 +220,8 @@ Any two or three of the following would materially upgrade the project:
 - three external integrations / 100+ non-owner successful calls;
 - one partner showing **>=2,000 current-family candidate events/month** or equivalent proven aggregation;
 - one E5 willingness-to-pay/resource commitment at a commercially useful price;
-- representative software buyers explicitly preferring external cross-city deterministic maintenance over internal local RAG/checkers for a concrete cost/reliability reason.
+- representative software buyers explicitly preferring external cross-city deterministic maintenance over internal local RAG/checkers for a concrete cost/reliability reason;
+- repeat paid usage from multiple unrelated agent/API buyers discovered without direct sales.
 
 ## What would move the score below 50
 
@@ -224,6 +238,7 @@ Serious stop signals include:
 - buyers will not pay for scope-only municipal preflight and the address-aware premium proves too rare;
 - **multiple representative software buyers say they would simply build/maintain the relevant one-city/few-city checker internally**;
 - **LandLogic or another competitor confirms an already-available low-friction/self-serve permit-specific API that adequately covers the target workflow/economics**;
+- **agent/x402 discovery continues to produce only probes/one-off use rather than repeat independent workflows after credible exposure**;
 - rule maintenance costs several hours/month per low-volume jurisdiction;
 - buyers only value full filing/expediting and will not pay for preflight.
 
@@ -280,9 +295,11 @@ Measure separately:
 
 Do not use `address was available`, `address lookup succeeded`, or `GIS data was returned` as substitutes for this metric.
 
-### D. Platform threshold
+### D. Platform threshold + build-vs-buy
 
 Measure one recent month of covered-geography **current-family** candidate events. First threshold: **>=500/month**; then look for >=2,000/month aggregation and a credible path to 10,000 external preflights/month.
+
+For any high-volume software buyer, pair the volume result with the economic question documented in `docs/VENDOR_BUILD_VS_BUY_ECONOMICS_20260828.md`: at the resulting API spend, why would the buyer not internalize the relevant municipal rules?
 
 ### E. E3 -> E4 -> E5 chain
 
@@ -296,42 +313,28 @@ No directory listing, polite reply, internal CI call, synthetic benchmark, succe
 
 For software buyers, ask the concrete version rather than generic feature interest:
 
-> `For your actual municipalities, would you rather maintain roughly 1-9 core municipal rule/guidance sources and a few dozen local permit rules yourself, or pay an external provider to maintain cross-city normalization, official evidence/source drift, unknown-state safety, optional property context and regression tests?`
+> For your actual municipalities, if permit checks became material volume, would you prefer to pay a metered external API, use a fixed platform license, or maintain the municipal logic internally? What makes that choice rational, especially relative to LandLogic/Parcella or other available tooling?
 
-Record the reason, not just `yes/no`.
+A buyer saying `we would just build the local version` is meaningful negative evidence.
 
-For Ontario buyers also ask whether LandLogic/Parcella can already solve the workflow and, if not, whether the real blocker is:
-
-- self-serve access;
-- implementation time/cost;
-- permit-specific output contract;
-- evidence/versioning;
-- cross-province coverage;
-- latency;
-- per-call economics.
-
-A generic statement that `urbanisme before quote would be useful` is no longer differentiation evidence because BuilderAI shows vertical software can embed it directly.
+A buyer saying `we do not want to own cross-city regulatory maintenance` is useful differentiation evidence, but still does not prove price or call volume.
 
 ## Defensibility checkpoint
 
 Do not score defensibility above 6/10 until at least one of these exists:
 
-- repeated integration with real switching cost;
-- externally benchmarked accuracy corpus;
-- meaningful rule/source-change history that buyers explicitly value;
-- partner-specific normalization/routing embedded into operations;
-- property/address context shown to matter in representative usage;
-- enough observed production outcomes to prioritize and maintain rules better than a new entrant;
-- representative evidence that buyers prefer purchasing shared cross-city maintenance to building local rule logic themselves.
-
-Basic permit trigger lists, municipality-specific educational checkers, API/MCP wrappers, unused GIS capability, code volume and idea novelty do **not** qualify as moat assets.
+- a repeated integration whose workflow switching cost is real;
+- an externally benchmarked accuracy corpus competitors cannot reproduce instantly;
+- meaningful rule/source-change history maintained over time;
+- a partner-specific normalized schema/routing layer embedded into operations;
+- enough observed production outcomes to prioritize/maintain rules better than a new entrant.
 
 ## Bottom line
 
-ProjectPermit remains worth validating because municipality-specific permit applicability is demonstrably non-uniform and the operating-cost profile is excellent.
+ProjectPermit remains worth validating because the pain/cost structure is attractive and the product is technically capable of municipality-specific safe routing.
 
-But the current commercial status is now:
+But its current commercial status is now more cautiously stated as:
 
-> **promising low-cost capability, real municipal rule differentiation, unproven workflow volume, unproven distribution, weak current address-aware monetization, high competitive pressure, and unproven standalone-API build-vs-buy advantage**
+> **real technical differentiation, very narrow competitive whitespace, unproven build-vs-buy preference, unproven repeated distribution, no E5**
 
-The next dollar/hour should buy **external workflow incidence, representative E3 value, build-vs-buy evidence, exact competitor-gap evidence and E5**, not more coverage.
+The next dollar/hour should buy **external workflow + build-vs-buy + E3/E4 evidence**, not more code or marketplace exposure.
