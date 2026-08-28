@@ -6,10 +6,13 @@ on:
     paths:
       - 'market_research/property_fact_consumption_audit.py'
       - 'market_research/property_overlay_flip_matrix.py'
+      - 'market_research/property_overlay_unknown_safety_audit.py'
       - 'src/projectpermit/engine.py'
       - 'src/projectpermit/expansion_rules.py'
       - 'src/projectpermit/quebec_expansion_rules.py'
       - 'src/projectpermit/vancouver_rules.py'
+      - 'src/projectpermit/overlay_safety.py'
+      - 'src/projectpermit/jurisdiction_router.py'
       - '.github/workflows/property-fact-consumption-audit.yml'
 
 permissions:
@@ -29,10 +32,13 @@ jobs:
         run: python market_research/property_fact_consumption_audit.py --output property_fact_consumption_audit.json
       - name: Measure property-overlay determination flips
         run: python market_research/property_overlay_flip_matrix.py --output property_overlay_flip_matrix.json
+      - name: Fail safe when property overlays are unresolved
+        run: python market_research/property_overlay_unknown_safety_audit.py --output property_overlay_unknown_safety_audit.json
       - uses: actions/upload-artifact@v4
         with:
           name: property-fact-value-audit
           path: |
             property_fact_consumption_audit.json
             property_overlay_flip_matrix.json
+            property_overlay_unknown_safety_audit.json
           if-no-files-found: error

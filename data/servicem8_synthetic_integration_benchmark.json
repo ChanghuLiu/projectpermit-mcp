@@ -1,19 +1,19 @@
 {
   "benchmark": "ServiceM8 synthetic/de-identified integration benchmark",
   "captured_at": "2026-08-27",
-  "purpose": "Internal adapter and rules integration evidence only. This is not E3 market validation and uses no real ServiceM8 customer data.",
+  "purpose": "Internal adapter and rules integration evidence only. This is not E3 market validation and uses no real ServiceM8 customer data. Overlay-sensitive exemptions fail safe to municipal confirmation when property overlays are unresolved.",
   "cases": [
     {
       "id": "sm8-syn-001",
       "jurisdiction": "gatineau_qc",
-      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
       "payload": {"uuid": "sm8-job-001", "status": "Quote", "job_address": "101 Example St, Gatineau, QC", "job_description": "Replace same-size front window"},
       "project": {"family": "window_door", "action": "replace_same_size", "estimated_cost_cad": 1800, "structural_change": false}
     },
     {
       "id": "sm8-syn-002",
       "jurisdiction": "gatineau_qc",
-      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
       "payload": {"uuid": "sm8-job-002", "status": "Quote", "job_address": "102 Example St, Gatineau, QC", "job_description": "Paint and flooring refresh only"},
       "project": {"family": "interior_renovation", "action": "painting", "estimated_cost_cad": 9000, "structural_change": false}
     },
@@ -34,7 +34,7 @@
     {
       "id": "sm8-syn-005",
       "jurisdiction": "gatineau_qc",
-      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
       "payload": {"uuid": "sm8-job-005", "status": "Quote", "job_address": "105 Example St, Gatineau, QC", "job_description": "Residential rear deck"},
       "project": {"family": "deck_porch", "action": "build_deck"}
     },
@@ -55,7 +55,7 @@
     {
       "id": "sm8-syn-008",
       "jurisdiction": "gatineau_qc",
-      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
       "payload": {"uuid": "sm8-job-008", "status": "Quote", "job_address": "108 Example St, Gatineau, QC", "job_description": "Bathroom finish and existing fixture refresh"},
       "materials": [{"job_uuid": "sm8-job-008", "name": "Bathroom fixture refresh", "item_description": "Existing fixture replacement"}],
       "project": {"family": "kitchen_bath_plumbing", "action": "fixture_refresh", "estimated_cost_cad": 12000, "structural_change": false}
