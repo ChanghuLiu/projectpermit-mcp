@@ -4,7 +4,7 @@
 
 SoumissionRénovation.ca is currently the strongest publicly observed Quebec platform candidate for ProjectPermit because it combines:
 
-- very large recurring renovation-project intake;
+- very large recurring renovation-project platform activity;
 - a Quebec-focused contractor network;
 - project details collected before contractor matching;
 - explicit current-family service categories;
@@ -20,18 +20,33 @@ Source:
 
 - `https://soumissionrenovation.ca/fr/blogue/devoilement-des-tendances-et-comportements-qui-faconneront-lindustrie-de-la-renovation-au-quebec-en-2026`
 
-155,000 annual projects corresponds to roughly **12,900 platform projects/month** as a simple annual-average sensitivity.
+### Metric-definition caveat
 
-This is **not** current ProjectPermit SAM because the public figure is Quebec-wide / platform-wide and includes many project types outside ProjectPermit's current families and current covered municipalities.
+The source is internally ambiguous about the exact event definition:
+
+- the narrative says `155 000 projets réalisés en 2025`;
+- a nearby chart section is titled `Nombre total de projets soumis sur la plateforme et leur valeur`;
+- the later summary again says `+ de 155 000 projets réalisés en 2025`.
+
+Therefore **do not treat 155,000 as a clean observed intake-request count** until SoumissionRénovation confirms the definition. It is evidence of very large platform project activity, but the public page does not cleanly distinguish submitted projects, matched projects, completed/realized projects, or a shared internal `project` metric.
+
+155,000 annual projects corresponds to roughly **12,900 platform project events/month** only as a simple annual-average sensitivity.
+
+This is **not** current ProjectPermit SAM because:
+
+- the event definition is not cleanly confirmed as intake;
+- the public figure is Quebec-wide / platform-wide;
+- it includes project types outside ProjectPermit's current families;
+- it includes municipalities outside current ProjectPermit coverage.
 
 ### Current threshold sensitivity
 
-At 12,900 total projects/month:
+If the 155k figure is comparable to the project events available at or before contractor matching, then at roughly 12,900 total project events/month:
 
 - 500 current-family candidate events/month would require roughly **3.9%** of total project flow;
 - 2,000 current-family candidate events/month would require roughly **15.5%** of total project flow.
 
-These percentages are only sensitivity thresholds. They are **not observed current-family shares**.
+These percentages are only sensitivity thresholds. They are **not observed current-family shares**, and they should not be used if the 155k metric is later confirmed to represent only downstream/completed projects that are not available at the pre-quote decision point.
 
 ## Workflow placement evidence
 
@@ -134,6 +149,7 @@ SoumissionRénovation becomes a meaningful scale/differentiation validation win 
 
 Downgrade this route if:
 
+- the 155k metric is not comparable to an upstream project/intake event and no upstream denominator can be obtained;
 - covered-city current-family volume is below the 500/month threshold and there is no credible multi-city expansion pull;
 - permit applicability is normally already known before project matching;
 - contractors reliably handle permit decisions downstream without meaningful friction;
@@ -147,7 +163,8 @@ As of 2026-08-28:
 
 > **HIGH-PRIORITY QUEBEC SCALE + DIFFERENTIATION CANDIDATE — UNVALIDATED**
 
-SoumissionRénovation has the strongest observed public project-volume shape in Quebec, but the two decisive numbers remain unknown:
+SoumissionRénovation has the strongest observed public project-activity shape in Quebec, but the decisive observations remain unknown:
 
-1. covered-city current-family project events/month;
-2. unresolved permit-applicability incidence before contractor matching.
+1. the exact operational definition of the public 155k project metric;
+2. covered-city current-family project events/month at the pre-quote/intake stage;
+3. unresolved permit-applicability incidence before contractor matching.
