@@ -86,7 +86,18 @@ jobs:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip
       - run: pip install -e .
-      - run: python scripts/http_preview_remote_smoke.py
+      - name: Run remote HTTP preview smoke with retry
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if python scripts/http_preview_remote_smoke.py; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 3))
+          done
 
   remote-paid-mcp-challenge:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -98,7 +109,18 @@ jobs:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip
       - run: pip install -e '.[mcp]'
-      - run: python scripts/paid_mcp_unpaid_smoke.py
+      - name: Run paid MCP unpaid challenge with retry
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if python scripts/paid_mcp_unpaid_smoke.py; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 3))
+          done
 
   remote-http-bazaar-challenge:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -110,7 +132,18 @@ jobs:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip
       - run: pip install -e '.[x402]'
-      - run: python scripts/http_bazaar_unpaid_smoke.py
+      - name: Run HTTP Bazaar unpaid challenge with retry
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if python scripts/http_bazaar_unpaid_smoke.py; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 3))
+          done
 
   facilitator-capabilities:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
