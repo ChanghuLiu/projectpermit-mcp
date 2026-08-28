@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Validate and summarize ProjectPermit operator-rescue evidence CSVs.
 
-This is a research/evidence utility, not product runtime code. It keeps the
-operator-rescue denominators explicit so unique requests, candidate preflights,
-partner-delivered copies, unresolved cases, and material hits cannot be silently
-substituted for one another.
+Research/evidence utility only. It keeps unique requests, supported-jurisdiction
+requests, candidate preflights, partner-delivered copies, unresolved cases and
+material hits as separate denominators.
 """
 from __future__ import annotations
 
@@ -25,15 +24,7 @@ CURRENT_FAMILIES = {
     "addition",
     "kitchen_bath_plumbing",
 }
-
-PERMIT_STATES = {
-    "KNOWN_REQUIRED",
-    "KNOWN_NOT_REQUIRED",
-    "UNRESOLVED",
-    "NOT_CHECKED",
-    "UNKNOWN",
-}
-
+PERMIT_STATES = {"KNOWN_REQUIRED", "KNOWN_NOT_REQUIRED", "UNRESOLVED", "NOT_CHECKED", "UNKNOWN"}
 FACT_CLASSES = {
     "DIRECT_STRUCTURED",
     "TEXT_DERIVABLE",
@@ -41,14 +32,12 @@ FACT_CLASSES = {
     "EXTERNAL_PROPERTY_LOOKUP_REQUIRED",
     "INSUFFICIENT_FOR_CURRENT_RULES",
 }
-
 MATERIAL_CLASSES = {
     "MATERIAL_EFFECT_CONFIRMED",
     "POSSIBLE_EFFECT_NOT_MEASURED",
     "NO_MATERIAL_EFFECT",
     "UNKNOWN",
 }
-
 INTEGRATION_TOPOLOGIES = {
     "CENTRAL_SINGLE_INTEGRATION",
     "CENTRAL_WITH_SITE_MAPPING",
@@ -56,7 +45,7 @@ INTEGRATION_TOPOLOGIES = {
     "MANUAL_EXPORT_ONLY",
     "UNKNOWN",
 }
-
+CENTRAL_TOPOLOGIES = {"CENTRAL_SINGLE_INTEGRATION", "CENTRAL_WITH_SITE_MAPPING"}
 YES_VALUES = {"1", "true", "yes", "y"}
 NO_VALUES = {"0", "false", "no", "n"}
 
@@ -75,7 +64,7 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
 
 def _optional_int(row: dict[str, str], field: str, label: str) -> int | None:
     raw = _text(row.get(field))
-    if raw == "":
+    if not raw:
         return None
     try:
         value = int(raw)
@@ -88,7 +77,7 @@ def _optional_int(row: dict[str, str], field: str, label: str) -> int | None:
 
 def _optional_float(row: dict[str, str], field: str, label: str) -> float | None:
     raw = _text(row.get(field))
-    if raw == "":
+    if not raw:
         return None
     try:
         value = float(raw)
@@ -101,7 +90,7 @@ def _optional_float(row: dict[str, str], field: str, label: str) -> float | None
 
 def _optional_bool(value: Any, *, label: str, field: str) -> bool | None:
     raw = _text(value).lower()
-    if raw == "":
+    if not raw:
         return None
     if raw in YES_VALUES:
         return True
@@ -110,14 +99,8 @@ def _optional_bool(value: Any, *, label: str, field: str) -> bool | None:
     raise ValueError(f"{label}: {field} must be yes/no when populated, got {value!r}")
 
 
-def _sum_known(values: list[int | None]) -> int:
-    return sum(value for value in values if value is not None)
-
-
 def _pct(numerator: int, denominator: int) -> float | None:
-    if denominator <= 0:
-        return None
-    return round(numerator * 100.0 / denominator, 2)
+    return round(numerator * 100.0 / denominator, 2) if denominator > 0 else None
 
 
 def summarize_monthly(rows: list[dict[str, str]]) -> dict[str, Any]:
@@ -130,10 +113,6 @@ def summarize_monthly(rows: list[dict[str, str]]) -> dict[str, Any]:
         raise ValueError(f"monthly aggregate must contain exactly one operator, found {sorted(operators)}")
     if len(months) != 1:
         raise ValueError(f"monthly aggregate must contain exactly one complete month, found {sorted(months)}")
-
-    totals: Counter[str] = Counter()
-    family_rows: list[dict[str, Any]] = []
-    topology_values: set[str] = set()
 
     count_fields = [
         "unique_requests",
@@ -148,6 +127,9 @@ def summarize_monthly(rows: list[dict[str, str]]) -> dict[str, Any]:
         "material_effect_known_count",
         "partner_deliveries",
     ]
+    totals: Counter[str] = Counter()
+    family_rows: list[dict[str, Any]] = []
+    topology_values: set[str] = set()
 
     for index, row in enumerate(rows, start=2):
         family = _text(row.get("current_family"))
@@ -163,21 +145,12 @@ def summarize_monthly(rows: list[dict[str, str]]) -> dict[str, Any]:
         material = values["material_effect_known_count"]
 
         if unique is not None:
-            for field in (
-                "candidate_preflight_requests",
-                "within_supported_jurisdictions",
-                "known_required",
-                "known_not_required",
-                "unresolved",
-                "not_checked",
-                "unknown_permit_state",
-                "required_followup_or_research",
-                "material_effect_known_count",
-            ):
+            for field in count_fields:
+                if field == "partner_deliveries":
+                    continue
                 value = values[field]
                 if value is not None and value > unique:
                     raise ValueError(f"{label}: {field} cannot exceed unique_requests")
-
         if candidate is not None and supported is not None and candidate > supported:
             raise ValueError(f"{label}: candidate_preflight_requests cannot exceed within_supported_jurisdictions")
         if unresolved is not None and candidate is not None and unresolved > candidate:
@@ -185,15 +158,11 @@ def summarize_monthly(rows: list[dict[str, str]]) -> dict[str, Any]:
         if material is not None and candidate is not None and material > candidate:
             raise ValueError(f"{label}: material_effect_known_count cannot exceed candidate_preflight_requests")
 
-        state_values = [
-            values["known_required"],
-            values["known_not_required"],
-            values["unresolved"],
-            values["not_checked"],
-            values["unknown_permit_state"],
-        ]
+        state_values = [values[name] for name in (
+            "known_required", "known_not_required", "unresolved", "not_checked", "unknown_permit_state"
+        )]
         if unique is not None and all(value is not None for value in state_values):
-            state_total = _sum_known(state_values)
+            state_total = sum(value for value in state_values if value is not None)
             if state_total > unique:
                 raise ValueError(f"{label}: permit-state counts sum to {state_total}, above unique_requests={unique}")
 
@@ -217,20 +186,21 @@ def summarize_monthly(rows: list[dict[str, str]]) -> dict[str, Any]:
         for field, value in values.items():
             if value is not None:
                 totals[field] += value
-
-        family_rows.append(
-            {
-                "current_family": family,
-                **values,
-                "computed_delivery_multiplier": computed_multiplier,
-                "integration_topology": topology or None,
-            }
-        )
+        family_rows.append({
+            "current_family": family,
+            **values,
+            "computed_delivery_multiplier": computed_multiplier,
+            "integration_topology": topology or None,
+        })
 
     unique_total = totals["unique_requests"]
     candidate_total = totals["candidate_preflight_requests"]
     unresolved_total = totals["unresolved"]
     partner_delivery_total = totals["partner_deliveries"]
+    topology_list = sorted(topology_values)
+    central_integration_plausible = bool(topology_values & CENTRAL_TOPOLOGIES) and (
+        "SEPARATE_SITE_INTEGRATIONS" not in topology_values
+    )
 
     return {
         "operator": next(iter(operators)),
@@ -241,9 +211,9 @@ def summarize_monthly(rows: list[dict[str, str]]) -> dict[str, Any]:
         "unresolved_share_of_candidate_pct": _pct(unresolved_total, candidate_total),
         "candidate_share_of_unique_pct": _pct(candidate_total, unique_total),
         "delivery_multiplier": round(partner_delivery_total / unique_total, 4)
-        if unique_total > 0 and partner_delivery_total > 0
-        else None,
-        "integration_topologies": sorted(topology_values),
+        if unique_total > 0 and partner_delivery_total > 0 else None,
+        "integration_topologies": topology_list,
+        "central_integration_plausible": central_integration_plausible,
         "commercial_500_call_gate": candidate_total >= 500,
     }
 
@@ -254,12 +224,13 @@ def summarize_sample(rows: list[dict[str, str]]) -> dict[str, Any]:
             "sampled_cases": 0,
             "candidate_cases": 0,
             "supported_cases": 0,
+            "permit_state_counts": {},
             "fact_sufficiency_counts": {},
             "decision_fact_sufficiency_rate_pct": None,
             "material_effect_counts": {},
+            "material_effect_confirmed_candidate_count": 0,
             "material_hit_rate_pct": None,
             "safety_material_disagreements": 0,
-            "duplicate_sample_ids": [],
         }
 
     ids = [_text(row.get("sample_id")) for row in rows]
@@ -273,11 +244,8 @@ def summarize_sample(rows: list[dict[str, str]]) -> dict[str, Any]:
     fact_counts: Counter[str] = Counter()
     material_counts: Counter[str] = Counter()
     permit_state_counts: Counter[str] = Counter()
-    supported_cases = 0
-    candidate_cases = 0
-    sufficient_candidate_cases = 0
-    material_confirmed_candidate = 0
-    safety_material_disagreements = 0
+    supported_cases = candidate_cases = sufficient_candidate_cases = 0
+    material_confirmed_candidate = safety_material_disagreements = 0
 
     for index, row in enumerate(rows, start=2):
         sample_id = _text(row.get("sample_id"))
@@ -286,16 +254,12 @@ def summarize_sample(rows: list[dict[str, str]]) -> dict[str, Any]:
         if family and family not in CURRENT_FAMILIES:
             raise ValueError(f"{label}: unsupported current_family {family!r}")
 
-        supported = _optional_bool(
-            row.get("within_supported_jurisdiction"), label=label, field="within_supported_jurisdiction"
-        )
+        supported = _optional_bool(row.get("within_supported_jurisdiction"), label=label, field="within_supported_jurisdiction")
         candidate = _optional_bool(row.get("candidate_preflight"), label=label, field="candidate_preflight")
         if candidate is True and supported is False:
             raise ValueError(f"{label}: candidate_preflight=yes cannot have within_supported_jurisdiction=no")
-        if supported is True:
-            supported_cases += 1
-        if candidate is True:
-            candidate_cases += 1
+        supported_cases += int(supported is True)
+        candidate_cases += int(candidate is True)
 
         permit_state = _text(row.get("permit_state_at_intake")).upper()
         if permit_state:
@@ -319,14 +283,10 @@ def summarize_sample(rows: list[dict[str, str]]) -> dict[str, Any]:
             if candidate is True and material_class == "MATERIAL_EFFECT_CONFIRMED":
                 material_confirmed_candidate += 1
 
-        disagreement_material = _optional_bool(
-            row.get("disagreement_material"), label=label, field="disagreement_material"
-        )
+        disagreement_material = _optional_bool(row.get("disagreement_material"), label=label, field="disagreement_material")
         safety_direction = _text(row.get("safety_direction")).upper()
         if disagreement_material is True and safety_direction in {
-            "LESS_CONSERVATIVE",
-            "FALSE_LIKELY_NOT_REQUIRED",
-            "UNSAFE_LESS_CONSERVATIVE",
+            "LESS_CONSERVATIVE", "FALSE_LIKELY_NOT_REQUIRED", "UNSAFE_LESS_CONSERVATIVE"
         }:
             safety_material_disagreements += 1
 
@@ -338,33 +298,30 @@ def summarize_sample(rows: list[dict[str, str]]) -> dict[str, Any]:
         "fact_sufficiency_counts": dict(sorted(fact_counts.items())),
         "decision_fact_sufficiency_rate_pct": _pct(sufficient_candidate_cases, candidate_cases),
         "material_effect_counts": dict(sorted(material_counts.items())),
+        "material_effect_confirmed_candidate_count": material_confirmed_candidate,
         "material_hit_rate_pct": _pct(material_confirmed_candidate, candidate_cases),
         "safety_material_disagreements": safety_material_disagreements,
-        "duplicate_sample_ids": [],
     }
 
 
 def build_summary(monthly_path: Path, sample_path: Path | None = None) -> dict[str, Any]:
     monthly = summarize_monthly(_read_csv(monthly_path))
     sample = summarize_sample(_read_csv(sample_path)) if sample_path is not None else summarize_sample([])
-
     advance_to_e4 = (
         monthly["commercial_500_call_gate"]
         and monthly["totals"].get("unresolved", 0) > 0
+        and monthly["central_integration_plausible"]
         and sample["candidate_cases"] > 0
         and sample["decision_fact_sufficiency_rate_pct"] not in (None, 0)
-        and sample["material_effect_counts"].get("MATERIAL_EFFECT_CONFIRMED", 0) > 0
+        and sample["material_effect_confirmed_candidate_count"] > 0
         and sample["safety_material_disagreements"] == 0
-        and bool(monthly["integration_topologies"])
-        and "SEPARATE_SITE_INTEGRATIONS" not in monthly["integration_topologies"]
     )
-
     return {
         "report": "ProjectPermit_operator_rescue_metrics",
         "report_version": 1,
         "evidence_boundary": (
-            "Research summary only. Public/partner-reported aggregate values do not become E2/E3/E4/E5 "
-            "unless the repository evidence standard's provenance, representativeness, external-use, and "
+            "Mechanical research screen only. Aggregate values do not become E2/E3/E4/E5 unless "
+            "the repository evidence standard's provenance, representativeness, external-use and "
             "commitment requirements are independently satisfied."
         ),
         "monthly": monthly,
@@ -375,12 +332,9 @@ def build_summary(monthly_path: Path, sample_path: Path | None = None) -> dict[s
 
 
 def decision_row(summary: dict[str, Any]) -> dict[str, Any]:
-    monthly = summary["monthly"]
-    sample = summary["sample"]
+    monthly, sample = summary["monthly"], summary["sample"]
     totals = monthly["totals"]
     fact_counts = sample["fact_sufficiency_counts"]
-    material_counts = sample["material_effect_counts"]
-    topology = ";".join(monthly["integration_topologies"])
     return {
         "operator": monthly["operator"],
         "complete_month": monthly["complete_month"],
@@ -396,9 +350,9 @@ def decision_row(summary: dict[str, Any]) -> dict[str, Any]:
         "external_property_lookup_required_count": fact_counts.get("EXTERNAL_PROPERTY_LOOKUP_REQUIRED", 0),
         "insufficient_current_rules_count": fact_counts.get("INSUFFICIENT_FOR_CURRENT_RULES", 0),
         "decision_fact_sufficiency_rate_pct": sample["decision_fact_sufficiency_rate_pct"],
-        "material_effect_confirmed_count": material_counts.get("MATERIAL_EFFECT_CONFIRMED", 0),
+        "material_effect_confirmed_count": sample["material_effect_confirmed_candidate_count"],
         "material_hit_rate_pct": sample["material_hit_rate_pct"],
-        "integration_topology": topology,
+        "integration_topology": ";".join(monthly["integration_topologies"]),
         "shadow_external_calls": "",
         "accepted_price_or_license": "",
         "operator_resources_committed": "",
@@ -412,9 +366,8 @@ def decision_row(summary: dict[str, Any]) -> dict[str, Any]:
 
 
 def _write_decision_csv(path: Path, row: dict[str, Any]) -> None:
-    fieldnames = list(row.keys())
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=list(row))
         writer.writeheader()
         writer.writerow(row)
 
