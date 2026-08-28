@@ -90,6 +90,8 @@ Example covered-city evidence:
 - `https://soumissionrenovation.ca/fr/repertoire/qc/gatineau/renovation`
 - `https://soumissionrenovation.ca/fr/repertoire/QC/gatineau/construction`
 - `https://soumissionrenovation.ca/fr/repertoire/qc/gatineau/entrepreneur-general`
+- `https://soumissionrenovation.ca/fr/repertoire/qc/laval/plancher`
+- `https://soumissionrenovation.ca/fr/repertoire/qc/longueuil/entrepreneur-general`
 
 Do **not** infer project-demand share from contractor/service listings. These pages prove workflow/category/geography presence only.
 
@@ -124,6 +126,42 @@ The required scale observation is:
 > one recent complete month's current-family project intake in Gatineau + Laval + Longueuil (or another explicitly covered ProjectPermit geography), with permit applicability still unresolved at intake/quote routing.
 
 If only Quebec-wide volume is available, it is an **expansion signal**, not current covered-market distribution proof.
+
+## Public covered-city denominator path exhausted
+
+A targeted 2026-08-28 public review looked specifically for project-volume breakdowns for **Gatineau / Outaouais, Laval and Longueuil / Montérégie**.
+
+What is publicly reproducible:
+
+- the Quebec-wide 2025 platform signal of 155,000+ projects and 17,500 certified contractors;
+- active contractor/service directory coverage in Gatineau, Laval and Longueuil;
+- visible overlap between those local service taxonomies and current ProjectPermit families.
+
+What was **not** found in the current public material:
+
+- project events/month by Gatineau, Laval or Longueuil;
+- Outaouais/Laval/Montérégie regional project-volume breakdowns in the annual report;
+- current-family share by covered city;
+- pre-quote unresolved permit-applicability incidence by city or region.
+
+Therefore the public denominator route is now classified as:
+
+> **EXHAUSTED FOR CURRENT COVERED-CITY SCALE — INTERNAL/PARTNER DATA REQUIRED**
+
+Do not substitute any of the following:
+
+- Quebec population share;
+- city population share;
+- number of listed contractors;
+- directory service counts;
+- the 155k Quebec-wide annual project figure;
+- generic renovation-market statistics.
+
+Those proxies cannot establish the required observation:
+
+`covered-city current-family upstream events × unresolved permit-applicability incidence`.
+
+This is not negative product evidence. It is a **measurement boundary**: scale validation for SoumissionRénovation now requires the platform, an integration partner, or another bounded first-party workflow dataset.
 
 ## Outreach sent
 
@@ -161,9 +199,9 @@ Downgrade this route if:
 
 As of 2026-08-28:
 
-> **HIGH-PRIORITY QUEBEC SCALE + DIFFERENTIATION CANDIDATE — UNVALIDATED**
+> **HIGH-PRIORITY QUEBEC SCALE + DIFFERENTIATION CANDIDATE — PUBLIC COVERED-CITY DENOMINATOR UNAVAILABLE / EXTERNAL VALIDATION REQUIRED**
 
-SoumissionRénovation has the strongest observed public project-activity shape in Quebec, but the decisive observations remain unknown:
+SoumissionRénovation has the strongest observed public project-activity shape in Quebec, but the decisive observations remain unknown and are no longer expected to be recoverable from public proxies:
 
 1. the exact operational definition of the public 155k project metric;
 2. covered-city current-family project events/month at the pre-quote/intake stage;
