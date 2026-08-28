@@ -40,12 +40,7 @@ Absence from public search is not proof that no private API exists.
 
 Ville de Québec operates an address/property-specific Assistant-permis that validates whether a permit or certificate is required for planned work.
 
-Its public flow takes:
-
-- address / postal code / lot;
-- permit category;
-- nature of work;
-- property-specific context.
+Its public flow takes address / postal code / lot, permit category, nature of work and property-specific context.
 
 Source:
 
@@ -112,7 +107,7 @@ Sources:
 - `https://www.apchq.com/a-propos/reseau-de-l-apchq/`
 - `https://www.apchq.com/`
 
-APCHQ's February 2026 forecast also expects residential renovation spending to grow about **8% in 2026** after a strong 2025 rebound.
+APCHQ's February 2026 forecast expects residential renovation spending to grow about **8% in 2026** after a strong 2025 rebound.
 
 Source:
 
@@ -141,8 +136,6 @@ Therefore use it only for sensitivity arithmetic.
 
 If 155,000 annual platform projects were the upper activity base, that is about **12,917 projects/month**.
 
-To produce ProjectPermit calls at different uncertain-preflight shares:
-
 | Qualifying pre-contract uncertainty share | Approx. calls/month |
 |---:|---:|
 | 1% | 129 |
@@ -169,7 +162,7 @@ Earlier public research already closed the path to deriving a defensible Soumiss
 
 See:
 
-- `docs/SOUMISSIONRENOVATION_PUBLIC_DENOMINATOR_CLOSURE_20260828.md` or the corresponding merged public-denominator research if file naming differs in the repository history.
+- `docs/SOUMISSION_RENOVATION_PLATFORM_CASE_20260828.md`
 
 Therefore **do not add Montreal, Quebec City or other municipalities merely to make the denominator look larger**.
 
@@ -177,7 +170,7 @@ Coverage expansion is only justified after a credible Quebec software/platform b
 
 ## Rescue gate
 
-The Quebec-only thesis survives only if one credible province-wide or multi-customer buyer supplies all four elements:
+The Quebec-only thesis survives only if one credible province-wide or multi-customer buyer supplies all four elements.
 
 ### Gate A — bounded repeated incidence
 
@@ -194,13 +187,7 @@ The denominator must exclude routine repairs and unrelated trades. A meaningful 
 
 ### Gate C — differentiation from existing Quebec tools
 
-The buyer must explain why the workflow is not already adequately solved by:
-
-- municipal assistants/pages;
-- Assistant Rénovation QC;
-- BuilderAI/internal AI/RAG;
-- manual permit specialists;
-- municipality-specific customer support.
+The buyer must explain why the workflow is not already adequately solved by municipal assistants/pages, Assistant Rénovation QC, BuilderAI/internal AI/RAG, manual permit specialists or municipality-specific customer support.
 
 The missing capability should be specifically reusable B2B/API automation, auditable/reproducible evidence, cross-city maintenance or similar.
 
@@ -218,27 +205,15 @@ A statement that an API would be "nice to have" is insufficient.
 4. **BuilderAI / other Quebec contractor software** — mainly a build-vs-buy comparator; a preference for external cross-city maintenance would be positive evidence, while internalization preference is negative.
 5. **Assistant Rénovation QC** — competitive/API-boundary target: public product is multi-municipality consumer-facing; a private partner API would materially weaken the rescue thesis.
 
+A machine-readable copy of these gates is tracked in `data/quebec_rescue_targets.csv`.
+
 ## Engineering policy
 
 Until a Quebec rescue gate clears:
 
-**Do not:**
+**Do not:** add Montreal; add Quebec City; add more Quebec project families; build a Quebec-specific consumer app; build integrations for Elper/SoumissionRénovation speculatively; add paid data sources; market the product as Quebec-wide.
 
-- add Montreal;
-- add Quebec City;
-- add more Quebec project families;
-- build a Quebec-specific consumer app;
-- build integrations for Elper/SoumissionRénovation speculatively;
-- add paid data sources;
-- market the product as Quebec-wide.
-
-**Allowed:**
-
-- buyer/incidence research;
-- representative E3 cases from existing Quebec coverage;
-- exact competitor/API verification;
-- French-language validation material;
-- a small adapter/integration change only when a credible partner requires it to run a real trial.
+**Allowed:** buyer/incidence research; representative E3 cases from existing Quebec coverage; exact competitor/API verification; French-language validation material; a small adapter/integration change only when a credible partner requires it to run a real trial.
 
 ## Score implication
 
