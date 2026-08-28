@@ -1,8 +1,21 @@
 # ProjectPermit Outreach Follow-up Playbook
 
-Updated: 2026-08-27
+Updated: 2026-08-28
 
 Status: **prepared, not sent**
+
+## Sender identity
+
+Use the human-facing sender identity **Liu from ProjectPermit** for new outreach and future follow-ups.
+
+Signature:
+
+Liu
+ProjectPermit
+
+Do not rewrite or resend already-delivered threads merely because the Gmail display name/profile image changed. Keep existing threads intact and use the new identity naturally on the next legitimate reply/follow-up.
+
+Do not use `ProjectPermit / Independent developer` as a brand-only signature going forward; the objective is to make it clear that a real person is asking a narrow research question, not that the message is an automated product campaign.
 
 ## Timing
 
@@ -27,8 +40,8 @@ If yes, I can test 20 anonymized scopes against the live ProjectPermit preview. 
 If this is the wrong team or the decision is already solved upstream, that is useful feedback too.
 
 Best,
+Liu
 ProjectPermit
-Independent developer
 
 ## Follow-up #1 — integration consultant variant
 
@@ -41,8 +54,8 @@ The specific question I’m trying to validate is whether municipal permit-resea
 If you have one anonymized example, I can test it quickly. Even a “we never see this gap” answer is useful.
 
 Best,
+Liu
 ProjectPermit
-Independent developer
 
 ## Follow-up #1 — full permitting vendor variant
 
@@ -55,8 +68,8 @@ I’m specifically testing whether a low-cost upstream `permit required / likely
 A short yes/no plus where the decision happens in your workflow would be very useful.
 
 Best,
+Liu
 ProjectPermit
-Independent developer
 
 ## Final follow-up
 
@@ -67,8 +80,8 @@ I’m validating whether permit applicability is a repeated machine-call decisio
 If it is, I can run a free 20-scope pilot and measure the likely monthly call volume before building more jurisdiction coverage.
 
 Thanks,
+Liu
 ProjectPermit
-Independent developer
 
 ## Reply handling
 
