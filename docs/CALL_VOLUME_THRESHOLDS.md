@@ -59,7 +59,7 @@ These are gross-revenue sensitivities, not profitability forecasts.
 At exactly 10,000 total external successful preflights/month:
 
 | Paid/address-aware share | Paid calls/month | Gross @ $0.25 | Gross @ $0.50 |
-|---:|---:|---:|
+|---:|---:|---:|---:|
 | 30% | 3,000 | $750 | $1,500 |
 | 50% | 5,000 | $1,250 | $2,500 |
 | 70% | 7,000 | $1,750 | $3,500 |
@@ -123,7 +123,7 @@ Therefore:
 A conservative/diagnostic match against City `WORK` labels that visibly resemble current ProjectPermit families produced:
 
 | Year | Non-exclusive current-family-like issued-workflow signal | Avg/month |
-|---:|---:|
+|---:|---:|---:|
 | 2023 | **6,695** | **557.9** |
 | 2024 | **6,690** | **557.5** |
 | 2025 | **7,038** | **586.5** |
