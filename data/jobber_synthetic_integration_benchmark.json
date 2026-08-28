@@ -2,19 +2,19 @@
   "benchmark": "Jobber synthetic/de-identified integration benchmark",
   "captured_at": "2026-08-27",
   "purpose": "Internal adapter and rules integration evidence only. This is not E3 market validation and does not use any existing Jobber customer account.",
-  "address_resolution": "disabled in this benchmark to keep CI deterministic and network-free; civic address extraction is still exercised by the adapter",
+  "address_resolution": "disabled in this benchmark to keep CI deterministic and network-free; civic address extraction is still exercised by the adapter. Overlay-sensitive exemptions therefore fail safe to municipal confirmation when property overlays are unresolved.",
   "cases": [
     {
       "id": "jobber-syn-001",
       "jurisdiction": "gatineau_qc",
-      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
       "payload": {"__typename": "Quote", "id": "syn-q-001", "title": "Replace same-size front window", "property": {"address": {"street1": "101 Example St", "city": "Gatineau", "province": "QC", "postalCode": "J8X 1A1", "country": "CA"}}, "lineItems": {"nodes": [{"name": "Window replacement", "description": "Same opening, no wall changes"}]}},
       "project": {"family": "window_door", "action": "replace_same_size", "estimated_cost_cad": 1800, "structural_change": false}
     },
     {
       "id": "jobber-syn-002",
       "jurisdiction": "gatineau_qc",
-      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
       "payload": {"__typename": "Quote", "id": "syn-q-002", "title": "Paint and flooring refresh", "property": {"address": "102 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Interior refresh", "description": "Painting and flooring only"}]}},
       "project": {"family": "interior_renovation", "action": "painting", "estimated_cost_cad": 9000, "structural_change": false}
     },
@@ -35,7 +35,7 @@
     {
       "id": "jobber-syn-005",
       "jurisdiction": "gatineau_qc",
-      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
       "payload": {"__typename": "Quote", "id": "syn-q-005", "title": "Bathroom fixture refresh", "property": {"address": "105 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Bathroom refresh", "description": "Replace finishes and existing fixtures"}]}},
       "project": {"family": "kitchen_bath_plumbing", "action": "fixture_refresh", "estimated_cost_cad": 12000, "structural_change": false}
     },
@@ -49,7 +49,7 @@
     {
       "id": "jobber-syn-007",
       "jurisdiction": "gatineau_qc",
-      "expected_determination": "LIKELY_NOT_REQUIRED",
+      "expected_determination": "MUNICIPAL_CONFIRMATION_REQUIRED",
       "payload": {"__typename": "Quote", "id": "syn-q-007", "title": "Residential rear deck", "property": {"address": "107 Example St, Gatineau, QC"}, "lineItems": {"nodes": [{"name": "Deck", "description": "Rear residential deck"}]}},
       "project": {"family": "deck_porch", "action": "build_deck"}
     },
