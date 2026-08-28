@@ -47,11 +47,57 @@ This is especially relevant to PermitSnapshot-style broad AI approaches because 
 
 This does **not** prove PermitSnapshot's paid reports are wrong. It demonstrates the technical failure mode ProjectPermit is trying to control.
 
+## ProjectPermit self-audit
+
+The current ProjectPermit implementation was checked against this exact Mississauga conflict rather than assuming its own source handling is correct.
+
+Current repository state:
+
+- `data/source_manifest.json` has `manifest_version: 1` and `verified_at: 2026-08-26`;
+- `MIS_GENERAL` points to the current City of Mississauga `When a building permit is required` webpage, **not** the older residential guide PDF;
+- `src/projectpermit/expansion_rules.py` identifies the ruleset as `RULE_VERSION = 2026-08-26.1` and `SOURCE_VERIFIED_AT = 2026-08-26`;
+- Mississauga rule `MIS-BASE-001` deterministically returns `REQUIRED` for `finish_basement`, with the reason that Mississauga explicitly lists finishing a basement to create rooms/living space as permit-required work;
+- the older 10 m² / basement-finishing guidance is not the cited source for that current rule.
+
+So the demonstrated stale-source failure mode is **not currently present in ProjectPermit's Mississauga basement rule**.
+
+## Existing source-change detector
+
+`src/projectpermit/source_watch.py` already implements a low-cost source-change detector:
+
+1. fetch each URL in the source manifest;
+2. normalize HTML/text whitespace while retaining PDF bytes;
+3. compute SHA-256 content digests;
+4. compare them with the prior stored source state;
+5. emit `CONTENT_CHANGED` when a known source hash changes;
+6. emit `FETCH_FAILED` when an official source can no longer be fetched.
+
+The module intentionally does **not** auto-edit legal/regulatory rules. A source change creates a review signal; a human/developer must decide whether the rule or its golden cases actually need revision.
+
+That is the correct safety model for a deterministic regulatory ruleset.
+
+## Operationalization gap
+
+The current repository audit also found an important limitation:
+
+- no committed `data/source_state.json` baseline is currently visible;
+- no scheduled GitHub Actions workflow for `source_watch.py` is currently visible.
+
+Therefore the accurate claim today is:
+
+> **ProjectPermit has a source-change detection mechanism, but continuous/scheduled source monitoring is not yet operationalized.**
+
+Do **not** describe the project as already continuously monitoring municipal changes.
+
+This distinction matters because the commercial differentiation thesis depends on maintained freshness, not merely having code capable of detecting changes when someone runs it.
+
 ## ProjectPermit differentiation hypothesis strengthened technically
 
 The surviving technical hypothesis is now narrower:
 
 > A maintained rule layer with explicit current source selection, source-version tracking, stable rule IDs and deterministic inputs can avoid stale-but-official guidance errors that broad web/RAG systems are exposed to.
+
+The current Mississauga self-audit shows the architecture can encode the correct present source boundary. It does **not** yet prove that buyers value this enough to pay for it or that the monitoring process will remain operationally cheap at scale.
 
 This should be tested explicitly in E3.
 
@@ -66,6 +112,19 @@ For representative historical cases, record not only agreement/disagreement but 
 
 Cases involving changed thresholds or changed municipal guidance are especially valuable, but the sample must remain representative rather than cherry-picked.
 
+## Do not operationalize monitoring merely to stay busy
+
+At the current Go/No-Go score, adding a scheduled source-watch workflow would be easy engineering but weak commercial learning.
+
+Do **not** build it merely to make the product look more complete.
+
+Operationalize scheduled monitoring only if one of these becomes true:
+
+- an E2+/E3 partner explicitly values maintained/source-versioned rules;
+- a real E4 pilot needs source-freshness assurance;
+- source-update burden becomes a measured part of build-vs-buy economics;
+- ProjectPermit continues past the current stop/re-scope gate.
+
 ## Score effect
 
 **No score increase.**
@@ -75,6 +134,7 @@ Reason:
 - this supports technical differentiation;
 - it does not establish buyer willingness to pay for source freshness;
 - it does not establish frequency of stale-source failures in real workflows;
+- continuous monitoring is not yet operationalized;
 - it is not an independent representative benchmark.
 
 Go/No-Go remains **50/100 — validation/falsification only**.
