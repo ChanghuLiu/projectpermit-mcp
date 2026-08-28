@@ -8,7 +8,7 @@ Decision status:
 
 This is not a product-quality score. It is a commercial evidence score for whether ProjectPermit deserves more independent-developer time/cash.
 
-## Current score: 52 / 100
+## Current score: 51 / 100
 
 | Dimension | Weight | Current rating | Weighted points | Why |
 |---|---:|---:|---:|---|
@@ -17,18 +17,18 @@ This is not a product-quality score. It is a commercial evidence score for wheth
 | Addressable call volume | 15 | 6/10 | 9.0 | Contractor/platform denominators are material, but Toronto broad MEP flow cannot be mapped safely to the current eight families. Toronto + Mississauga's strongest reproducible current-family-like public issued signal is only ~618-639/month, and even that is not upstream candidate volume. |
 | Repeat frequency | 10 | 5/10 | 5.0 | Ordinary contractor building-permit cadence appears modest; aggregated workflow can be larger. **E4 remains 0.** |
 | Distribution fit | 10 | 5/10 | 5.0 | Real quote-first workflows exist, but no production integration partner exists. Registry/Bazaar/x402 payment plumbing proves discoverability and settlement capability, not buyer demand; a 2026 population-scale study also cautions that raw x402 settlement counts are heavily concentrated and often internal/fictitious. ProjectPermit itself still has E4=0 despite being discoverable. |
-| Competitive headroom | 10 | 2/10 | 2.0 | LandLogic/Parcella now occupies a broad Ontario property/permit-intelligence + partner-API layer, while BuilderAI has delivered pre-quote municipal urbanism inside Quebec estimating and ConstructAI publicly claims a Toronto embedded permit checker in beta. The remaining self-serve deterministic permit-specific API gap is narrow and unvalidated. |
+| Competitive headroom | 10 | 1/10 | 1.0 | GoBuild now independently embeds permit-needs prediction, current-local-code checks and cited sources inside contractor software; BuilderAI already embeds municipal urbanism in Quebec estimates; LandLogic/Parcella covers broad Ontario property/permit intelligence + partner APIs. Remaining whitespace for a standalone self-serve permit-specific API is extremely narrow and unvalidated. |
 | Defensibility | 10 | 2/10 | 2.0 | Local rule replication is demonstrably cheap enough for focused checkers/vertical SaaS, and the build-vs-buy audit shows Toronto/Mississauga scope-only logic can currently be grounded in one primary rule/guidance source per city. Defensibility must come from externally valued cross-city maintenance, evidence/versioning, safety, accuracy history or embedded distribution—not rule ownership itself. |
 | Cash-cost fit | 5 | 9/10 | 4.5 | Deterministic rules + first-party/open municipal data; no paid LLM/property-data/human-review dependency required by default. |
 | Technical feasibility | 5 | 9/10 | 4.5 | Seven jurisdictions, address adapters, HTTP/MCP/x402, tests and production services already work. |
 | Evidence maturity | 5 | 3/10 | 1.5 | No independent representative E3 completed; E4 = 0; E5 = 0. |
-| **Total** | **100** |  | **51.5 -> 52** |  |
+| **Total** | **100** |  | **50.5 -> 51** |  |
 
-## Why the score moved 61 -> 59 -> 58 -> 57 -> 56 -> 53 -> 52
+## Why the score moved 61 -> 59 -> 58 -> 57 -> 56 -> 53 -> 52 -> 51
 
 ### 61 -> 59: current-family volume correction
 
-Toronto's broad Mechanical + Plumbing + Drain/Site permit flow (~1.7k issued revisions/month) was too broad to count toward the current product. City `WORK` labels show most of that volume as generic building-permit-related work that cannot be mapped safely to the existing eight families.
+Toronto's broad Mechanical + Plumbing + Drain/Site permit flow (~1.7k issued revisions/month) was too broad to count toward the current product. City `WORK` labels show most of that volume as generic building-permit-related work that cannot be mapped safely into the existing eight families.
 
 A deliberately conservative/non-exclusive Toronto current-family-like diagnostic is:
 
@@ -136,6 +136,23 @@ This matters because build-vs-buy economics make high-volume vertical SaaS buyer
 
 Accordingly **distribution fit falls from 6/10 to 5/10**. x402 remains useful payment infrastructure; it should not be counted as validated distribution.
 
+### 52 -> 51: GoBuild independently embeds near-exact permit intelligence
+
+A targeted Canadian contractor-software scan found GoBuild publicly advertising an `AI permit & zoning intelligence` feature that:
+
+- predicts the permits and drawings a job needs;
+- checks current local code;
+- provides cited sources;
+- is embedded in the same contractor platform as estimates, proposals and job management;
+- publicly shows a `Building permit — likely required (City of Toronto)` example;
+- is included in the product's all-features subscription rather than presented as a separate metered permit API.
+
+See `docs/EMBEDDED_BUILD_VS_BUY_SCAN_20260828.md`.
+
+This is independent of BuilderAI and materially closer to ProjectPermit's intended output than permit search, permit-document storage or downstream filing tools. GoBuild does not publicly prove comparable accuracy, broad Canadian municipality coverage or a third-party permit API, but it demonstrates that `job/scope -> likely permits + current local code + cited sources` can already be an embedded contractor-software feature.
+
+Accordingly **competitive headroom falls from 2/10 to 1/10**. Remaining whitespace is no longer the feature itself; it is only the narrower shared/self-serve/cross-city external capability contract and whether buyers prefer that over their embedded implementation.
+
 ## Municipality-specific technical value still exists
 
 A separate synthetic discrimination audit should not be confused with this monetization/competition downgrade.
@@ -159,38 +176,18 @@ Interpretation:
 
 The score therefore does not rise because the synthetic municipal matrix is favorable.
 
-## Workflow timing: quote-first exists, but is not universal
+## Why this is not yet a No-Go
 
-Public contractor processes show at least two real patterns.
+At 51/100 the project is now only one weighted point above the explicit stop zone. The remaining reason to continue is narrow:
 
-Quote-first examples:
+- the product works technically;
+- municipality-specific routing really can diverge;
+- current operation remains cheap;
+- no representative software buyer has yet answered the build-vs-buy question;
+- no direct competitor has yet publicly demonstrated the exact combination of self-serve cross-city deterministic permit API + official rule/version contract + low-friction metered developer access across ProjectPermit's target geographies;
+- the external validation stop clock is only 2/20 qualified human conversations.
 
-- TopDown Renovations: estimate -> written quote -> design -> permits;
-- Nexon Build: discovery -> scope/fixed-price estimate -> design & permits;
-- Crown Structural: detailed quotation including engineering/permit costs -> engineering -> permit submission.
-
-Permit-first counterexample:
-
-- WeRenovate.com requires permit-approved drawings before processing a construction estimate.
-
-See `docs/QUOTE_STAGE_WORKFLOW_TIMING_EVIDENCE.md`.
-
-Implication: ProjectPermit's intended quote-stage insertion point is real, but not universal. A platform's total quote count is not a call denominator until we know how many quotes still have unresolved permit applicability at that point.
-
-## Why this is not a No-Go
-
-ProjectPermit still has several good solo-developer properties:
-
-- very low marginal compute cost;
-- no mandatory paid data license;
-- no mandatory human reviewer/permit runner;
-- real regulatory pain;
-- a concrete quote/job integration point in some contractor workflows;
-- municipality-specific rules genuinely can produce opposite safe routing outcomes;
-- no public evidence yet establishes that LandLogic or another competitor offers the exact combination of **self-serve, low-friction, permit-specific deterministic machine output + official evidence/versioning** as an ordinary developer product across the target Canadian workflows;
-- the cross-city shared-maintenance proposition remains plausible even though local replication is cheap.
-
-This is a narrow reason to continue **validation**, not a reason to expand.
+This justifies **continued validation only**. It does not justify more product investment.
 
 ## Why this is not a Go-to-scale
 
@@ -198,15 +195,13 @@ The critical commercial facts remain missing:
 
 1. How often is `permit required?` unresolved when a Request/assessment/estimate/quote is created?
 2. How many of those events map to a current family?
-3. Will software buyers call a separate API instead of building a narrow local checker/RAG or using free municipal tools?
+3. Will software buyers call a separate API instead of building a narrow local checker/RAG or using embedded products like GoBuild/BuilderAI?
 4. For buyers considering LandLogic/Parcella or internal RAG, what exact blocker makes ProjectPermit's narrower contract preferable?
 5. How often does municipality-specific logic change a generic answer in representative real projects?
 6. How often does derived address/property context materially change safe routing?
 7. Will anyone pay the proposed price or commit integration resources?
 8. Can accuracy stay high without a staffed expert operation?
 9. If high-volume software buyers prefer internalization, can variable-geography agent/long-tail channels produce meaningful independent repeated usage rather than merely discovery/probes?
-
-Until those are answered, expanding cities/features only increases maintenance burden.
 
 ## What would move the score above 70
 
@@ -237,7 +232,7 @@ Serious stop signals include:
 - property/address context rarely changes the answer;
 - buyers will not pay for scope-only municipal preflight and the address-aware premium proves too rare;
 - **multiple representative software buyers say they would simply build/maintain the relevant one-city/few-city checker internally**;
-- **LandLogic or another competitor confirms an already-available low-friction/self-serve permit-specific API that adequately covers the target workflow/economics**;
+- **LandLogic, GoBuild or another competitor confirms an already-available low-friction/self-serve permit-specific API that adequately covers the target workflow/economics**;
 - **agent/x402 discovery continues to produce only probes/one-off use rather than repeat independent workflows after credible exposure**;
 - rule maintenance costs several hours/month per low-volume jurisdiction;
 - buyers only value full filing/expediting and will not pay for preflight.
@@ -246,95 +241,24 @@ Serious stop signals include:
 
 Until external evidence pushes the score above 70:
 
-**Do not:**
+**Do not:** add an eighth municipality; add U.S. coverage; add electrical/HVAC/mechanical families from public volume; build a third FSM adapter; add speculative property/GIS rules; add drawing/document QA; add filing/status/inspection operations; add human reviewer network; pay marketplace/listing fees; build consumer permit/zoning tools.
 
-- add an eighth municipality;
-- add U.S. coverage;
-- add electrical/HVAC/mechanical families based only on public permit volume;
-- build a third FSM adapter;
-- add speculative property/GIS rules merely to make existing adapters appear valuable;
-- add drawings/document QA;
-- add filing/status/inspection operations;
-- add a human reviewer network;
-- pay marketplace/listing fees merely for visibility;
-- build consumer zoning/feasibility or standalone permit-checker features.
-
-**Allowed engineering:**
-
-- bugs;
-- validation-friction reduction;
-- privacy/telemetry correctness;
-- benchmark tooling;
-- corrections that prevent SAM/competition/monetization overclaim;
-- changes explicitly required by an E2+/E3 partner.
+**Allowed:** bugs; validation-friction reduction; privacy/telemetry correctness; benchmark tooling; corrections that prevent overclaim; changes explicitly required by E2+/E3 partners.
 
 ## Current highest-value experiments
 
-### A. Bounded estimator / quote denominator
-
-For one recent complete month or fixed recent sample:
-
-- relevant Requests/Assessments/Estimates/Quotes;
-- current-family share;
-- fraction where `permit required?` is still unresolved at first quote;
-- who/what resolved the rest before quote.
-
-### B. Generic checker vs municipality-specific value
-
-Representative historical cases now have optional benchmark fields to record whether municipality specificity changed the safe answer. This does not affect E3 qualification.
-
-Measure:
-
-`cases where municipality-specific logic materially changed generic routing / representative current-family cases`
-
-### C. Address/property incremental value
-
-Measure separately:
-
-`cases where derived property/address context materially changed safe routing / representative current-family cases`
-
-Do not use `address was available`, `address lookup succeeded`, or `GIS data was returned` as substitutes for this metric.
-
-### D. Platform threshold + build-vs-buy
-
-Measure one recent month of covered-geography **current-family** candidate events. First threshold: **>=500/month**; then look for >=2,000/month aggregation and a credible path to 10,000 external preflights/month.
-
-For any high-volume software buyer, pair the volume result with the economic question documented in `docs/VENDOR_BUILD_VS_BUY_ECONOMICS_20260828.md`: at the resulting API spend, why would the buyer not internalize the relevant municipal rules?
-
-### E. E3 -> E4 -> E5 chain
-
-Keep the evidence order strict:
-
-`E2 bounded workflow -> E3 representative historical benchmark -> E4 repeated external usage -> E5 economic behavior`
-
-No directory listing, polite reply, internal CI call, synthetic benchmark, successful address lookup or public permit count substitutes for that chain.
-
-### F. Build-vs-buy / exact competitor gap
-
-For software buyers, ask the concrete version rather than generic feature interest:
-
-> For your actual municipalities, if permit checks became material volume, would you prefer to pay a metered external API, use a fixed platform license, or maintain the municipal logic internally? What makes that choice rational, especially relative to LandLogic/Parcella or other available tooling?
-
-A buyer saying `we would just build the local version` is meaningful negative evidence.
-
-A buyer saying `we do not want to own cross-city regulatory maintenance` is useful differentiation evidence, but still does not prove price or call volume.
-
-## Defensibility checkpoint
-
-Do not score defensibility above 6/10 until at least one of these exists:
-
-- a repeated integration whose workflow switching cost is real;
-- an externally benchmarked accuracy corpus competitors cannot reproduce instantly;
-- meaningful rule/source-change history maintained over time;
-- a partner-specific normalized schema/routing layer embedded into operations;
-- enough observed production outcomes to prioritize/maintain rules better than a new entrant.
+1. **Qualified human build-vs-buy responses** — current stop clock 2/20.
+2. **Representative E3 divergence-sensitive cases** — especially basement/window/deck/accessory/plumbing/overlay boundaries.
+3. **Platform volume + economics together** — a 10k-call partner only matters if it also explains why C$2.5k/month at `$0.25` is preferable to internal maintenance.
+4. **External E4** — 20+ repeated operational calls from one real workflow.
+5. **Exact competitor API check** — if an existing product exposes comparable self-serve permit-specific machine output at acceptable economics, stop earlier than the 20-conversation clock.
 
 ## Bottom line
 
-ProjectPermit remains worth validating because the pain/cost structure is attractive and the product is technically capable of municipality-specific safe routing.
+ProjectPermit is now a **51/100 validation-only project**.
 
-But its current commercial status is now more cautiously stated as:
+The feature/category is real, but most apparent moats have been falsified. The remaining thesis is only:
 
-> **real technical differentiation, very narrow competitive whitespace, unproven build-vs-buy preference, unproven repeated distribution, no E5**
+> **some buyers may still prefer a shared, self-serve, deterministic, cross-city permit capability over internal embedded AI/RAG because maintenance, evidence, safety and geography breadth are non-core.**
 
-The next dollar/hour should buy **external workflow + build-vs-buy + E3/E4 evidence**, not more code or marketplace exposure.
+That thesis has no E2/E3/E4/E5 support yet. The next evidence must come from buyers or real usage, not more product work.
