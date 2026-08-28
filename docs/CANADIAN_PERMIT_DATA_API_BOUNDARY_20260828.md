@@ -107,8 +107,10 @@ ProjectPermit currently has no reason to incur a $299+/month data bill solely fo
 
 Reason:
 
-- competitive headroom is already 0/10;
+- the canonical scorecard currently rates competitive headroom at **1/10** after the later GoBuild review; this document must not override that canonical rating;
 - permit-record normalization is adjacent/downstream and was never the remaining claimed moat;
 - the scan makes the scope boundary clearer but does not prove demand for pre-application applicability.
 
 A newly discovered Canadian API with the exact pre-application deterministic contract and viable pricing would be materially different and should trigger an explicit score/re-scope review.
+
+For score changes, `docs/GO_NO_GO_SCORECARD.md` is the canonical source. Research addenda should state their directional implication and update that scorecard explicitly if a score change is warranted rather than carrying an independent competing score.
