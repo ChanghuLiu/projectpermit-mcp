@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from collections import Counter
 from pathlib import Path
 from typing import Iterable
 
@@ -23,6 +24,14 @@ JURISDICTIONS = {
     "LAV": "laval_qc",
     "LON": "longueuil_qc",
     "VAN": "vancouver_bc",
+}
+
+# These are context/data endpoints rather than the first-party prose/by-law/permit
+# guidance that directly states project requirements.  Keeping them separate avoids
+# inflating the minimum source burden for a scope-only embedded checker.
+CONTEXT_SOURCE_KINDS = {
+    "official_gis",
+    "official_open_data",
 }
 
 RULE_FILES = [
@@ -142,28 +151,46 @@ def _rule_ids() -> dict:
     }
 
 
+def _source_counts(items: list[dict]) -> dict:
+    context_items = [item for item in items if item.get("kind") in CONTEXT_SOURCE_KINDS]
+    rule_guidance_items = [item for item in items if item.get("kind") not in CONTEXT_SOURCE_KINDS]
+    return {
+        "count": len(items),
+        "rule_guidance_count": len(rule_guidance_items),
+        "context_data_count": len(context_items),
+        "critical_count": sum(1 for item in items if item.get("criticality") == "critical"),
+        "source_ids": [item["source_id"] for item in items],
+        "rule_guidance_source_ids": [item["source_id"] for item in rule_guidance_items],
+        "context_data_source_ids": [item["source_id"] for item in context_items],
+    }
+
+
 def _sources() -> dict:
     manifest = json.loads(_path("data/source_manifest.json").read_text(encoding="utf-8"))
     by_jurisdiction = {jurisdiction: [] for jurisdiction in JURISDICTIONS.values()}
     unknown_prefixes: list[str] = []
+    kind_counts = Counter()
     for source in manifest["sources"]:
         source_id = source["source_id"]
         prefix = source_id.split("_", 1)[0]
         jurisdiction = JURISDICTIONS.get(prefix)
+        kind_counts[source.get("kind", "unknown")] += 1
         if jurisdiction is None:
             unknown_prefixes.append(source_id)
             continue
         by_jurisdiction[jurisdiction].append(source)
+
+    all_counts = _source_counts(manifest["sources"])
     return {
         "manifest_version": manifest.get("manifest_version"),
         "verified_at": manifest.get("verified_at"),
-        "official_source_count": len(manifest["sources"]),
+        "official_source_count": all_counts["count"],
+        "rule_guidance_source_count": all_counts["rule_guidance_count"],
+        "context_data_source_count": all_counts["context_data_count"],
+        "by_kind": dict(sorted(kind_counts.items())),
+        "context_source_kinds": sorted(CONTEXT_SOURCE_KINDS),
         "by_jurisdiction": {
-            jurisdiction: {
-                "count": len(items),
-                "critical_count": sum(1 for item in items if item.get("criticality") == "critical"),
-                "source_ids": [item["source_id"] for item in items],
-            }
+            jurisdiction: _source_counts(items)
             for jurisdiction, items in by_jurisdiction.items()
         },
         "unknown_prefix_source_ids": unknown_prefixes,
@@ -193,10 +220,13 @@ def run() -> dict:
 
     one_city_proxy = {}
     for jurisdiction in JURISDICTIONS.values():
+        source_row = sources["by_jurisdiction"][jurisdiction]
         one_city_proxy[jurisdiction] = {
             "rule_id_count": rules["by_jurisdiction"][jurisdiction]["count"],
-            "official_source_count": sources["by_jurisdiction"][jurisdiction]["count"],
-            "critical_source_count": sources["by_jurisdiction"][jurisdiction]["critical_count"],
+            "official_source_count": source_row["count"],
+            "rule_guidance_source_count": source_row["rule_guidance_count"],
+            "context_data_source_count": source_row["context_data_count"],
+            "critical_source_count": source_row["critical_count"],
             "note": (
                 "A one-city LOC figure is intentionally not reported because several Python modules "
                 "share helpers and multiple jurisdictions. Rule/source counts are the safer city-level proxy."
@@ -223,6 +253,7 @@ def run() -> dict:
         "explicitly_excluded_from_core_clone": EXPLICITLY_EXCLUDED_FROM_CORE_CLONE,
         "interpretation_rules": [
             "A small one-city rule/source count supports the hypothesis that a narrow local checker can be cheap to internalize.",
+            "For a scope-only checker, rule/guidance sources are a stricter minimum proxy than total sources because GIS/open-data context endpoints may be unnecessary.",
             "A larger cross-city source/rule/test surface supports only a maintenance-burden hypothesis; buyer preference must still be observed.",
             "Do not count FSM adapters, MCP, x402, distribution or market-research code as permit-domain moat.",
             "Do not convert LOC to hours or dollars without external evidence.",
@@ -243,11 +274,14 @@ def main() -> int:
     print("=== ProjectPermit build-vs-buy maintenance baseline ===")
     print(f"jurisdictions={result['jurisdiction_count']}")
     print(f"official_sources={result['official_sources']['official_source_count']}")
+    print(f"rule_guidance_sources={result['official_sources']['rule_guidance_source_count']}")
+    print(f"context_data_sources={result['official_sources']['context_data_source_count']}")
     print(f"unique_rule_ids={result['deterministic_rules']['unique_rule_id_count']}")
     for jurisdiction, row in result["layers"]["one_city_proxy"].items():
         print(
             f"city={jurisdiction} rule_ids={row['rule_id_count']} "
-            f"sources={row['official_source_count']} critical_sources={row['critical_source_count']}"
+            f"sources={row['official_source_count']} rule_guidance_sources={row['rule_guidance_source_count']} "
+            f"context_sources={row['context_data_source_count']} critical_sources={row['critical_source_count']}"
         )
     for name in (
         "multi_city_deterministic_rule_surface",
