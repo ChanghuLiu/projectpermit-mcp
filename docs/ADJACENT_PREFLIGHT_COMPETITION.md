@@ -1,6 +1,6 @@
 # Adjacent preflight competition boundary
 
-Updated: 2026-08-27
+Updated: 2026-08-28
 
 Purpose: keep ProjectPermit focused on the narrow capability that is not already being served well by zoning/buildability or downstream permit-package products.
 
@@ -268,6 +268,48 @@ Current public positioning is much broader housing-delivery intelligence:
 
 Its Ontario emphasis is not currently a clean match to ProjectPermit's covered GTA/municipal workflow, so it is not a priority E2 target merely because it is Canadian. It is another reason not to turn ProjectPermit into a full housing-development operating system.
 
+## Neighbourly / Homicity — permit-history API, not applicability
+
+A 2026 API-level search found Neighbourly/Homicity exposing a Canadian Building Permits API across roughly 20 cities. It normalizes permit records into a shared schema and supports address/coordinate/viewport queries, filtering by permit type, status, cost and date.
+
+Public source:
+
+- https://homicity.com/data/permits
+
+This is important **data-layer competition**, but it answers a different question:
+
+`What permits were filed/issued around this address/place?`
+
+rather than:
+
+`Does this proposed normalized scope require a permit under the current municipality's rules?`
+
+Boundary implication:
+
+- do not duplicate normalized historical permit-search APIs;
+- historical permit data may become supporting context, but it is not a substitute for applicability rules;
+- the existence of a Canada-wide normalized permit-data API further weakens any moat claim based on data normalization alone;
+- no current public evidence from this product shows a scope-to-permit-required deterministic endpoint.
+
+## Canadian deterministic compliance-checking initiative — medium-term threat
+
+In August 2026, Innovative Solutions Canada / NRC published a challenge for deterministic AI-assisted compliance checking of building permit applications. The requested capabilities include itemized `Meets / Does not Meet / Information Not Available / Uncertain` outcomes, rule-level checks, possible open APIs, and pipelines to digitalized code/by-law data.
+
+Public source:
+
+- https://ised-isde.canada.ca/site/innovative-solutions-canada/en/deterministic-artificial-intelligence-assisted-compliance-checking-building-permit-applications
+
+This is primarily **downstream application/code-compliance review**, not ProjectPermit's upstream `do I need a permit?` decision. It therefore does not make the current product redundant.
+
+However, it is a medium-term competitive signal:
+
+- Canadian public-sector funding is actively encouraging deterministic regulatory engines and interoperable APIs;
+- digitalized code/by-law infrastructure will reduce the cost of building rule-based compliance products over time;
+- ProjectPermit must not rely on the claim that deterministic regulatory interpretation will remain technically rare;
+- any moat has to come from validated workflow distribution, maintained municipal exceptions, safety/accuracy history and low-cost integration rather than the mere existence of a deterministic rules engine.
+
+Do not lower the commercial score solely for this initiative because its current scope is downstream and no directly substitutable self-serve permit-applicability API is demonstrated.
+
 ## Why this boundary matters
 
 The adjacent market is already becoming crowded across three layers:
@@ -362,7 +404,8 @@ The 2026 competitive scan changes the conclusion from **no equivalent layer foun
 - QwikScope Greenlight is a close U.S. conceptual analogue;
 - Permitio bundles automatic permit detection into U.S. field-service permit filing;
 - Ampr embeds Ontario electrical permit detection directly at quote creation;
-- these competitors appear early-stage rather than mature based on currently visible adoption evidence.
+- Canadian permit-history/property APIs and public-sector deterministic compliance initiatives are reducing the technical whitespace around the product;
+- these observations do not yet prove a directly substitutable low-friction Canadian applicability API.
 
 Therefore ProjectPermit is still early enough to validate, but **feature novelty is not defensibility**.
 
