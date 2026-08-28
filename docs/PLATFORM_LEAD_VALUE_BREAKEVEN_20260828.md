@@ -14,6 +14,12 @@ This note asks a different question for **marketplaces / lead-routing platforms*
 
 This is a **unit-economics sensitivity only**. It is not E5, observed willingness to pay, measured routing loss, or proof that permit uncertainty causes marketplace waste.
 
+### Currency boundary
+
+The lead values below are Canadian-dollar values. For arithmetic comparability, the hypothetical ProjectPermit prices are treated as **CAD-equivalent call prices** in the sensitivity tables.
+
+If production billing is actually denominated in USD/USDC through x402, the realized bill must first be converted to CAD at the applicable transaction/exchange rate before using these ratios. This note therefore does not claim FX-invariant pricing or a final billing currency.
+
 ---
 
 ## 1. Public lead-value context
@@ -51,7 +57,7 @@ The anchors are not TAM inputs and are not ProjectPermit willingness-to-pay evid
 
 Let:
 
-- `P` = ProjectPermit price per candidate preflight call;
+- `P` = ProjectPermit CAD-equivalent price per candidate preflight call;
 - `L` = economic value / avoidable loss associated with one lead or routing event;
 - `r` = minimum fraction of `L` that ProjectPermit must preserve or avoid losing for the call to break even, ignoring integration cost.
 
@@ -61,7 +67,7 @@ Then:
 
 ### Required value preservation by lead-value band
 
-| Lead / routing value | $0.10 call | $0.25 call | $0.50 call |
+| Lead / routing value | C$0.10-equivalent call | C$0.25-equivalent call | C$0.50-equivalent call |
 |---:|---:|---:|---:|
 | C$5 | 2.0% | 5.0% | 10.0% |
 | C$25 | 0.4% | 1.0% | 2.0% |
@@ -69,9 +75,9 @@ Then:
 
 Interpretation:
 
-- at C$50/lead, `$0.25` appears arithmetically easy to absorb **if** the preflight reliably creates at least 0.5% of lead value;
+- at C$50/lead, a C$0.25-equivalent call appears arithmetically easy to absorb **if** the preflight reliably creates at least 0.5% of lead value;
 - at C$5/connection, the same call requires a much more material **5%** value effect;
-- `$0.50` is especially demanding in low-value lead channels.
+- a C$0.50-equivalent call is especially demanding in low-value lead channels.
 
 This is why ProjectPermit should not justify pricing by citing a single C$50 lead example.
 
@@ -94,7 +100,7 @@ Then:
 
 ### Required value per materially improved lead
 
-| Material hit rate | $0.10/call | $0.25/call | $0.50/call |
+| Material hit rate | C$0.10-eq/call | C$0.25-eq/call | C$0.50-eq/call |
 |---:|---:|---:|---:|
 | 1% | C$10.00 | C$25.00 | C$50.00 |
 | 2% | C$5.00 | C$12.50 | C$25.00 |
@@ -106,7 +112,7 @@ This table is strategically more useful than `API price as a percent of lead val
 
 Example:
 
-- if only **1%** of candidate leads materially benefit, a `$0.25` call needs to create/avoid about **C$25 of value on each hit** merely to cover API spend;
+- if only **1%** of candidate leads materially benefit, a C$0.25-equivalent call needs to create/avoid about **C$25 of value on each hit** merely to cover API spend;
 - if **10%** materially benefit, the required value per hit falls to **C$2.50**.
 
 Therefore even a cheap call is unattractive if permit applicability almost never changes anything at the insertion point.
@@ -174,7 +180,7 @@ These remain sensitivity/context only:
 
 Strong evidence requires economic commitment, for example:
 
-- accepting `$0.10`, `$0.25` or another explicit per-call price tied to expected volume;
+- accepting a concrete per-call price tied to expected volume;
 - accepting a fixed platform licence / paid pilot;
 - committing engineering/security/procurement effort for a real integration;
 - continuing real external usage after free pilot limits end;
@@ -186,7 +192,7 @@ The exact pricing model should follow evidence rather than be built in advance.
 
 ## 7. Pricing implication
 
-The current `$0.20–$0.50/call` idea should remain a hypothesis, not a product promise.
+The current `$0.20–$0.50/call` idea should remain a hypothesis, not a product promise. If billed in USD/USDC, compare the converted CAD-equivalent cost against partner economics rather than using the nominal number directly.
 
 This sensitivity makes several possibilities plausible **only if E4/E5 appears**:
 
@@ -204,7 +210,7 @@ Do not implement these pricing variants now.
 
 **No score change. ProjectPermit remains 50/100, PAUSE / RE-SCOPE.**
 
-The arithmetic shows that a low metered price can fit inside some renovation-lead economics, but it also shows that low-value connections and low material-hit rates can make even `$0.25–$0.50` unattractive.
+The arithmetic shows that a low metered price can fit inside some renovation-lead economics, but it also shows that low-value connections and low material-hit rates can make even nominal `$0.25–$0.50` pricing unattractive.
 
 No current evidence establishes:
 
@@ -224,6 +230,6 @@ The economically meaningful question for a marketplace is not:
 
 It is:
 
-> `Across every lead we pay to check, does the permit signal prevent enough real routing/research/lead-quality loss — after integration cost — to beat the metered spend, and do we still prefer buying rather than building?`
+> `Across every lead we pay to check, does the permit signal prevent enough real routing/research/lead-quality loss — after FX and integration cost — to beat the metered spend, and do we still prefer buying rather than building?`
 
 Until a real partner answers that with observed workflow behavior or money/resource commitment, willingness-to-pay remains unvalidated.
