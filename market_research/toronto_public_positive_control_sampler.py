@@ -1,19 +1,21 @@
-"""Build a privacy-minimized Toronto permit-positive candidate sample.
+"""Build a privacy-minimized Toronto residential building-permit positive sample.
 
 This is technical safety-benchmark tooling only. It streams City of Toronto Active
-and Cleared building-permit CSV resources, keeps issued 2026 residential records
-that map textually to a current ProjectPermit family, deduplicates permit revisions,
-and emits a deterministic chronological candidate sample.
+and Cleared building-permit CSV resources, keeps issued low-rise residential BLD
+records that map textually to a current ProjectPermit family, deduplicates revisions
+to one row per base building permit, and emits a deterministic chronological
+candidate sample.
 
 The output is NOT market-validation E3 evidence. It is only a source from which
-clearly mappable, already-permit-positive cases may be replayed to detect dangerous
-`LIKELY_NOT_REQUIRED` false negatives.
+clearly mappable, already-building-permit-positive cases may be replayed to detect
+dangerous `LIKELY_NOT_REQUIRED` false negatives.
 
 Privacy boundary:
 - civic address, postal code, applicant, owner, contractor and contact fields are
   never emitted;
-- exact street number/name tokens are removed from scope text if they appear there;
-- email/phone-like strings are redacted;
+- if the row's exact `street number + street name` appears inside public scope text,
+  that combined address phrase is redacted without deleting standalone numbers;
+- postal/email/phone-like strings are redacted;
 - only permit id/revision, issue date, non-address classification fields, sanitized
   public work/scope text and deterministic family-token matches are written.
 """
@@ -95,8 +97,8 @@ FAMILY_TOKENS: dict[str, tuple[str, ...]] = {
     ),
 }
 
-RESIDENTIAL_TOKENS = (
-    "residential",
+LOW_RISE_STRUCTURE_TOKENS = (
+    "sfd",
     "single family",
     "single-family",
     "single detached",
@@ -105,14 +107,28 @@ RESIDENTIAL_TOKENS = (
     "semi detached",
     "townhouse",
     "row house",
-    "dwelling",
+    "laneway",
+    "rear yard suite",
+    "2 unit",
+    "3+ unit",
     "house",
-    "secondary suite",
-    "laneway suite",
-    "garden suite",
 )
 
-NONRESIDENTIAL_TOKENS = (
+EXCLUDED_STRUCTURE_TOKENS = (
+    "apartment",
+    "group home",
+    "multiple use",
+    "non residential",
+    "non-residential",
+    "commercial",
+    "industrial",
+    "institutional",
+    "office",
+    "warehouse",
+    "other",
+)
+
+NONRESIDENTIAL_USE_TOKENS = (
     "industrial",
     "warehouse",
     "office",
@@ -123,6 +139,7 @@ NONRESIDENTIAL_TOKENS = (
     "hospital",
     "restaurant",
     "factory",
+    "automotive",
 )
 
 EMAIL_RE = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I)
@@ -173,20 +190,31 @@ def _contains_token(text: str, tokens: Iterable[str]) -> bool:
     return any(token in lowered for token in tokens)
 
 
-def _residential_basis(structure: str, current_use: str, proposed_use: str) -> list[str]:
-    fields = {
-        "structure_type": structure,
-        "current_use": current_use,
-        "proposed_use": proposed_use,
-    }
-    combined = " | ".join(fields.values()).lower()
-    if _contains_token(combined, NONRESIDENTIAL_TOKENS):
+def _is_building_permit_number(permit_number: str) -> bool:
+    return bool(re.search(r"\bBLD\b", permit_number or "", flags=re.I))
+
+
+def _low_rise_residential_basis(
+    structure: str,
+    current_use: str,
+    proposed_use: str,
+) -> list[str]:
+    structure_lower = structure.lower()
+    if _contains_token(structure_lower, EXCLUDED_STRUCTURE_TOKENS):
         return []
-    return [
-        label
-        for label, value in fields.items()
-        if _contains_token(value, RESIDENTIAL_TOKENS)
-    ]
+    if not _contains_token(structure_lower, LOW_RISE_STRUCTURE_TOKENS):
+        return []
+
+    use_combined = f"{current_use} | {proposed_use}".lower()
+    if _contains_token(use_combined, NONRESIDENTIAL_USE_TOKENS):
+        return []
+
+    basis = ["structure_type"]
+    if current_use.strip():
+        basis.append("current_use")
+    if proposed_use.strip():
+        basis.append("proposed_use")
+    return basis
 
 
 def _family_matches(work: str, description: str) -> dict[str, list[str]]:
@@ -199,6 +227,17 @@ def _family_matches(work: str, description: str) -> dict[str, list[str]]:
     return matches
 
 
+def _combined_address_pattern(street_num: str, street_name: str) -> re.Pattern[str] | None:
+    num = street_num.strip()
+    name = street_name.strip()
+    if not num or not name:
+        return None
+    # Match only the combined civic-number + street-name phrase. Never redact a
+    # standalone number because it may be a dimension, count or cost fact.
+    escaped_name = re.escape(name).replace(r"\ ", r"\s+")
+    return re.compile(rf"(?<!\w){re.escape(num)}\s+{escaped_name}(?!\w)", re.I)
+
+
 def _sanitize_scope_text(
     text: str,
     *,
@@ -209,14 +248,21 @@ def _sanitize_scope_text(
     value = EMAIL_RE.sub("[redacted-email]", text or "")
     value = PHONE_RE.sub("[redacted-phone]", value)
 
-    # Remove exact address tokens from the row if they appear in the free-text scope.
-    # Do not globally remove numbers because dimensions/counts are decision-useful.
-    for token in (postal.strip(), street_name.strip(), street_num.strip()):
-        if not token or len(token) < 2:
-            continue
-        value = re.sub(re.escape(token), "[redacted-address]", value, flags=re.I)
+    address_pattern = _combined_address_pattern(street_num, street_name)
+    if address_pattern:
+        value = address_pattern.sub("[redacted-address]", value)
+
+    postal_token = postal.strip()
+    if postal_token:
+        value = re.sub(re.escape(postal_token), "[redacted-postal]", value, flags=re.I)
 
     return WHITESPACE_RE.sub(" ", value).strip()
+
+
+def _revision_sort_key(value: str) -> tuple[int, str]:
+    text = (value or "").strip()
+    match = re.match(r"^(\d+)", text)
+    return (int(match.group(1)) if match else -1, text)
 
 
 def _stream_source(
@@ -228,7 +274,7 @@ def _stream_source(
 ) -> tuple[int, dict[tuple[str, str], dict]]:
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "ProjectPermit public-positive-control/1.0"},
+        headers={"User-Agent": "ProjectPermit public-positive-control/1.1"},
     )
     source_rows = 0
     selected: dict[tuple[str, str], dict] = {}
@@ -272,13 +318,15 @@ def _stream_source(
 
             permit = _value(row, permit_col).strip()
             revision = _value(row, revision_col).strip()
-            if not permit:
+            if not permit or not _is_building_permit_number(permit):
                 continue
 
             structure = _value(row, structure_col).strip()
             current_use = _value(row, current_use_col).strip()
             proposed_use = _value(row, proposed_use_col).strip()
-            residential_basis = _residential_basis(structure, current_use, proposed_use)
+            residential_basis = _low_rise_residential_basis(
+                structure, current_use, proposed_use
+            )
             if not residential_basis:
                 continue
 
@@ -339,18 +387,36 @@ def main() -> None:
         CLEARED_URL, "cleared", start_date=start_date, end_date=end_date
     )
 
-    # Prefer the current Active row when the same permit revision is visible in both
-    # sources, but preserve source overlap in aggregate metadata.
     overlap = set(active) & set(cleared)
-    combined = dict(cleared)
-    combined.update(active)
+    combined_revisions = dict(cleared)
+    combined_revisions.update(active)
+
+    # One project should not gain weight merely because the City dataset contains
+    # multiple revisions. Keep the latest issued/revision row for each base BLD permit.
+    by_permit: dict[str, dict] = {}
+    for candidate in combined_revisions.values():
+        permit = candidate["permit_number"]
+        existing = by_permit.get(permit)
+        candidate_key = (
+            candidate["issued_date"],
+            _revision_sort_key(candidate["revision_number"]),
+        )
+        if existing is None:
+            by_permit[permit] = candidate
+            continue
+        existing_key = (
+            existing["issued_date"],
+            _revision_sort_key(existing["revision_number"]),
+        )
+        if candidate_key > existing_key:
+            by_permit[permit] = candidate
 
     ordered = sorted(
-        combined.values(),
+        by_permit.values(),
         key=lambda item: (
             item["issued_date"],
             item["permit_number"],
-            item["revision_number"],
+            _revision_sort_key(item["revision_number"]),
         ),
     )
     sample = ordered[: args.limit]
@@ -364,22 +430,24 @@ def main() -> None:
             "end_date": end_date.isoformat(),
         },
         "purpose": (
-            "Technical permit-positive false-negative candidate sample only; "
+            "Technical building-permit-positive false-negative candidate sample only; "
             "not market-validation E3, not an incidence denominator, and not SAM."
         ),
         "selection_rule": (
-            "Issued record in fixed date window + explicit residential structure/use token + "
-            "at least one current-family token in City WORK/DESCRIPTION; deduplicate by "
-            "permit number/revision; deterministic ascending issue-date/permit/revision order; "
-            "take first N eligible records."
+            "Issued BLD record in fixed date window + low-rise residential structure/use gate + "
+            "at least one current-family token in City WORK/DESCRIPTION; merge Active/Cleared; "
+            "deduplicate to latest row per base building permit; deterministic ascending "
+            "issue-date/permit order; take first N eligible building permits."
         ),
         "privacy_boundary": (
-            "No civic address/postal/applicant/owner/contractor/contact columns emitted; exact row "
-            "street number/name/postal tokens and email/phone-like strings are redacted from scope text."
+            "No civic address/postal/applicant/owner/contractor/contact columns emitted; only the "
+            "combined exact civic-number + street-name phrase, full postal token and email/phone-like "
+            "strings are redacted from scope text; standalone numbers are preserved."
         ),
         "source_rows_scanned": {"active": active_rows, "cleared": cleared_rows},
-        "eligible_unique_permit_revisions": len(combined),
-        "cross_source_overlap": len(overlap),
+        "eligible_unique_permit_revisions_before_base_dedup": len(combined_revisions),
+        "eligible_unique_building_permits": len(by_permit),
+        "cross_source_overlap_revisions": len(overlap),
         "sample_limit": args.limit,
         "sample_count": len(sample),
         "cases": sample,
@@ -390,9 +458,10 @@ def main() -> None:
         json.dumps(
             {
                 "output": str(args.output),
-                "eligible_unique_permit_revisions": len(combined),
+                "eligible_unique_permit_revisions_before_base_dedup": len(combined_revisions),
+                "eligible_unique_building_permits": len(by_permit),
                 "sample_count": len(sample),
-                "cross_source_overlap": len(overlap),
+                "cross_source_overlap_revisions": len(overlap),
             },
             indent=2,
         )
