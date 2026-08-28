@@ -6,7 +6,7 @@ It does not change the current decision status:
 
 > **CONTINUE VALIDATION — DO NOT EXPAND PRODUCT SCOPE YET**
 
-## Revised score: 52 / 100
+## Revised score: 51 / 100
 
 Previous canonical score: **56 / 100**.
 
@@ -16,13 +16,13 @@ Previous canonical score: **56 / 100**.
 | Willingness to pay / monetization fit | 15 | 4/10 | 4/10 | 6.0 | No E5 evidence. |
 | Addressable call volume | 15 | 6/10 | 6/10 | 9.0 | No new bounded covered-market upstream denominator. |
 | Repeat frequency | 10 | 5/10 | 5/10 | 5.0 | No E4 evidence. |
-| Distribution fit | 10 | 6/10 | 6/10 | 6.0 | SoumissionRénovation and Elper improve candidate shape, but neither has validated monthly permit-call volume or integration commitment. |
-| **Competitive headroom** | **10** | **4/10** | **1/10** | **1.0** | LandLogic occupies broad Ontario property/permitting-adjacent API territory; BuilderAI embeds municipal urbanism before quote in Quebec; PermitFlow now proves a scaled U.S. multi-jurisdiction permit research/data/integration platform. |
-| **Defensibility** | **10** | **3/10** | **2/10** | **2.0** | BuilderAI demonstrates vertical internalization; PermitFlow demonstrates that maintained jurisdiction data and research automation can be industrialized. A moat now requires externally proven Canadian evidence/accuracy/distribution advantages. |
+| Distribution fit | 10 | 6/10 | 6/10 | 6.0 | RenoAssistance and HomeStars now provide stronger upstream funnel targets, but neither has validated a recent monthly denominator or integration commitment. |
+| **Competitive headroom** | **10** | **4/10** | **0/10** | **0.0** | LandLogic occupies broad Ontario regulatory/property API territory; BuilderAI embeds municipal urbanism before quote; PermitFlow proves scaled permit research/data/integration; RealCraft independently bundles Canadian permit guidance into a quote marketplace. |
+| **Defensibility** | **10** | **3/10** | **2/10** | **2.0** | Internal platform guidance is clearly feasible, but deterministic accuracy/evidence/maintenance may still differentiate. This now requires external proof. |
 | Cash-cost fit | 5 | 9/10 | 9/10 | 4.5 | No change. |
-| Technical feasibility | 5 | 9/10 | 9/10 | 4.5 | No change; unknown-overlay false-negative path was also corrected on 2026-08-28. |
+| Technical feasibility | 5 | 9/10 | 9/10 | 4.5 | No change; unknown-overlay false-negative path was corrected on 2026-08-28. |
 | Evidence maturity | 5 | 3/10 | 3/10 | 1.5 | No independent representative E3; E4=0; E5=0. |
-| **Total** | **100** | **56** |  | **51.5 -> 52** |  |
+| **Total** | **100** | **56** |  | **50.5 -> 51** |  |
 
 ## 56 -> 54: LandLogic materially closes Ontario platform/API headroom
 
@@ -116,7 +116,50 @@ This evidence rejects the weaker assumption that close permit-intelligence compe
 
 The remaining Canadian wedge is geographic and contractual, not conceptual. It should be treated as a temporary opening rather than durable headroom.
 
-Competitive headroom therefore falls **2/10 -> 1/10**. Defensibility remains **2/10** for now because the scorecard already requires maintained Canadian evidence, representative accuracy and embedded distribution as the only plausible moat candidates.
+Competitive headroom therefore fell **2/10 -> 1/10**.
+
+## 52 -> 51: RealCraft independently bundles permit guidance into the Canadian quote funnel
+
+RealCraft is a Canadian contractor marketplace currently in Beta / founding-member mode. Its client workflow combines:
+
+- a Smart Quote Wizard;
+- local professional matching and quote comparison;
+- a free `Permit Navigator / Permit Advisor` positioned before hiring;
+- public municipal permit guides for Ottawa, Toronto, Gatineau, Mississauga, London and Hamilton.
+
+Sources:
+
+- `https://realcraft.ca/for-clients/`
+- `https://realcraft.ca/permits/`
+
+See `docs/REALCRAFT_PERMIT_NAVIGATOR_THREAT_20260828.md`.
+
+Important boundary:
+
+- the current public `Open the Permit Advisor` path routes to guide-style municipality pages;
+- current review did not find a public structured permit-applicability API, stable rule IDs or address-aware deterministic response contract;
+- RealCraft's preview still says local professionals are placeholders / the product is building toward later-2026 launch.
+
+So RealCraft is not a proven scaled exact substitute.
+
+But it is strong independent **product-convergence evidence**: another Canadian quote marketplace has already decided that permit guidance is useful enough to bundle directly into the pre-hire experience and give away free.
+
+That closes the remaining conceptual headroom. Competitive headroom therefore falls **1/10 -> 0/10**.
+
+### Accuracy differentiation remains possible
+
+RealCraft's Toronto guide currently summarizes basement finishing as usually requiring a permit when it adds habitable space.
+
+Toronto's current official guidance is more conditional and explicitly exempts a house-basement finish when there are no structural/material alterations, no additional dwelling unit and no new plumbing.
+
+Sources:
+
+- `https://realcraft.ca/permits/ontario/toronto/`
+- `https://www.toronto.ca/services-payments/building-construction/building-permit/before-you-apply-for-a-building-permit/when-do-i-need-a-building-permit/`
+
+This does not prove ProjectPermit is globally more accurate. It shows one concrete reason a structured deterministic rules layer could still outperform simplified city guidance.
+
+A build-vs-buy email was sent to `support@realcraft.ca` asking whether RealCraft maintains municipal guidance internally and whether it would consider a maintained deterministic API as coverage expands.
 
 ## Revised differentiation requirement
 
@@ -124,7 +167,7 @@ A buyer saying `permit/urbanism guidance before quote would be useful` is no lon
 
 It proves workflow demand only.
 
-ProjectPermit now needs buyer evidence that an **external shared capability** is preferable to municipal self-service, a scaled permit platform, or internal vertical RAG because of one or more of:
+ProjectPermit now needs buyer evidence that an **external shared capability** is preferable to municipal self-service, a scaled permit platform, or internal platform guidance/RAG because of one or more of:
 
 1. cross-municipality maintenance burden;
 2. deterministic/reproducible rule logic;
@@ -135,27 +178,26 @@ ProjectPermit now needs buyer evidence that an **external shared capability** is
 7. reuse across REST/MCP/agent workflows;
 8. externally benchmarked accuracy or operational switching cost.
 
-## Why 52 is still above the stop line
+## Why 51 is still barely above the stop line
 
-The project is not a No-Go yet because:
+The project is not yet a No-Go because:
 
 - municipality-specific rules demonstrably differ;
-- deterministic/evidence-linked outputs may still be materially safer or easier to govern than generic RAG;
-- no current public PermitFlow Canadian coverage or exact ProjectPermit-style deterministic API contract was identified in this review;
-- Quebec still has no publicly verified LandLogic-equivalent broad third-party API in this review;
+- public competing guidance can still be simplified relative to current first-party municipal rules;
+- no current public Canadian product found in this review exposes the exact ProjectPermit-style deterministic/evidence-linked API contract;
 - the technical/cash-cost profile remains favorable for a narrow validation-stage product;
-- SoumissionRénovation and Elper create plausible high-leverage buyer tests;
-- ProjectPermit's 2026-08-28 unknown-overlay guard improves safety for staged address-light integrations.
+- RenoAssistance and HomeStars provide plausible high-leverage upstream denominator tests;
+- representative E3 and actual platform build-vs-buy evidence have not yet resolved the central question.
 
-But none of these prove a business.
+But none of these prove a business, and the margin above the stop line is now minimal.
 
 ## New stop pressure
 
 The score should move **below 50** without further product expansion if buyer evidence shows any combination of:
 
 - LandLogic, PermitFlow or another supplier already provides the target Canadian permit-applicability contract with acceptable procurement/integration economics;
-- Quebec/Canadian SaaS buyers prefer to build/own narrow municipal RAG internally;
-- SoumissionRénovation/Elper report permit applicability is normally resolved before their quote/intake stage;
+- RealCraft / BuilderAI / another Canadian SaaS says municipal guidance is cheap/easy enough to maintain internally and an external deterministic API adds little value;
+- RenoAssistance/HomeStars report permit applicability is normally resolved before their quote/intake stage;
 - no platform exposes >=500 covered current-family candidate events/month with unresolved applicability;
 - buyers value municipal deep links/checklists enough that deterministic evidence is not worth paying for;
 - E3 requires human expert review on a large share of ordinary cases;
@@ -163,7 +205,7 @@ The score should move **below 50** without further product expansion if buyer ev
 
 ## Engineering implication remains unchanged
 
-Do not add an eighth municipality or new scope family because of competitive anxiety.
+Do not add an eighth municipality, Hamilton/London coverage, a new scope family, or filing workflow because of competitive anxiety.
 
 Allowed work remains:
 
