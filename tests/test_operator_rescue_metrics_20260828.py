@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import importlib.util
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,6 +12,7 @@ MODULE_PATH = Path(__file__).resolve().parents[1] / "market_research" / "operato
 SPEC = importlib.util.spec_from_file_location("operator_rescue_metrics_20260828", MODULE_PATH)
 assert SPEC and SPEC.loader
 metrics = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = metrics
 SPEC.loader.exec_module(metrics)
 
 
