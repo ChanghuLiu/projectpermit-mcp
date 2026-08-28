@@ -24,19 +24,25 @@ def build_server():
     server = MCPServer(
         "ProjectPermit",
         instructions=(
-            "Municipal construction permit preflight. Start with projectpermit_info "
-            "to discover supported jurisdictions, project families and an example. "
-            "Normalize the proposed construction scope into structured facts before "
-            "calling check_project_requirements. Results are evidence-linked preflight "
-            "information, not municipal authorization. For repeated validation, "
-            "context.client_tag may be a stable non-sensitive integration label; it is "
-            "hashed before telemetry. This public endpoint is a developer-validation preview."
+            "Municipal construction permit preflight for supported Canadian cities. "
+            "Use it when proposed renovation/building work needs an evidence-linked "
+            "permit-applicability check before quoting, scheduling or design lock. "
+            "Start with projectpermit_info to discover supported jurisdiction ids, "
+            "project families and a valid example. Normalize the proposed scope into "
+            "structured facts before calling check_project_requirements. Preserve "
+            "unknown facts rather than guessing them; the engine can return review or "
+            "municipal-confirmation states when the facts do not support a safe yes/no. "
+            "Do not use ProjectPermit as municipal authorization, legal advice, engineering "
+            "review, plan/code review, permit filing or inspection approval. For repeated "
+            "validation, context.client_tag may be a stable non-sensitive integration "
+            "label; it is hashed before telemetry. This public endpoint is a "
+            "developer-validation preview."
         ),
     )
 
     @server.tool()
     def projectpermit_info() -> dict[str, Any]:
-        """Return free ProjectPermit capabilities and a valid starter example."""
+        """Use first to get supported Canadian cities/families and a valid starter example. This is capability discovery only; it does not decide whether a project needs a permit."""
         return {
             "service": "ProjectPermit",
             "tool": "check_project_requirements",
@@ -67,7 +73,7 @@ def build_server():
         context: dict[str, Any] | None = None,
         resolve_address: bool = False,
     ) -> dict[str, Any]:
-        """Return evidence-linked permit/planning preflight requirements."""
+        """Use for a proposed renovation/building scope in a supported city when an agent needs permit applicability before quoting, scheduling or design lock. Supply normalized scope facts; use address resolution where supported when property overlays matter. Returns a deterministic determination (REQUIRED, LIKELY_REQUIRED, LIKELY_NOT_REQUIRED, ADDITIONAL_REVIEW_REQUIRED, MUNICIPAL_CONFIRMATION_REQUIRED or OUT_OF_SCOPE), confidence, stable rule/version metadata and official-source evidence. Do not use for final municipal authorization, legal/engineering advice, plan review, permit filing or inspection approval; preserve missing facts instead of guessing."""
         return run_preflight(
             {
                 "jurisdiction": jurisdiction,
