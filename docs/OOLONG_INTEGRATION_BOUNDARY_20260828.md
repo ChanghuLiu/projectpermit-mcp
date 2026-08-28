@@ -39,7 +39,46 @@ Absence of public documentation does not prove an internal/private integration d
 
 ---
 
-## 2. Historical technical evidence supports reusable cross-site form infrastructure
+## 2. A real pre-delivery qualification / triage stage is publicly documented
+
+A current Soumissions Maison partner page states that **each quote request is analyzed and sorted by the team before it is sent to a partner**. It also states that an inappropriate request can be credited and redirected to another collaborator.
+
+A separate current Soumissions Maison page gives an even clearer process description:
+
+1. the consumer completes the online form;
+2. the request is automatically routed to a **sorting/triage centre (`centre de tri`)**;
+3. team members carefully analyze it;
+4. the request is transferred to the best-qualified partners according to criteria those partners set.
+
+Sources:
+
+- `https://www.soumissionsmaison.com/inscription-comme-partenaire/`
+- `https://www.soumissionsmaison.com/obtenez-de-nouveaux-clients/`
+
+This is stronger insertion-point evidence than generic claims about lead generation.
+
+It establishes that at least this public Soumissions Maison workflow has a real operator-controlled decision stage **after intake and before partner delivery**.
+
+That stage is conceptually where a ProjectPermit result could matter, for example by influencing:
+
+- which partner category receives the request;
+- whether a request needs more human validation;
+- whether it is held, redirected or considered unsuitable;
+- whether additional project information is required before delivery.
+
+However, public evidence still does **not** establish that:
+
+- Soumissions Cuisine and Soumissions Plomberie use exactly this same triage centre/process;
+- all Oolong-controlled renovation funnels converge into one shared lead record;
+- permit applicability is currently considered during triage;
+- permit information would materially change any triage decision;
+- current-family permit uncertainty occurs frequently enough to matter.
+
+Therefore this finding strengthens the **insertion-point hypothesis**, not the denominator, fact-sufficiency, material-effect or buy-preference evidence.
+
+---
+
+## 3. Historical technical evidence supports reusable cross-site form infrastructure
 
 An Oolong frontend-developer recruiting page published in 2021 described work on high-traffic Oolong sites and explicitly required developers to:
 
@@ -67,11 +106,9 @@ Do not convert a 2021 implementation detail into a current integration contract.
 
 ---
 
-## 3. Current form surfaces remain compatible with a centralized enrichment concept
+## 4. Current form surfaces remain compatible with a centralized enrichment concept
 
 Current public forms reviewed on 2026-08-28 include structured hidden/visible request identifiers and project fields.
-
-Examples:
 
 ### Soumissions Plomberie
 
@@ -113,57 +150,60 @@ They do not reveal the server-side form processor or prove one shared technical 
 
 ---
 
-## 4. Stronger current operator-centralization evidence
+## 5. Stronger current operator-centralization evidence
 
-The current Oolong partner model is more important than the exact WordPress plugin:
+The current operator model is more important than the exact WordPress plugin:
 
 - Oolong lets partners choose the **type**, **territory** and **quantity** of leads;
-- Oolong describes itself as performing collection and a selection/qualification process before delivery;
+- Soumissions Maison publicly documents a **pre-delivery team triage stage**;
+- requests can be redirected when unsuitable for a particular partner;
 - Oolong publicly frames the business as lead-to-deal performance marketing rather than independent site hosting.
 
-That means a permit-applicability signal could theoretically be inserted in a central operator qualification/routing step even if the underlying consumer sites use different forms.
+That means a permit-applicability signal could theoretically become an input to an existing qualification/routing decision rather than create an entirely new workflow.
 
-The relevant integration question is therefore not merely:
+The key question is no longer simply:
 
 > `Do all sites use the same WordPress plugin?`
 
 It is:
 
-> `Is there one operator-side lead record / routing stage where multiple funnels can be enriched before partner delivery?`
+> `Do the relevant Oolong-controlled renovation funnels converge into one operator-side lead/triage record where a permit signal can be evaluated before partner delivery?`
 
-Only Oolong can confirm that.
+Only Oolong can confirm that boundary.
 
 ---
 
-## 5. Integration classification today
+## 6. Integration classification today
 
 Public evidence supports:
 
 - `CENTRAL_OPERATOR_CONTROL = YES`
+- `PRE_DELIVERY_TRIAGE_STAGE = YES_FOR_PUBLIC_SOUMISSIONS_MAISON_WORKFLOW`
 - `MULTI_FUNNEL_DATA_COLLECTION = YES`
 - `PUBLIC_PARTNER_DELIVERY = EMAIL_FIRST`
 - `HISTORICAL_SHARED_FORM_INFRASTRUCTURE = YES`
 - `CURRENT_SHARED_CRM_OR_DATABASE = UNVERIFIED`
+- `CURRENT_FAMILY_FUNNELS_SHARE_DOCUMENTED_TRIAGE_STAGE = UNVERIFIED`
 - `PUBLIC_PARTNER_API_OR_WEBHOOK = NOT_FOUND`
 - `ONE_INTEGRATION_ACROSS_CURRENT_FAMILY_FUNNELS = UNVERIFIED`
 
 Therefore the correct current ProjectPermit integration classification remains:
 
-> **UNKNOWN — central operator integration plausible, but not externally demonstrated.**
+> **UNKNOWN — a real pre-delivery operator triage point is documented, but a shared current-family technical insertion point is not externally demonstrated.**
 
 Do not mark Oolong as `CENTRAL_SINGLE_INTEGRATION` or `CENTRAL_WITH_SITE_MAPPING` until a human/operator or direct technical artifact confirms it.
 
 ---
 
-## 6. Economic consequence
+## 7. Economic consequence
 
 This boundary cuts both ways.
 
 ### Positive
 
-A centralized operator may already own the collection/qualification step, so ProjectPermit would not necessarily need a separate business relationship with every niche site.
+A centralized operator already has a qualification/routing stage, so ProjectPermit may not need to invent a new operational step.
 
-If one internal operator integration reaches several relevant funnels, integration cost `I` can be amortized across a larger `N`.
+If one internal enrichment point reaches several relevant funnels, integration cost `I` can be amortized across a larger `N`.
 
 ### Negative
 
@@ -172,22 +212,23 @@ Because the public partner product is email-first rather than an exposed API eco
 That cooperation is itself valuable evidence:
 
 - committing staff to map fields, configure a webhook/shadow process or export chronological cases is resource commitment;
-- refusing custom integration because email delivery is sufficient is negative evidence;
-- saying the team would add the permit logic directly to its own shared WordPress/backend stack is strong build-vs-buy negative evidence.
+- refusing custom integration because existing triage/email delivery is sufficient is negative evidence;
+- saying the team would add permit logic directly to its own shared WordPress/backend/triage stack is strong build-vs-buy negative evidence.
 
 Therefore an integration discussion should be treated as part of E5/resource validation, not as a free implementation assumption.
 
 ---
 
-## 7. Highest-value human questions
+## 8. Highest-value human questions
 
 If Oolong responds, ask only after the bounded denominator/workflow questions:
 
-1. Do the relevant renovation funnels converge into one internal lead record/CRM/routing process before partner email delivery?
-2. Can one enrichment step see leads from multiple funnels, or would each site need separate work?
-3. Are the relevant forms still based on a shared Gravity Forms/WordPress pipeline, or has the architecture changed?
-4. Could a shadow permit-preflight result be attached to the internal lead before partner routing without changing homeowner-facing behavior?
-5. Would Oolong rather call an externally maintained service or implement municipal permit logic inside its existing shared stack?
+1. Do Soumissions Cuisine, Soumissions Plomberie and the other relevant renovation funnels pass through the same pre-delivery triage/routing process described publicly by Soumissions Maison?
+2. Do those funnels converge into one internal lead record/CRM/routing process before partner email delivery?
+3. What decisions does the triage team currently make, and would knowing `permit required / likely not / municipal confirmation needed` change any of them?
+4. Can one enrichment step see leads from multiple funnels, or would each site need separate work?
+5. Could a shadow permit-preflight result be attached before partner routing without changing homeowner-facing behavior?
+6. Would Oolong rather call an externally maintained service or implement municipal permit logic inside its existing shared stack?
 
 Do not build a Gravity Forms plugin or webhook before these answers exist.
 
@@ -197,14 +238,22 @@ Do not build a Gravity Forms plugin or webhook before these answers exist.
 
 **No score change. ProjectPermit remains 50/100, PAUSE / RE-SCOPE.**
 
-This review strengthens the claim that Oolong is a genuine centralized lead operator and weakens the assumption that an off-the-shelf public API already exists.
+This review now proves more than generic centralization: a real public pre-delivery triage stage exists in the Soumissions Maison workflow.
 
-That makes Oolong a better **validation target**, but not an easier validated integration.
+But it still does not establish:
+
+- current-family candidate volume;
+- unresolved permit incidence;
+- shared current-family triage/CRM topology;
+- material effect of permit information;
+- external buy/resource commitment.
+
+That makes Oolong a better **validation target**, not a validated integration.
 
 ## Bottom line
 
-The operator route remains credible, but the integration thesis should now be stated precisely:
+The operator route should now be stated precisely:
 
-> Oolong appears to centralize lead collection, qualification and email delivery across many niches, and historically used reusable WordPress/Gravity Forms infrastructure. A single internal enrichment point is plausible, but no current public partner API/webhook or confirmed shared CRM insertion point has been found.
+> Oolong/Soumissions Maison publicly documents an operator-controlled triage step between form intake and partner delivery, while Oolong historically used reusable WordPress/Gravity Forms infrastructure. ProjectPermit therefore has a plausible existing insertion point, but no current public API/webhook or confirmed shared current-family CRM/triage integration has been found.
 
 The next proof must come from Oolong's workflow/technical response, not more speculative engineering.
