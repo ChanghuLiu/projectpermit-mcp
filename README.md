@@ -2,6 +2,16 @@
 
 ProjectPermit is an evidence-linked municipal permit preflight engine for construction and renovation projects. **BuildRequirements** is the deterministic rules engine inside it.
 
+## Try free in 30 seconds
+
+No account, API key, wallet, MCP client, or platform integration is required for the current structured-facts validation preview.
+
+- Free HTTP preview: `POST https://projectpermit-api-v2-production.up.railway.app/v1/preview-project-requirements`
+- Free capability discovery: `GET https://projectpermit-api-v2-production.up.railway.app/v1/capabilities`
+- Free standard MCP preview: `https://projectpermit-mcp-production.up.railway.app/mcp`
+
+See [`TRY_PROJECTPERMIT.md`](TRY_PROJECTPERMIT.md) for a copy-paste `curl` example and the preview privacy boundary. The anonymous HTTP preview intentionally excludes civic-address/GIS resolution; use the standard MCP developer preview for a bounded address-aware validation workflow.
+
 ## Current jurisdiction coverage
 
 Current deterministic rule footprint:
@@ -23,6 +33,7 @@ The engine deliberately does **not** call an LLM. A calling agent normalizes nat
 ## Live endpoints
 
 - HTTP API: `https://projectpermit-api-v2-production.up.railway.app`
+- Free HTTP developer-validation preview: `POST https://projectpermit-api-v2-production.up.railway.app/v1/preview-project-requirements`
 - Standard MCP developer-validation preview: `https://projectpermit-mcp-production.up.railway.app/mcp`
 - Paid MCP: `https://projectpermit-x402-mcp-production.up.railway.app/mcp`
 
@@ -88,9 +99,15 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 
 ## API
 
+For no-wallet validation, use the free structured-facts route:
+
+`POST /v1/preview-project-requirements`
+
+For the x402-paid HTTP contract, use:
+
 `POST /v1/check-project-requirements`
 
-Example:
+Both use the same normalized project shape; the anonymous free preview intentionally rejects address/GIS resolution. Example project facts:
 
 ```json
 {
@@ -106,7 +123,7 @@ Example:
 }
 ```
 
-For an address-aware jurisdiction, set `resolve_address=true` and supply `address`; the same behavior is available through standard MCP and paid MCP.
+For an address-aware jurisdiction, set `resolve_address=true` and supply `address` through the standard MCP preview or paid route; the anonymous HTTP preview deliberately does not accept address resolution.
 
 ## Developer-validation workflow
 
