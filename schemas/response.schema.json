@@ -37,6 +37,17 @@
         }
       }
     },
+    "property_context_status": {
+      "enum": ["UNRESOLVED_FOR_EXEMPTION"],
+      "description": "Present when a no-permit path cannot be trusted until parcel-specific property context is resolved."
+    },
+    "required_property_facts": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true,
+      "minItems": 1,
+      "description": "Property facts that must be resolved before relying on the otherwise applicable exemption."
+    },
     "disclaimer": {"type": "string"},
     "engine_version": {"type": "string"}
   }
