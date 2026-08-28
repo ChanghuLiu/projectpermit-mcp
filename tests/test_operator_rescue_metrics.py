@@ -81,8 +81,25 @@ def write_csv(path: Path, fields: list[str], rows: list[dict[str, object]]) -> N
             writer.writerow(row)
 
 
+def qualifying_sample(count: int) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for index in range(count):
+        rows.append(
+            {
+                "sample_id": f"A-{index + 1}",
+                "current_family": "kitchen_bath_plumbing",
+                "within_supported_jurisdiction": "YES",
+                "candidate_preflight": "YES",
+                "permit_state_at_intake": "UNRESOLVED",
+                "fact_sufficiency_class": "DIRECT_STRUCTURED",
+                "material_effect_class": "MATERIAL_EFFECT_CONFIRMED" if index == 0 else "NO_MATERIAL_EFFECT",
+            }
+        )
+    return rows
+
+
 class OperatorRescueMetricsTests(unittest.TestCase):
-    def test_exact_500_candidate_gate_and_sample_metrics(self) -> None:
+    def test_exact_500_candidate_gate_and_20_case_sample_metrics(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             monthly = root / "monthly.csv"
@@ -111,48 +128,7 @@ class OperatorRescueMetricsTests(unittest.TestCase):
                     }
                 ],
             )
-            write_csv(
-                sample,
-                SAMPLE_FIELDS,
-                [
-                    {
-                        "sample_id": "A-1",
-                        "current_family": "kitchen_bath_plumbing",
-                        "within_supported_jurisdiction": "YES",
-                        "candidate_preflight": "YES",
-                        "permit_state_at_intake": "UNRESOLVED",
-                        "fact_sufficiency_class": "DIRECT_STRUCTURED",
-                        "material_effect_class": "MATERIAL_EFFECT_CONFIRMED",
-                    },
-                    {
-                        "sample_id": "A-2",
-                        "current_family": "kitchen_bath_plumbing",
-                        "within_supported_jurisdiction": "YES",
-                        "candidate_preflight": "YES",
-                        "permit_state_at_intake": "UNRESOLVED",
-                        "fact_sufficiency_class": "TEXT_DERIVABLE",
-                        "material_effect_class": "NO_MATERIAL_EFFECT",
-                    },
-                    {
-                        "sample_id": "A-3",
-                        "current_family": "kitchen_bath_plumbing",
-                        "within_supported_jurisdiction": "YES",
-                        "candidate_preflight": "YES",
-                        "permit_state_at_intake": "KNOWN_REQUIRED",
-                        "fact_sufficiency_class": "FOLLOWUP_REQUIRED",
-                        "material_effect_class": "UNKNOWN",
-                    },
-                    {
-                        "sample_id": "A-4",
-                        "current_family": "kitchen_bath_plumbing",
-                        "within_supported_jurisdiction": "NO",
-                        "candidate_preflight": "NO",
-                        "permit_state_at_intake": "UNKNOWN",
-                        "fact_sufficiency_class": "INSUFFICIENT_FOR_CURRENT_RULES",
-                        "material_effect_class": "UNKNOWN",
-                    },
-                ],
-            )
+            write_csv(sample, SAMPLE_FIELDS, qualifying_sample(20))
 
             summary = metrics.build_summary(monthly, sample)
             self.assertTrue(summary["monthly"]["commercial_500_call_gate"])
@@ -160,11 +136,39 @@ class OperatorRescueMetricsTests(unittest.TestCase):
             self.assertEqual(summary["monthly"]["totals"]["candidate_preflight_requests"], 500)
             self.assertEqual(summary["monthly"]["unresolved_share_of_candidate_pct"], 40.0)
             self.assertEqual(summary["monthly"]["delivery_multiplier"], 2.0)
-            self.assertEqual(summary["sample"]["candidate_cases"], 3)
-            self.assertEqual(summary["sample"]["decision_fact_sufficiency_rate_pct"], 66.67)
-            self.assertEqual(summary["sample"]["material_hit_rate_pct"], 33.33)
+            self.assertEqual(summary["sample"]["sampled_cases"], 20)
+            self.assertTrue(summary["sample"]["representative_20_case_gate"])
+            self.assertEqual(summary["sample"]["candidate_cases"], 20)
+            self.assertEqual(summary["sample"]["decision_fact_sufficiency_rate_pct"], 100.0)
+            self.assertEqual(summary["sample"]["material_hit_rate_pct"], 5.0)
             self.assertTrue(summary["advance_to_e4_mechanical_screen"])
             self.assertFalse(summary["renew_engineering"])
+
+    def test_19_cases_do_not_clear_representative_sample_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            monthly = root / "monthly.csv"
+            sample = root / "sample.csv"
+            write_csv(
+                monthly,
+                MONTHLY_FIELDS,
+                [
+                    {
+                        "operator": "Operator A",
+                        "complete_month": "2026-07",
+                        "current_family": "kitchen_bath_plumbing",
+                        "unique_requests": 600,
+                        "candidate_preflight_requests": 500,
+                        "within_supported_jurisdictions": 550,
+                        "unresolved": 100,
+                        "integration_topology": "CENTRAL_SINGLE_INTEGRATION",
+                    }
+                ],
+            )
+            write_csv(sample, SAMPLE_FIELDS, qualifying_sample(19))
+            summary = metrics.build_summary(monthly, sample)
+            self.assertFalse(summary["sample"]["representative_20_case_gate"])
+            self.assertFalse(summary["advance_to_e4_mechanical_screen"])
 
     def test_499_candidates_does_not_clear_gate(self) -> None:
         rows = [
@@ -288,22 +292,10 @@ class OperatorRescueMetricsTests(unittest.TestCase):
                     }
                 ],
             )
-            write_csv(
-                sample,
-                SAMPLE_FIELDS,
-                [
-                    {
-                        "sample_id": "A-1",
-                        "current_family": "basement",
-                        "within_supported_jurisdiction": "YES",
-                        "candidate_preflight": "YES",
-                        "fact_sufficiency_class": "DIRECT_STRUCTURED",
-                        "material_effect_class": "MATERIAL_EFFECT_CONFIRMED",
-                        "disagreement_material": "YES",
-                        "safety_direction": "LESS_CONSERVATIVE",
-                    }
-                ],
-            )
+            rows = qualifying_sample(20)
+            rows[0]["disagreement_material"] = "YES"
+            rows[0]["safety_direction"] = "LESS_CONSERVATIVE"
+            write_csv(sample, SAMPLE_FIELDS, rows)
             summary = metrics.build_summary(monthly, sample)
             self.assertEqual(summary["sample"]["safety_material_disagreements"], 1)
             self.assertFalse(summary["advance_to_e4_mechanical_screen"])

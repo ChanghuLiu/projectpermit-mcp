@@ -48,6 +48,7 @@ INTEGRATION_TOPOLOGIES = {
 CENTRAL_TOPOLOGIES = {"CENTRAL_SINGLE_INTEGRATION", "CENTRAL_WITH_SITE_MAPPING"}
 YES_VALUES = {"1", "true", "yes", "y"}
 NO_VALUES = {"0", "false", "no", "n"}
+MIN_OPERATOR_REPLAY_SAMPLE = 20
 
 
 def _text(value: Any) -> str:
@@ -222,6 +223,7 @@ def summarize_sample(rows: list[dict[str, str]]) -> dict[str, Any]:
     if not rows:
         return {
             "sampled_cases": 0,
+            "representative_20_case_gate": False,
             "candidate_cases": 0,
             "supported_cases": 0,
             "permit_state_counts": {},
@@ -292,6 +294,7 @@ def summarize_sample(rows: list[dict[str, str]]) -> dict[str, Any]:
 
     return {
         "sampled_cases": len(rows),
+        "representative_20_case_gate": len(rows) >= MIN_OPERATOR_REPLAY_SAMPLE,
         "supported_cases": supported_cases,
         "candidate_cases": candidate_cases,
         "permit_state_counts": dict(sorted(permit_state_counts.items())),
@@ -311,6 +314,7 @@ def build_summary(monthly_path: Path, sample_path: Path | None = None) -> dict[s
         monthly["commercial_500_call_gate"]
         and monthly["totals"].get("unresolved", 0) > 0
         and monthly["central_integration_plausible"]
+        and sample["representative_20_case_gate"]
         and sample["candidate_cases"] > 0
         and sample["decision_fact_sufficiency_rate_pct"] not in (None, 0)
         and sample["material_effect_confirmed_candidate_count"] > 0
@@ -318,7 +322,7 @@ def build_summary(monthly_path: Path, sample_path: Path | None = None) -> dict[s
     )
     return {
         "report": "ProjectPermit_operator_rescue_metrics",
-        "report_version": 1,
+        "report_version": 2,
         "evidence_boundary": (
             "Mechanical research screen only. Aggregate values do not become E2/E3/E4/E5 unless "
             "the repository evidence standard's provenance, representativeness, external-use and "
@@ -344,6 +348,7 @@ def decision_row(summary: dict[str, Any]) -> dict[str, Any]:
         "unresolved_count": totals.get("unresolved", 0),
         "unresolved_share_pct": monthly["unresolved_share_of_candidate_pct"],
         "sampled_cases": sample["sampled_cases"],
+        "representative_20_case_gate": "YES" if sample["representative_20_case_gate"] else "NO",
         "direct_structured_count": fact_counts.get("DIRECT_STRUCTURED", 0),
         "text_derivable_count": fact_counts.get("TEXT_DERIVABLE", 0),
         "followup_required_count": fact_counts.get("FOLLOWUP_REQUIRED", 0),
