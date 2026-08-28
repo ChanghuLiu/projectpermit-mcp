@@ -1,5 +1,7 @@
 # Go / No-Go Scorecard Addendum — 2026-08-28
 
+> **Historical transition record.** This file documents the evidence that moved the commercial score from 56 to 53 on 2026-08-28. The current canonical score and decision rules now live in `docs/GO_NO_GO_SCORECARD.md`; do not treat this addendum as a second current scorecard.
+
 This addendum updates the 2026-08-27 commercial scorecard with competitive evidence discovered on 2026-08-28.
 
 It does not change the current decision status:
