@@ -1,0 +1,60 @@
+name: Build vs Buy Maintenance Baseline
+
+on:
+  push:
+    paths:
+      - 'market_research/build_vs_buy_maintenance_baseline.py'
+      - 'src/projectpermit/engine.py'
+      - 'src/projectpermit/expansion_rules.py'
+      - 'src/projectpermit/quebec_expansion_rules.py'
+      - 'src/projectpermit/vancouver_rules.py'
+      - 'src/projectpermit/overlay_safety.py'
+      - 'src/projectpermit/jurisdiction_router.py'
+      - 'src/projectpermit/address.py'
+      - 'src/projectpermit/mississauga_address.py'
+      - 'src/projectpermit/vancouver_address.py'
+      - 'src/projectpermit/source_watch.py'
+      - 'schemas/**'
+      - 'data/source_manifest.json'
+      - 'tests/test_address.py'
+      - 'tests/test_api.py'
+      - 'tests/test_expansion_rules.py'
+      - 'tests/test_overlay_safety.py'
+      - 'tests/test_preflight_service.py'
+      - 'tests/test_public_permit_positive_backtest.py'
+      - 'tests/test_quebec_expansion_rules.py'
+      - 'tests/test_schema_contract.py'
+      - 'tests/test_source_manifest.py'
+      - 'tests/test_source_watch.py'
+      - 'tests/test_vancouver_rules.py'
+      - '.github/workflows/property-fact-consumption-audit.yml'
+      - '.github/workflows/build-vs-buy-maintenance-baseline.yml'
+  pull_request:
+    paths:
+      - 'market_research/build_vs_buy_maintenance_baseline.py'
+      - 'src/projectpermit/**'
+      - 'schemas/**'
+      - 'data/source_manifest.json'
+      - 'tests/**'
+      - '.github/workflows/build-vs-buy-maintenance-baseline.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Measure maintained permit capability surface
+        run: |
+          python market_research/build_vs_buy_maintenance_baseline.py --output build_vs_buy_maintenance_baseline.json
+          cat build_vs_buy_maintenance_baseline.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-vs-buy-maintenance-baseline
+          path: build_vs_buy_maintenance_baseline.json
+          if-no-files-found: error
