@@ -1,6 +1,6 @@
 # ProjectPermit / BuildRequirements
 
-ProjectPermit is an evidence-linked municipal permit preflight engine for construction and renovation projects. **BuildRequirements** is the deterministic rules engine inside it.
+ProjectPermit is a **building permit requirements API & MCP for contractors and AI agents**. It checks proposed construction and renovation scope across 7 Canadian municipalities and returns deterministic permit signals, official-source evidence, workflow routing, and an automation-ready action bundle. **BuildRequirements** is the deterministic rules engine inside it.
 
 ## Try free in 30 seconds
 
@@ -56,11 +56,11 @@ See [`docs/AGENT_WORKFLOW_GUIDANCE.md`](docs/AGENT_WORKFLOW_GUIDANCE.md).
 
 The HTTP API exposes free machine-readable capability discovery at `GET /v1/capabilities`.
 
-Commercial x402 resources are configured on **Base mainnet** (`eip155:8453`) with USDC payment:
+Commercial x402 resources are configured on **Base mainnet** (`eip155:8453`) with USDC payment. The current launch price intentionally minimizes first-use friction while paid adoption and repeat-call behavior are being validated:
 
-- single paid HTTP preflight: **$0.20 USDC**
-- single paid MCP preflight: **$0.20 USDC**
-- paid HTTP batch, up to 50 normalized projects: **$5.00 USDC**
+- single paid HTTP preflight: **$0.05 USDC / call**
+- single paid MCP preflight: **$0.05 USDC / call**
+- paid HTTP batch, up to 50 normalized projects: **$5.00 USDC** *(experimental/legacy pricing; not the current launch focus)*
 
 The production facilitator is `https://facilitator.payai.network`.
 
