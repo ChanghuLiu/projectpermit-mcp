@@ -51,7 +51,7 @@ def main() -> None:
         if city not in description:
             raise SystemExit(f"Jurisdiction missing from x402 resource description: {city}: {description}")
     lower_description = description.lower()
-    for required_term in ("action", "evidence", "idempotency", "change"):
+    for required_term in ("action", "evidence", "idempotency", "change", "writeback", "mutation"):
         if required_term not in lower_description:
             raise SystemExit(f"x402 resource description missing {required_term} positioning: {description}")
 
@@ -81,8 +81,8 @@ def main() -> None:
     if not EXPECTED_JURISDICTIONS.issubset(enum):
         raise SystemExit(f"Jurisdiction enum missing from Bazaar extension schema: {enum}")
     context_description = str(((input_schema.get("properties") or {}).get("context") or {}).get("description") or "")
-    if "prior_decision_identity" not in context_description:
-        raise SystemExit(f"Bazaar input schema missing repeat identity contract: {context_description}")
+    if "prior_decision_identity" not in context_description or "writeback" not in context_description.lower():
+        raise SystemExit(f"Bazaar input schema missing repeat identity/safe-writeback contract: {context_description}")
 
     output = info.get("output") or {}
     example = output.get("example") or {}
@@ -93,7 +93,7 @@ def main() -> None:
         raise SystemExit(f"Bazaar output example missing workflow routing: {workflow}")
     bundle = example.get("action_bundle") or {}
     if bundle.get("bundle_version") != "2026-08-29.2":
-        raise SystemExit(f"Bazaar output example missing Layer 4 bundle version: {bundle}")
+        raise SystemExit(f"Bazaar output example missing action bundle version: {bundle}")
     identity = bundle.get("identity") or {}
     if not identity.get("bundle_id") or not identity.get("idempotency_key"):
         raise SystemExit(f"Bazaar output example missing decision identity: {bundle}")
@@ -104,6 +104,15 @@ def main() -> None:
     tasks = bundle.get("tasks") or []
     if not tasks or tasks[0].get("task_type") != "ATTACH_EVIDENCE":
         raise SystemExit(f"Bazaar action bundle missing proposed task: {bundle}")
+    gate = bundle.get("mutation_gate") or {}
+    if gate.get("state") != "BLOCKED":
+        raise SystemExit(f"Unscoped Bazaar example must be writeback-blocked: {gate}")
+    if "MISSING_WORK_RECORD_SCOPE" not in (gate.get("reason_codes") or []):
+        raise SystemExit(f"Bazaar mutation gate missing unscoped blocker: {gate}")
+    if gate.get("execution_requires_explicit_request") is not True:
+        raise SystemExit(f"Bazaar mutation gate must require explicit request: {gate}")
+    if (gate.get("idempotency") or {}).get("unconditional_create_allowed") is not False:
+        raise SystemExit(f"Bazaar mutation gate must forbid unconditional create: {gate}")
 
     output_example_schema = (
         ((((schema_properties.get("output") or {}).get("properties") or {}).get("example") or {}))
@@ -115,9 +124,15 @@ def main() -> None:
         )
     bundle_schema = output_properties.get("action_bundle") or {}
     bundle_properties = bundle_schema.get("properties") or {}
-    if not {"identity", "change"}.issubset(bundle_properties):
-        raise SystemExit(f"Bazaar output schema missing identity/change: {bundle_schema}")
+    if not {"identity", "change", "mutation_gate"}.issubset(bundle_properties):
+        raise SystemExit(f"Bazaar output schema missing identity/change/mutation gate: {bundle_schema}")
+    gate_schema = bundle_properties.get("mutation_gate") or {}
+    gate_properties = gate_schema.get("properties") or {}
+    state_enum = set((gate_properties.get("state") or {}).get("enum") or [])
+    if state_enum != {"READY_FOR_EXPLICIT_WRITE", "NOOP_UNCHANGED", "BLOCKED"}:
+        raise SystemExit(f"Bazaar output schema missing mutation gate states: {gate_schema}")
 
+    print("http_bazaar_safe_writeback_gate=PASS")
     print("http_bazaar_identity=PASS")
     print("http_bazaar_action_bundle=PASS")
     print("http_bazaar_seven_jurisdictions=PASS")
