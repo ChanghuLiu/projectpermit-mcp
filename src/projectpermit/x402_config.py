@@ -92,6 +92,7 @@ HTTP_DISCOVERY_OUTPUT_EXAMPLE: dict[str, Any] = {
         "bundle_version": "2026-08-29.2",
         "identity": {
             "identity_version": "2026-08-29.1",
+            "idempotency_version": "1",
             "bundle_id": "ppb_example",
             "input_fingerprint": "ppi_example",
             "decision_fingerprint": "ppd_example",
@@ -176,6 +177,7 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
                     "type": "object",
                     "properties": {
                         "identity_version": {"type": "string"},
+                        "idempotency_version": {"type": "string"},
                         "bundle_id": {"type": "string"},
                         "input_fingerprint": {"type": "string"},
                         "decision_fingerprint": {"type": "string"},
@@ -187,6 +189,7 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
                     },
                     "required": [
                         "identity_version",
+                        "idempotency_version",
                         "bundle_id",
                         "input_fingerprint",
                         "decision_fingerprint",
