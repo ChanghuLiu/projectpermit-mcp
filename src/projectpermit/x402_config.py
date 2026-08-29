@@ -72,6 +72,14 @@ HTTP_DISCOVERY_OUTPUT_EXAMPLE: dict[str, Any] = {
         }
     ],
     "confidence": "HIGH",
+    "workflow": {
+        "mode": "NO_PERMIT_SIGNAL",
+        "recommended_route": "CONTINUE_WITH_EVIDENCE",
+        "quote_handling": "NO_PERMIT_ALLOWANCE_SIGNAL",
+        "automation_safe": True,
+        "summary": "No permit requirement was identified by the supplied facts; retain the official evidence with the job record.",
+        "follow_up_questions": [],
+    },
     "engine_version": "phase0-0.1.0",
 }
 
@@ -92,6 +100,25 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
         },
         "requirements": {"type": "array"},
         "confidence": {"type": "string"},
+        "workflow": {
+            "type": "object",
+            "properties": {
+                "mode": {"type": "string"},
+                "recommended_route": {"type": "string"},
+                "quote_handling": {"type": "string"},
+                "automation_safe": {"type": "boolean"},
+                "summary": {"type": "string"},
+                "follow_up_questions": {"type": "array"},
+            },
+            "required": [
+                "mode",
+                "recommended_route",
+                "quote_handling",
+                "automation_safe",
+                "summary",
+                "follow_up_questions",
+            ],
+        },
         "disclaimer": {"type": "string"},
         "engine_version": {"type": "string"},
         "address_context": {"type": "object"},
@@ -101,6 +128,7 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
         "determination",
         "requirements",
         "confidence",
+        "workflow",
         "engine_version",
     ],
 }
@@ -190,8 +218,9 @@ def configure_x402(app: Any) -> None:
     common_description = (
         "Evidence-linked municipal construction permit/planning preflight for Gatineau, "
         "Ottawa, Toronto, Mississauga, Laval, Longueuil and Vancouver. Returns "
-        "deterministic rule results with official-source evidence. Not municipal "
-        "authorization or legal advice."
+        "deterministic rule results, official-source evidence, and agent-ready workflow "
+        "routing with targeted missing-fact questions. Not municipal authorization or "
+        "legal advice."
     )
 
     routes = {
@@ -222,7 +251,8 @@ def configure_x402(app: Any) -> None:
             mime_type="application/json",
             description=(
                 "Paid bulk ProjectPermit preflight for 1-50 normalized projects with "
-                "per-item error isolation and batch audit metadata. " + common_description
+                "per-item error isolation, workflow routing, and batch audit metadata. "
+                + common_description
             ),
         ),
     }
