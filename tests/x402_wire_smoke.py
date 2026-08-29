@@ -43,7 +43,7 @@ assert output_info.get('type') == 'json', output_info
 output_example = output_info.get('example') or {}
 assert output_example.get('engine_version') == 'phase0-0.1.0', output_info
 bundle = output_example.get('action_bundle') or {}
-assert bundle.get('bundle_version') == '2026-08-29.2', output_example
+assert bundle.get('bundle_version') == '2026-08-29.3', output_example
 identity = bundle.get('identity') or {}
 assert identity.get('bundle_id'), identity
 assert identity.get('idempotency_key'), identity
@@ -51,6 +51,11 @@ assert str(identity['bundle_id']).startswith('ppb_'), identity
 assert str(identity['idempotency_key']).startswith('ppidem_'), identity
 change = bundle.get('change') or {}
 assert change.get('classification') == 'FIRST_OBSERVATION', change
+gate = bundle.get('mutation_gate') or {}
+assert gate.get('state') == 'BLOCKED', gate
+assert 'MISSING_WORK_RECORD_SCOPE' in (gate.get('reason_codes') or []), gate
+assert gate.get('execution_requires_explicit_request') is True, gate
+assert (gate.get('idempotency') or {}).get('unconditional_create_allowed') is False, gate
 
 # x402 v2 serializes the JSON Schema for `info` at extensions.bazaar.schema.
 # OutputConfig.schema is folded into schema.properties.output.properties.example.
@@ -65,6 +70,12 @@ bundle_schema = output_properties.get('action_bundle') or {}
 bundle_properties = bundle_schema.get('properties') or {}
 assert 'identity' in bundle_properties, bundle_schema
 assert 'change' in bundle_properties, bundle_schema
+assert 'mutation_gate' in bundle_properties, bundle_schema
+gate_schema = bundle_properties.get('mutation_gate') or {}
+gate_properties = gate_schema.get('properties') or {}
+assert set((gate_properties.get('state') or {}).get('enum') or []) == {
+    'READY_FOR_EXPLICIT_WRITE', 'NOOP_UNCHANGED', 'BLOCKED'
+}, gate_schema
 
 batch_response = client.post('/v1/check-project-requirements-batch', json={
     'items': [
@@ -84,4 +95,4 @@ assert batch_challenge.get('x402Version') == 2, batch_challenge
 assert batch_challenge.get('accepts'), batch_challenge
 assert any(item.get('network') == 'eip155:84532' for item in batch_challenge['accepts']), batch_challenge
 
-print('x402 unpaid wire smoke: single + bulk 402 challenges + HTTP Bazaar identity/action-bundle metadata OK')
+print('x402 unpaid wire smoke: single + bulk 402 challenges + HTTP Bazaar identity/action-bundle/mutation-gate metadata OK')
