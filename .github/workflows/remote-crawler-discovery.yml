@@ -1,14 +1,11 @@
 name: Remote Crawler Discovery
 
 on:
-  pull_request:
-    paths:
-      - scripts/crawler_discovery_remote_smoke.py
-      - .github/workflows/remote-crawler-discovery.yml
   push:
     branches: [main]
     paths:
       - src/projectpermit/crawler_discovery.py
+      - src/projectpermit/public_x402_well_known.py
       - src/projectpermit/api.py
       - scripts/crawler_discovery_remote_smoke.py
       - .github/workflows/remote-crawler-discovery.yml

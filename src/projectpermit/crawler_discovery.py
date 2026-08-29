@@ -12,6 +12,7 @@ PUBLIC_CRAWL_PATHS = (
     "/openapi.json",
     "/v1/capabilities",
     "/.well-known/agent.json",
+    "/.well-known/x402",
     "/.well-known/x402-service.json",
 )
 

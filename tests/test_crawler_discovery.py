@@ -24,6 +24,7 @@ class CrawlerDiscoveryTests(unittest.TestCase):
 
     def test_key_machine_discovery_documents_are_in_sitemap(self) -> None:
         self.assertIn("/.well-known/agent.json", PUBLIC_CRAWL_PATHS)
+        self.assertIn("/.well-known/x402", PUBLIC_CRAWL_PATHS)
         self.assertIn("/.well-known/x402-service.json", PUBLIC_CRAWL_PATHS)
         self.assertIn("/openapi.json", PUBLIC_CRAWL_PATHS)
         self.assertIn("/llms.txt", PUBLIC_CRAWL_PATHS)
