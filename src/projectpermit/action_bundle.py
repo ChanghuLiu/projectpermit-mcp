@@ -2,7 +2,8 @@
 
 The bundle is designed for contractor, field-service and property workflow agents.
 It packages the deterministic permit decision, workflow routing, official evidence,
-blocking tasks, missing facts and audit metadata into one stable object.
+blocking tasks, missing facts, audit metadata and deterministic decision identity
+into one stable object.
 
 It never mutates an upstream platform and never represents municipal authorization.
 """
@@ -11,8 +12,10 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, Mapping
 
+from .decision_identity import build_decision_identity, classify_identity_change
 
-BUNDLE_VERSION = "2026-08-29.1"
+
+BUNDLE_VERSION = "2026-08-29.2"
 
 
 def _text(value: Any) -> str:
@@ -24,7 +27,6 @@ def _dedupe_sorted(values: list[str]) -> list[str]:
 
 
 def _collect_evidence(result: Mapping[str, Any]) -> list[dict[str, Any]]:
-    """Deduplicate official sources while preserving the rules that relied on them."""
     by_key: dict[tuple[str, str], dict[str, Any]] = {}
     rule_ids: dict[tuple[str, str], list[str]] = defaultdict(list)
     statuses: dict[tuple[str, str], list[str]] = defaultdict(list)
@@ -43,7 +45,6 @@ def _collect_evidence(result: Mapping[str, Any]) -> list[dict[str, Any]]:
         evidence = requirement.get("evidence")
         if not isinstance(evidence, list):
             continue
-
         for source in evidence:
             if not isinstance(source, Mapping):
                 continue
@@ -73,13 +74,16 @@ def _collect_evidence(result: Mapping[str, Any]) -> list[dict[str, Any]]:
                 **source,
                 "rule_ids": _dedupe_sorted(rule_ids[key]),
                 "statuses": _dedupe_sorted(statuses[key]),
-                "source_verified_at": (
-                    min(verified_dates[key]) if verified_dates[key] else None
-                ),
+                "source_verified_at": min(verified_dates[key]) if verified_dates[key] else None,
             }
         )
-
-    output.sort(key=lambda item: (item.get("authority") or "", item.get("source_id") or "", item.get("url") or ""))
+    output.sort(
+        key=lambda item: (
+            item.get("authority") or "",
+            item.get("source_id") or "",
+            item.get("url") or "",
+        )
+    )
     return output
 
 
@@ -87,7 +91,6 @@ def _collect_audit(result: Mapping[str, Any], evidence: list[dict[str, Any]]) ->
     rule_ids: list[str] = []
     rule_versions: list[str] = []
     verified_dates: list[str] = []
-
     requirements = result.get("requirements")
     if isinstance(requirements, list):
         for requirement in requirements:
@@ -100,7 +103,6 @@ def _collect_audit(result: Mapping[str, Any], evidence: list[dict[str, Any]]) ->
     rule_ids = _dedupe_sorted(rule_ids)
     rule_versions = _dedupe_sorted(rule_versions)
     verified_dates = _dedupe_sorted(verified_dates)
-
     return {
         "engine_version": _text(result.get("engine_version")),
         "rule_ids": rule_ids,
@@ -114,41 +116,17 @@ def _collect_audit(result: Mapping[str, Any], evidence: list[dict[str, Any]]) ->
 
 def _route_task(route: str, workflow: Mapping[str, Any]) -> dict[str, Any] | None:
     if route == "ADD_PERMIT_TASK":
-        return {
-            "task_type": "PERMIT_PROCESS",
-            "blocking": True,
-            "action": "Add a permit task/allowance before scheduling or design lock.",
-        }
+        return {"task_type": "PERMIT_PROCESS", "blocking": True, "action": "Add a permit task/allowance before scheduling or design lock."}
     if route == "CONTINUE_WITH_EVIDENCE":
-        return {
-            "task_type": "ATTACH_EVIDENCE",
-            "blocking": False,
-            "action": "Attach the evidence-linked preflight result to the work record before continuing.",
-        }
+        return {"task_type": "ATTACH_EVIDENCE", "blocking": False, "action": "Attach the evidence-linked preflight result to the work record before continuing."}
     if route == "COLLECT_MISSING_FACTS":
-        return {
-            "task_type": "COLLECT_MISSING_FACTS",
-            "blocking": True,
-            "action": "Collect the listed missing facts and rerun ProjectPermit before automated finalization.",
-        }
+        return {"task_type": "COLLECT_MISSING_FACTS", "blocking": True, "action": "Collect the listed missing facts and rerun ProjectPermit before automated finalization."}
     if route == "ROUTE_SPECIAL_REVIEW":
-        return {
-            "task_type": "SPECIAL_REVIEW",
-            "blocking": True,
-            "action": "Route the work for the indicated planning, heritage, or special review.",
-        }
+        return {"task_type": "SPECIAL_REVIEW", "blocking": True, "action": "Route the work for the indicated planning, heritage, or special review."}
     if route == "MUNICIPAL_CONFIRMATION":
-        return {
-            "task_type": "MUNICIPAL_CONFIRMATION",
-            "blocking": True,
-            "action": "Obtain municipal confirmation before automated finalization.",
-        }
+        return {"task_type": "MUNICIPAL_CONFIRMATION", "blocking": True, "action": "Obtain municipal confirmation before automated finalization."}
     if route == "MANUAL_SCOPE_REVIEW":
-        return {
-            "task_type": "MANUAL_SCOPE_REVIEW",
-            "blocking": True,
-            "action": "Route the scope for manual review because the current ruleset does not cover it safely.",
-        }
+        return {"task_type": "MANUAL_SCOPE_REVIEW", "blocking": True, "action": "Route the scope for manual review because the current ruleset does not cover it safely."}
     return None
 
 
@@ -158,8 +136,6 @@ def _build_tasks(workflow: Mapping[str, Any], evidence: list[dict[str, Any]]) ->
     primary = _route_task(route, workflow)
     if primary is not None:
         tasks.append(primary)
-
-    # Permit/review paths also benefit from an explicit evidence-preservation task.
     if evidence and route not in {"CONTINUE_WITH_EVIDENCE", "COLLECT_MISSING_FACTS"}:
         tasks.append(
             {
@@ -171,34 +147,42 @@ def _build_tasks(workflow: Mapping[str, Any], evidence: list[dict[str, Any]]) ->
     return tasks
 
 
+def _prior_identity(facts: Mapping[str, Any]) -> Mapping[str, Any] | None:
+    context = facts.get("context")
+    if not isinstance(context, Mapping):
+        return None
+    prior = context.get("prior_decision_identity")
+    return prior if isinstance(prior, Mapping) else None
+
+
 def build_action_bundle(facts: Mapping[str, Any], result: Mapping[str, Any]) -> dict[str, Any]:
-    """Build a stable, platform-neutral action package from a completed preflight."""
     workflow = result.get("workflow")
     if not isinstance(workflow, Mapping):
         raise ValueError("ProjectPermit result.workflow is required before action bundle generation")
 
     evidence = _collect_evidence(result)
     audit = _collect_audit(result, evidence)
+    identity = build_decision_identity(facts, result, evidence=evidence, audit=audit)
+    change = classify_identity_change(_prior_identity(facts), identity)
+
     follow_ups = workflow.get("follow_up_questions")
     if not isinstance(follow_ups, list):
         follow_ups = []
-
     freshness = workflow.get("evidence_freshness")
     if not isinstance(freshness, Mapping):
         freshness = {}
-
     first_evidence_url = _text(evidence[0].get("url")) if evidence else ""
     first_rule_version = audit["rule_versions"][0] if audit["rule_versions"] else ""
 
     return {
         "bundle_version": BUNDLE_VERSION,
+        "identity": identity,
+        "change": change,
         "decision": {
             "determination": _text(result.get("determination")),
             "confidence": _text(result.get("confidence")),
             "jurisdiction": result.get("jurisdiction") if isinstance(result.get("jurisdiction"), Mapping) else {},
-            "project_family": _text((facts.get("project") or {}).get("family"))
-            if isinstance(facts.get("project"), Mapping)
-            else "",
+            "project_family": _text((facts.get("project") or {}).get("family")) if isinstance(facts.get("project"), Mapping) else "",
         },
         "routing": {
             "recommended_route": _text(workflow.get("recommended_route")),
@@ -219,6 +203,9 @@ def build_action_bundle(facts: Mapping[str, Any], result: Mapping[str, Any]) -> 
             "rule_version": first_rule_version,
             "evidence_url": first_evidence_url,
             "freshness_status": _text(freshness.get("status")),
+            "bundle_id": identity["bundle_id"],
+            "idempotency_key": identity["idempotency_key"],
+            "change_classification": change["classification"],
         },
         "disclaimer": _text(result.get("disclaimer")),
     }
