@@ -221,7 +221,11 @@ def build_workflow_guidance(
     """Return additive agent-routing guidance without changing the legal determination."""
     determination = str(result.get("determination") or "OUT_OF_SCOPE")
     confidence = str(result.get("confidence") or "LOW")
-    follow_ups = _follow_up_questions(facts, result)
+    follow_ups = (
+        _follow_up_questions(facts, result)
+        if determination == "MUNICIPAL_CONFIRMATION_REQUIRED"
+        else []
+    )
 
     if determination == "REQUIRED":
         route = "ADD_PERMIT_TASK"
@@ -239,7 +243,7 @@ def build_workflow_guidance(
         route = "CONTINUE_WITH_EVIDENCE"
         mode = "NO_PERMIT_SIGNAL"
         quote_handling = "NO_PERMIT_ALLOWANCE_SIGNAL"
-        automation_safe = confidence == "HIGH" and not follow_ups
+        automation_safe = confidence == "HIGH"
         summary = "No permit requirement was identified by the supplied facts; retain the official evidence with the job record."
     elif determination == "ADDITIONAL_REVIEW_REQUIRED":
         route = "ROUTE_SPECIAL_REVIEW"
