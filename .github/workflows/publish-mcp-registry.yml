@@ -48,7 +48,7 @@ jobs:
 
           payload = json.loads(Path('/tmp/registry.json').read_text())
           expected_name = 'io.github.ChanghuLiu/projectpermit'
-          expected_version = '0.4.0'
+          expected_version = '0.4.1'
           matches = []
           for item in payload.get('servers', []):
               server = item.get('server', item)
