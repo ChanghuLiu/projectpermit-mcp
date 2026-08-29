@@ -6,6 +6,10 @@ on:
     paths:
       - 'market_research/ottawa_permit_source_probe.py'
       - '.github/workflows/ottawa-address-premium-source-probe.yml'
+  pull_request:
+    paths:
+      - 'market_research/ottawa_permit_source_probe.py'
+      - '.github/workflows/ottawa-address-premium-source-probe.yml'
 
 permissions:
   contents: read
