@@ -50,14 +50,14 @@ Do not convert the 20,000 figure into current-family API calls or current annual
 
 ## Development/procurement provenance is unverified
 
-Current public material reviewed on 2026-08-28 does **not** establish whether URBAIN was:
+Current public material reviewed on 2026-08-28 and re-checked on 2026-08-29 does **not** establish whether URBAIN was:
 
 - developed wholly by Gatineau staff;
 - built with a contractor/vendor;
 - assembled on a configurable third-party rules/workflow platform; or
 - built through another mixed delivery model.
 
-No vendor attribution, public developer API, white-label offer or reusable municipal product contract was verified.
+The City's launch release describes what URBAIN does but does not name a supplier or state that it was built entirely in-house. No vendor attribution, public developer API, white-label offer or reusable municipal product contract was verified.
 
 Therefore ProjectPermit must not claim that URBAIN proves a municipality can build the whole system internally at a known cost. What it proves is narrower: a single municipality can deliver a high-overlap first-party applicability experience, regardless of the hidden build/procurement path.
 
@@ -71,14 +71,14 @@ URBAIN materially strengthens evidence already counted in the canonical scorecar
 - single-city rule ownership is not a durable moat;
 - free/bundled/first-party alternatives can occupy local consumer demand.
 
-Those facts are already reflected in:
+Those facts are already fully reflected in the current canonical commercial state:
 
 - competitive headroom = **0/10**;
-- defensibility = **2/10**;
+- defensibility = **0/10** after the later CivCheck/Clariti Guide deductions;
 - the earlier 58 -> 57 local-replication reduction;
-- the later build-vs-buy reduction that left defensibility at 2/10.
+- the later build-vs-buy and cross-jurisdiction regulatory-platform deductions.
 
-Reducing the score again would double-count the same underlying commercial fact.
+Reducing the score again for URBAIN would double-count the same underlying commercial fact. URBAIN is strengthening evidence for the current **48/100 (raw 47.5)** pause/re-scope state, not a new independent penalty.
 
 ## What URBAIN does change
 
