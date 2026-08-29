@@ -10,6 +10,7 @@ URL = os.getenv(
     "PROJECTPERMIT_PAID_HTTP_URL",
     "https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements",
 )
+EXPECTED_NETWORK = os.getenv("PROJECTPERMIT_SMOKE_X402_NETWORK", "eip155:8453")
 
 PAYLOAD = {
     "jurisdiction": "ottawa_on",
@@ -31,6 +32,7 @@ EXPECTED_JURISDICTIONS = {
 
 def main() -> None:
     print(f"paid_http_url={URL}")
+    print(f"expected_network={EXPECTED_NETWORK}")
     response = httpx.post(URL, json=PAYLOAD, timeout=30.0, follow_redirects=True)
     print(f"status={response.status_code}")
     if response.status_code != 402:
@@ -50,8 +52,8 @@ def main() -> None:
             raise SystemExit(f"Jurisdiction missing from x402 resource description: {city}: {description}")
 
     accepts = challenge.get("accepts") or []
-    if not any(item.get("network") == "eip155:84532" for item in accepts):
-        raise SystemExit("Base Sepolia payment option missing")
+    if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
+        raise SystemExit(f"Expected payment network missing: {EXPECTED_NETWORK}: {accepts}")
 
     bazaar = (challenge.get("extensions") or {}).get("bazaar")
     if not bazaar:
@@ -78,8 +80,12 @@ def main() -> None:
             raise SystemExit(f"Jurisdiction enum missing from Bazaar schema: {enum}")
 
     output = info.get("output") or {}
-    if (output.get("example") or {}).get("engine_version") != "phase0-0.1.0":
+    example = output.get("example") or {}
+    if example.get("engine_version") != "phase0-0.1.0":
         raise SystemExit(f"Unexpected Bazaar output example: {output}")
+    workflow = example.get("workflow") or {}
+    if workflow.get("recommended_route") != "CONTINUE_WITH_EVIDENCE":
+        raise SystemExit(f"Bazaar output example missing workflow routing: {workflow}")
 
     print("http_bazaar_seven_jurisdictions=PASS")
     print("http_bazaar_unpaid_smoke=PASS")
