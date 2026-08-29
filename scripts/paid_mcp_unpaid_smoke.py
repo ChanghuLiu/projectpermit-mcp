@@ -12,6 +12,7 @@ URL = os.getenv(
     "PROJECTPERMIT_PAID_MCP_URL",
     "https://projectpermit-x402-mcp-production.up.railway.app/mcp",
 )
+EXPECTED_NETWORK = os.getenv("PROJECTPERMIT_SMOKE_X402_NETWORK", "eip155:8453")
 EXPECTED_JURISDICTIONS = {
     "gatineau_qc",
     "ottawa_on",
@@ -33,6 +34,7 @@ def _json_from_result(result):
 
 async def main() -> None:
     print(f"paid_mcp_url={URL}")
+    print(f"expected_network={EXPECTED_NETWORK}")
     async with streamable_http_client(URL) as (read_stream, write_stream):
         async with ClientSession(read_stream, write_stream) as session:
             init = await session.initialize()
@@ -56,6 +58,13 @@ async def main() -> None:
             jurisdictions = set(info_payload.get("jurisdictions") or [])
             if not EXPECTED_JURISDICTIONS.issubset(jurisdictions):
                 raise SystemExit(f"Paid MCP info missing jurisdictions: {jurisdictions}")
+            if info_payload.get("network") != EXPECTED_NETWORK:
+                raise SystemExit(
+                    f"Paid MCP info network mismatch: {info_payload.get('network')} != {EXPECTED_NETWORK}"
+                )
+            workflow = info_payload.get("workflow_guidance") or {}
+            if workflow.get("field") != "workflow":
+                raise SystemExit(f"Paid MCP info missing workflow guidance: {workflow}")
             print(f"free_info_jurisdictions={sorted(jurisdictions)}")
             print("free_info=PASS")
 
@@ -74,8 +83,8 @@ async def main() -> None:
             if not challenge.get("accepts"):
                 raise SystemExit("x402 payment challenge did not include accepts")
             accepts = challenge["accepts"]
-            if not any(item.get("network") == "eip155:84532" for item in accepts):
-                raise SystemExit("Base Sepolia payment option missing")
+            if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
+                raise SystemExit(f"Expected payment network missing: {EXPECTED_NETWORK}: {accepts}")
             print("paid_mcp_seven_jurisdictions=PASS")
             print("paid_mcp_unpaid_smoke=PASS")
 
