@@ -7,50 +7,11 @@
   "properties": {
     "determination": {"enum": ["REQUIRED", "LIKELY_REQUIRED", "LIKELY_NOT_REQUIRED", "ADDITIONAL_REVIEW_REQUIRED", "MUNICIPAL_CONFIRMATION_REQUIRED", "OUT_OF_SCOPE"]},
     "confidence": {"enum": ["HIGH", "MEDIUM", "LOW"]},
-    "requirements": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["type", "status", "reason", "rule_id", "rule_version", "source_verified_at", "evidence"],
-        "properties": {
-          "type": {"type": "string"},
-          "status": {"enum": ["REQUIRED", "LIKELY_REQUIRED", "LIKELY_NOT_REQUIRED", "ADDITIONAL_REVIEW_REQUIRED", "MUNICIPAL_CONFIRMATION_REQUIRED", "OUT_OF_SCOPE"]},
-          "reason": {"type": "string"},
-          "rule_id": {"type": "string"},
-          "evidence": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "required": ["authority", "title", "url", "source_id"],
-              "properties": {
-                "authority": {"type": "string"},
-                "title": {"type": "string"},
-                "url": {"type": "string", "format": "uri"},
-                "source_id": {"type": "string"}
-              },
-              "additionalProperties": true
-            }
-          },
-          "rule_version": {"type": "string"},
-          "source_verified_at": {"type": "string", "format": "date"}
-        }
-      }
-    },
-    "property_context_status": {
-      "enum": ["UNRESOLVED_FOR_EXEMPTION"],
-      "description": "Present when a no-permit path cannot be trusted until parcel-specific property context is resolved."
-    },
-    "required_property_facts": {
-      "type": "array",
-      "items": {"type": "string"},
-      "uniqueItems": true,
-      "minItems": 1,
-      "description": "Property facts that must be resolved before relying on the otherwise applicable exemption."
-    },
+    "requirements": {"type": "array", "items": {"type": "object", "required": ["type", "status", "reason", "rule_id", "rule_version", "source_verified_at", "evidence"], "properties": {"type": {"type": "string"}, "status": {"enum": ["REQUIRED", "LIKELY_REQUIRED", "LIKELY_NOT_REQUIRED", "ADDITIONAL_REVIEW_REQUIRED", "MUNICIPAL_CONFIRMATION_REQUIRED", "OUT_OF_SCOPE"]}, "reason": {"type": "string"}, "rule_id": {"type": "string"}, "evidence": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["authority", "title", "url", "source_id"], "properties": {"authority": {"type": "string"}, "title": {"type": "string"}, "url": {"type": "string", "format": "uri"}, "source_id": {"type": "string"}}, "additionalProperties": true}}, "rule_version": {"type": "string"}, "source_verified_at": {"type": "string", "format": "date"}}}},
+    "property_context_status": {"enum": ["UNRESOLVED_FOR_EXEMPTION"]},
+    "required_property_facts": {"type": "array", "items": {"type": "string"}, "uniqueItems": true, "minItems": 1},
     "workflow": {
       "type": "object",
-      "description": "Deterministic agent-routing guidance. It does not alter or replace the permit determination.",
       "required": ["mode", "recommended_route", "quote_handling", "automation_safe", "summary", "follow_up_questions", "evidence_freshness"],
       "properties": {
         "mode": {"enum": ["PERMIT_PATH", "NO_PERMIT_SIGNAL", "NEEDS_MORE_CONTEXT", "NEEDS_REVIEW", "UNSUPPORTED_SCOPE"]},
@@ -58,136 +19,55 @@
         "quote_handling": {"enum": ["INCLUDE_PERMIT_ALLOWANCE", "NO_PERMIT_ALLOWANCE_SIGNAL", "HOLD_AUTOMATED_FINALIZATION"]},
         "automation_safe": {"type": "boolean"},
         "summary": {"type": "string"},
-        "follow_up_questions": {
-          "type": "array",
-          "maxItems": 3,
-          "items": {
-            "type": "object",
-            "required": ["fact_path", "question", "why_it_matters"],
-            "properties": {
-              "fact_path": {"type": "string"},
-              "question": {"type": "string"},
-              "why_it_matters": {"type": "string"}
-            },
-            "additionalProperties": false
-          }
-        },
-        "evidence_freshness": {
-          "type": "object",
-          "description": "ProjectPermit source-verification freshness policy. This is a product automation guardrail, not a municipal/legal validity period.",
-          "required": ["status", "oldest_verified_at", "newest_verified_at", "oldest_age_days", "review_after_days", "stale_after_days", "automation_blocked"],
-          "properties": {
-            "status": {"enum": ["CURRENT", "REVIEW_DUE", "STALE", "UNKNOWN"]},
-            "oldest_verified_at": {"type": ["string", "null"], "format": "date"},
-            "newest_verified_at": {"type": ["string", "null"], "format": "date"},
-            "oldest_age_days": {"type": ["integer", "null"], "minimum": 0},
-            "review_after_days": {"type": "integer", "minimum": 1},
-            "stale_after_days": {"type": "integer", "minimum": 1},
-            "automation_blocked": {"type": "boolean"}
-          },
-          "additionalProperties": false
-        }
+        "follow_up_questions": {"type": "array", "maxItems": 3, "items": {"type": "object", "required": ["fact_path", "question", "why_it_matters"], "properties": {"fact_path": {"type": "string"}, "question": {"type": "string"}, "why_it_matters": {"type": "string"}}, "additionalProperties": false}},
+        "evidence_freshness": {"type": "object", "required": ["status", "oldest_verified_at", "newest_verified_at", "oldest_age_days", "review_after_days", "stale_after_days", "automation_blocked"], "properties": {"status": {"enum": ["CURRENT", "REVIEW_DUE", "STALE", "UNKNOWN"]}, "oldest_verified_at": {"type": ["string", "null"], "format": "date"}, "newest_verified_at": {"type": ["string", "null"], "format": "date"}, "oldest_age_days": {"type": ["integer", "null"], "minimum": 0}, "review_after_days": {"type": "integer", "minimum": 1}, "stale_after_days": {"type": "integer", "minimum": 1}, "automation_blocked": {"type": "boolean"}}, "additionalProperties": false}
       },
       "additionalProperties": false
     },
     "action_bundle": {
       "type": "object",
-      "description": "Platform-neutral package for contractor/field-service integrations. It packages the permit decision, workflow route, official evidence, missing inputs, proposed tasks and audit metadata without mutating upstream systems.",
-      "required": ["bundle_version", "decision", "routing", "required_inputs", "tasks", "evidence", "audit", "writeback_hints", "disclaimer"],
+      "description": "Platform-neutral evidence/action package with deterministic identity, duplicate-suppression and change classification.",
+      "required": ["bundle_version", "identity", "change", "decision", "routing", "required_inputs", "tasks", "evidence", "audit", "writeback_hints", "disclaimer"],
       "properties": {
         "bundle_version": {"type": "string"},
-        "decision": {
+        "identity": {
           "type": "object",
-          "required": ["determination", "confidence", "jurisdiction", "project_family"],
+          "required": ["identity_version", "idempotency_version", "bundle_id", "input_fingerprint", "decision_fingerprint", "routing_fingerprint", "ruleset_fingerprint", "evidence_fingerprint", "scope_fingerprint", "idempotency_key"],
           "properties": {
-            "determination": {"type": "string"},
-            "confidence": {"type": "string"},
-            "jurisdiction": {"type": "object"},
-            "project_family": {"type": "string"}
+            "identity_version": {"type": "string"},
+            "idempotency_version": {"type": "string"},
+            "bundle_id": {"type": "string", "pattern": "^ppb_[0-9a-f]+$"},
+            "input_fingerprint": {"type": "string", "pattern": "^ppi_[0-9a-f]+$"},
+            "decision_fingerprint": {"type": "string", "pattern": "^ppd_[0-9a-f]+$"},
+            "routing_fingerprint": {"type": "string", "pattern": "^ppr_[0-9a-f]+$"},
+            "ruleset_fingerprint": {"type": "string", "pattern": "^pprules_[0-9a-f]+$"},
+            "evidence_fingerprint": {"type": "string", "pattern": "^ppe_[0-9a-f]+$"},
+            "scope_fingerprint": {"type": ["string", "null"]},
+            "idempotency_key": {"type": "string", "pattern": "^ppidem_[0-9a-f]+$"}
           },
           "additionalProperties": false
         },
-        "routing": {
+        "change": {
           "type": "object",
-          "required": ["recommended_route", "quote_handling", "automation_safe", "evidence_freshness"],
+          "required": ["classification", "material_change", "reasons", "prior_bundle_id"],
           "properties": {
-            "recommended_route": {"type": "string"},
-            "quote_handling": {"type": "string"},
-            "automation_safe": {"type": "boolean"},
-            "evidence_freshness": {"type": "object"}
+            "classification": {"enum": ["FIRST_OBSERVATION", "UNCHANGED", "DECISION_CHANGED", "ROUTE_CHANGED", "INPUT_CHANGED", "RULESET_CHANGED", "EVIDENCE_REFRESHED", "IDENTITY_VERSION_CHANGED"]},
+            "material_change": {"type": "boolean"},
+            "reasons": {"type": "array", "items": {"enum": ["NO_PRIOR_IDENTITY", "DECISION_CHANGED", "ROUTE_CHANGED", "INPUT_CHANGED", "RULESET_CHANGED", "EVIDENCE_REFRESHED", "IDENTITY_VERSION_CHANGED"]}},
+            "prior_bundle_id": {"type": ["string", "null"]}
           },
           "additionalProperties": false
         },
-        "required_inputs": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["fact_path", "question", "why_it_matters"],
-            "properties": {
-              "fact_path": {"type": "string"},
-              "question": {"type": "string"},
-              "why_it_matters": {"type": "string"}
-            },
-            "additionalProperties": false
-          }
-        },
-        "tasks": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["task_type", "blocking", "action"],
-            "properties": {
-              "task_type": {"enum": ["PERMIT_PROCESS", "ATTACH_EVIDENCE", "COLLECT_MISSING_FACTS", "SPECIAL_REVIEW", "MUNICIPAL_CONFIRMATION", "MANUAL_SCOPE_REVIEW"]},
-              "blocking": {"type": "boolean"},
-              "action": {"type": "string"}
-            },
-            "additionalProperties": false
-          }
-        },
-        "evidence": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["source_id", "authority", "title", "url", "rule_ids", "statuses", "source_verified_at"],
-            "properties": {
-              "source_id": {"type": "string"},
-              "authority": {"type": "string"},
-              "title": {"type": "string"},
-              "url": {"type": "string"},
-              "rule_ids": {"type": "array", "items": {"type": "string"}},
-              "statuses": {"type": "array", "items": {"type": "string"}},
-              "source_verified_at": {"type": ["string", "null"], "format": "date"}
-            },
-            "additionalProperties": false
-          }
-        },
-        "audit": {
-          "type": "object",
-          "required": ["engine_version", "rule_ids", "rule_versions", "source_verified_at_oldest", "source_verified_at_newest", "evidence_source_count", "generated_from"],
-          "properties": {
-            "engine_version": {"type": "string"},
-            "rule_ids": {"type": "array", "items": {"type": "string"}},
-            "rule_versions": {"type": "array", "items": {"type": "string"}},
-            "source_verified_at_oldest": {"type": ["string", "null"], "format": "date"},
-            "source_verified_at_newest": {"type": ["string", "null"], "format": "date"},
-            "evidence_source_count": {"type": "integer", "minimum": 0},
-            "generated_from": {"const": "deterministic_preflight"}
-          },
-          "additionalProperties": false
-        },
+        "decision": {"type": "object", "required": ["determination", "confidence", "jurisdiction", "project_family"], "properties": {"determination": {"type": "string"}, "confidence": {"type": "string"}, "jurisdiction": {"type": "object"}, "project_family": {"type": "string"}}, "additionalProperties": false},
+        "routing": {"type": "object", "required": ["recommended_route", "quote_handling", "automation_safe", "evidence_freshness"], "properties": {"recommended_route": {"type": "string"}, "quote_handling": {"type": "string"}, "automation_safe": {"type": "boolean"}, "evidence_freshness": {"type": "object"}}, "additionalProperties": false},
+        "required_inputs": {"type": "array", "items": {"type": "object", "required": ["fact_path", "question", "why_it_matters"], "properties": {"fact_path": {"type": "string"}, "question": {"type": "string"}, "why_it_matters": {"type": "string"}}, "additionalProperties": false}},
+        "tasks": {"type": "array", "items": {"type": "object", "required": ["task_type", "blocking", "action"], "properties": {"task_type": {"enum": ["PERMIT_PROCESS", "ATTACH_EVIDENCE", "COLLECT_MISSING_FACTS", "SPECIAL_REVIEW", "MUNICIPAL_CONFIRMATION", "MANUAL_SCOPE_REVIEW"]}, "blocking": {"type": "boolean"}, "action": {"type": "string"}}, "additionalProperties": false}},
+        "evidence": {"type": "array", "items": {"type": "object", "required": ["source_id", "authority", "title", "url", "rule_ids", "statuses", "source_verified_at"], "properties": {"source_id": {"type": "string"}, "authority": {"type": "string"}, "title": {"type": "string"}, "url": {"type": "string"}, "rule_ids": {"type": "array", "items": {"type": "string"}}, "statuses": {"type": "array", "items": {"type": "string"}}, "source_verified_at": {"type": ["string", "null"], "format": "date"}}, "additionalProperties": false}},
+        "audit": {"type": "object", "required": ["engine_version", "rule_ids", "rule_versions", "source_verified_at_oldest", "source_verified_at_newest", "evidence_source_count", "generated_from"], "properties": {"engine_version": {"type": "string"}, "rule_ids": {"type": "array", "items": {"type": "string"}}, "rule_versions": {"type": "array", "items": {"type": "string"}}, "source_verified_at_oldest": {"type": ["string", "null"], "format": "date"}, "source_verified_at_newest": {"type": ["string", "null"], "format": "date"}, "evidence_source_count": {"type": "integer", "minimum": 0}, "generated_from": {"const": "deterministic_preflight"}}, "additionalProperties": false},
         "writeback_hints": {
           "type": "object",
-          "required": ["permit_status", "confidence", "recommended_route", "quote_handling", "automation_safe", "rule_version", "evidence_url", "freshness_status"],
-          "properties": {
-            "permit_status": {"type": "string"},
-            "confidence": {"type": "string"},
-            "recommended_route": {"type": "string"},
-            "quote_handling": {"type": "string"},
-            "automation_safe": {"type": "boolean"},
-            "rule_version": {"type": "string"},
-            "evidence_url": {"type": "string"},
-            "freshness_status": {"type": "string"}
-          },
+          "required": ["permit_status", "confidence", "recommended_route", "quote_handling", "automation_safe", "rule_version", "evidence_url", "freshness_status", "bundle_id", "idempotency_key", "change_classification"],
+          "properties": {"permit_status": {"type": "string"}, "confidence": {"type": "string"}, "recommended_route": {"type": "string"}, "quote_handling": {"type": "string"}, "automation_safe": {"type": "boolean"}, "rule_version": {"type": "string"}, "evidence_url": {"type": "string"}, "freshness_status": {"type": "string"}, "bundle_id": {"type": "string"}, "idempotency_key": {"type": "string"}, "change_classification": {"type": "string"}},
           "additionalProperties": false
         },
         "disclaimer": {"type": "string"}
