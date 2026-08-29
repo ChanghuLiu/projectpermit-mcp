@@ -10,11 +10,57 @@ BASE = os.getenv(
     "https://projectpermit-api-v2-production.up.railway.app",
 ).rstrip("/")
 PREVIEW = f"{BASE}/v1/preview-project-requirements"
+EXPECTED_SINGLE_AMOUNT = os.getenv("PROJECTPERMIT_SMOKE_X402_SINGLE_AMOUNT", "0.05")
 WRITE_SCOPE_CONTEXT = {
     "source_platform": "projectpermit_ci",
     "source_object_type": "preview_record",
     "source_object_id": "http-preview-smoke-ottawa-1",
 }
+
+
+def _verify_public_discovery() -> None:
+    landing = httpx.get(f"{BASE}/", timeout=30.0, follow_redirects=True)
+    if landing.status_code != 200:
+        raise SystemExit(f"Public landing unavailable: {landing.status_code}: {landing.text[:300]}")
+    content_type = landing.headers.get("content-type", "")
+    if "text/html" not in content_type:
+        raise SystemExit(f"Public landing must be HTML: {content_type}")
+    for needle in (
+        "Building permit requirements API &amp; MCP",
+        "contractors and AI agents",
+        f"${EXPECTED_SINGLE_AMOUNT} USDC / call",
+        "/v1/preview-project-requirements",
+        "/openapi.json",
+        "projectpermit-mcp-production.up.railway.app/mcp",
+    ):
+        if needle not in landing.text:
+            raise SystemExit(f"Public landing missing discovery signal {needle!r}")
+
+    llms = httpx.get(f"{BASE}/llms.txt", timeout=30.0, follow_redirects=True)
+    if llms.status_code != 200:
+        raise SystemExit(f"llms.txt unavailable: {llms.status_code}: {llms.text[:300]}")
+    llms_type = llms.headers.get("content-type", "")
+    if "text/plain" not in llms_type:
+        raise SystemExit(f"llms.txt must be plain text: {llms_type}")
+    for needle in (
+        "Building permit requirements API & MCP",
+        f"Launch price: ${EXPECTED_SINGLE_AMOUNT} USDC per full preflight",
+        "Base mainnet (eip155:8453)",
+        "Official MCP Registry name: io.github.ChanghuLiu/projectpermit",
+        "building permit API",
+        "permit requirements MCP",
+    ):
+        if needle not in llms.text:
+            raise SystemExit(f"llms.txt missing agent discovery signal {needle!r}")
+
+    openapi = httpx.get(f"{BASE}/openapi.json", timeout=30.0, follow_redirects=True)
+    openapi.raise_for_status()
+    paths = (openapi.json().get("paths") or {})
+    if "/" in paths or "/llms.txt" in paths:
+        raise SystemExit("Discovery pages must stay outside the API operation schema")
+
+    print("public_landing_discovery=PASS")
+    print("llms_discovery=PASS")
 
 
 def _preview(
@@ -83,6 +129,8 @@ def _gate(payload: dict) -> dict:
 
 
 def main() -> None:
+    _verify_public_discovery()
+
     capabilities = httpx.get(f"{BASE}/v1/capabilities", timeout=30.0)
     capabilities.raise_for_status()
     info = capabilities.json()
