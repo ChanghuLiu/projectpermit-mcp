@@ -13,6 +13,10 @@ URL = os.getenv(
 )
 BASE_URL = URL.split("/v1/", 1)[0]
 EXPECTED_NETWORK = os.getenv("PROJECTPERMIT_SMOKE_X402_NETWORK", "eip155:8453")
+EXPECTED_ASSET = os.getenv(
+    "PROJECTPERMIT_SMOKE_X402_ASSET",
+    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+)
 EXPECTED_SINGLE_AMOUNT = os.getenv("PROJECTPERMIT_SMOKE_X402_SINGLE_AMOUNT", "0.05")
 EXPECTED_SINGLE_WIRE_AMOUNT = str(int(Decimal(EXPECTED_SINGLE_AMOUNT) * Decimal("1000000")))
 EXPECTED_BATCH_AMOUNT = os.getenv("PROJECTPERMIT_SMOKE_X402_BATCH_AMOUNT", "5.00")
@@ -108,12 +112,12 @@ def main() -> None:
         raise SystemExit(f"Expected payment network missing: {EXPECTED_NETWORK}: {accepts}")
     if not any(
         str(item.get("amount")) == EXPECTED_SINGLE_WIRE_AMOUNT
-        and ((item.get("extra") or {}).get("name") == "USDC")
+        and str(item.get("asset") or "").lower() == EXPECTED_ASSET.lower()
         for item in matching
     ):
         raise SystemExit(
-            f"Paid HTTP runtime price mismatch: expected ${EXPECTED_SINGLE_AMOUNT} USDC "
-            f"({EXPECTED_SINGLE_WIRE_AMOUNT} base units): {matching}"
+            f"Paid HTTP runtime price/asset mismatch: expected ${EXPECTED_SINGLE_AMOUNT} USDC "
+            f"({EXPECTED_SINGLE_WIRE_AMOUNT} base units, asset {EXPECTED_ASSET}): {matching}"
         )
     print("http_runtime_price=PASS")
 

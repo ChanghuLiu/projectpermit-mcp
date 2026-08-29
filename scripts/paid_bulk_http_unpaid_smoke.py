@@ -16,6 +16,10 @@ URL = os.getenv(
     f"{BASE_URL}/v1/check-project-requirements-batch",
 )
 EXPECTED_NETWORK = os.getenv("PROJECTPERMIT_SMOKE_X402_NETWORK", "eip155:8453")
+EXPECTED_ASSET = os.getenv(
+    "PROJECTPERMIT_SMOKE_X402_ASSET",
+    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+)
 EXPECTED_PRICE_USD = os.getenv("PROJECTPERMIT_SMOKE_X402_BATCH_AMOUNT", "5.00")
 EXPECTED_WIRE_AMOUNT = str(int(Decimal(EXPECTED_PRICE_USD) * Decimal("1000000")))
 
@@ -89,12 +93,12 @@ def main() -> None:
         raise SystemExit(f"Expected payment network missing: {EXPECTED_NETWORK}: {accepts}")
     if not any(
         str(item.get("amount")) == EXPECTED_WIRE_AMOUNT
-        and ((item.get("extra") or {}).get("name") == "USDC")
+        and str(item.get("asset") or "").lower() == EXPECTED_ASSET.lower()
         for item in matching
     ):
         raise SystemExit(
-            f"Paid bulk runtime price mismatch: expected ${EXPECTED_PRICE_USD} USDC "
-            f"({EXPECTED_WIRE_AMOUNT} base units): {matching}"
+            f"Paid bulk runtime price/asset mismatch: expected ${EXPECTED_PRICE_USD} USDC "
+            f"({EXPECTED_WIRE_AMOUNT} base units, asset {EXPECTED_ASSET}): {matching}"
         )
 
     print("paid_bulk_runtime_price=PASS")
