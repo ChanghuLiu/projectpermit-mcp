@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
 from urllib.request import Request, urlopen
 
 
 ORIGIN = "https://projectpermit-api-v2-production.up.railway.app"
+SINGLE_RESOURCE = f"{ORIGIN}/v1/check-project-requirements"
+BATCH_RESOURCE = f"{ORIGIN}/v1/check-project-requirements-batch"
 
 
 def _get(path: str) -> tuple[str, str]:
@@ -40,6 +43,7 @@ def main() -> None:
         "/openapi.json",
         "/v1/capabilities",
         "/.well-known/agent.json",
+        "/.well-known/x402",
         "/.well-known/x402-service.json",
     )
     for path in required_paths:
@@ -55,7 +59,19 @@ def main() -> None:
         if forbidden in sitemap:
             raise RuntimeError(f"sitemap unexpectedly includes {forbidden!r}")
 
+    x402_type, x402_text = _get("/.well-known/x402")
+    if not x402_type.startswith("application/json"):
+        raise RuntimeError(f"unexpected x402 well-known content type: {x402_type!r}")
+    x402_payload = json.loads(x402_text)
+    expected_x402 = {
+        "version": 1,
+        "resources": [SINGLE_RESOURCE, BATCH_RESOURCE],
+    }
+    if x402_payload != expected_x402:
+        raise RuntimeError(f"unexpected x402 well-known payload: {x402_payload!r}")
+
     print("production_crawler_discovery=PASS")
+    print("production_x402_well_known=PASS")
 
 
 if __name__ == "__main__":
