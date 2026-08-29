@@ -11,6 +11,7 @@ from .capabilities import PROJECT_FAMILIES
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 from .openapi_discovery import install_openapi_discovery
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
+from .public_agent_manifest import agent_manifest
 from .public_discovery import landing_html, llms_text
 from .public_x402_manifest import x402_service_manifest
 from .x402_config import configure_x402
@@ -58,6 +59,12 @@ def public_llms_text():
 def public_x402_service_manifest():
     """Machine-readable seller manifest for zero-cost x402 directory discovery."""
     return x402_service_manifest()
+
+
+@app.get("/.well-known/agent.json", include_in_schema=False)
+def public_agent_manifest():
+    """Provider-authoritative capability/payment manifest for agent directories."""
+    return agent_manifest()
 
 
 @app.get("/health")
