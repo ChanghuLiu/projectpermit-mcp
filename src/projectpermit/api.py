@@ -62,6 +62,16 @@ def capabilities():
             for jurisdiction in SUPPORTED_JURISDICTIONS
         ],
         "project_families": list(PROJECT_FAMILIES),
+        "workflow_guidance": {
+            "field": "workflow",
+            "includes": [
+                "recommended_route",
+                "quote_handling",
+                "automation_safe",
+                "follow_up_questions",
+            ],
+            "purpose": "Route permit-preflight results directly inside contractor/field-service agent workflows.",
+        },
         "free_preview_resource": "/v1/preview-project-requirements",
         "free_batch_preview_resource": "/v1/preview-project-requirements-batch",
         "paid_resource": "/v1/check-project-requirements",
