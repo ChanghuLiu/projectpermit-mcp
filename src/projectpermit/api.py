@@ -11,7 +11,7 @@ from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 from .x402_config import configure_x402
 
-app = FastAPI(title="ProjectPermit", version="0.7.0")
+app = FastAPI(title="ProjectPermit", version="0.6.0")
 
 
 class PreflightRequest(BaseModel):
@@ -43,7 +43,7 @@ class BatchRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"ok": True, "engine_version": "phase1d-0.7.0"}
+    return {"ok": True, "engine_version": "phase1c-0.6.0"}
 
 
 @app.get("/v1/capabilities")
@@ -52,7 +52,7 @@ def capabilities():
     address_resolvers = set(SUPPORTED_ADDRESS_JURISDICTIONS)
     return {
         "service": "ProjectPermit",
-        "engine_version": "phase1d-0.7.0",
+        "engine_version": "phase1c-0.6.0",
         "jurisdictions": [
             {
                 "id": jurisdiction,
