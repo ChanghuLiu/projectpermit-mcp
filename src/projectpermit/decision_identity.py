@@ -12,6 +12,7 @@ from typing import Any, Mapping
 
 
 IDENTITY_VERSION = "2026-08-29.1"
+IDEMPOTENCY_VERSION = "1"
 
 _EXCLUDED_FACT_KEYS = {
     "address",
@@ -85,11 +86,10 @@ def build_decision_identity(
 ) -> dict[str, Any]:
     """Build stable component fingerprints and an integration idempotency key.
 
-    Decision fingerprints exclude raw address and caller/platform context. The
-    idempotency key may be scoped to a work record using a one-way hash of the
-    caller's source object id (or explicit context.idempotency_scope), preventing
-    identical permit scopes on different jobs from colliding without returning the
-    raw identifier.
+    Reusable permit fingerprints exclude raw address and caller/platform context.
+    The idempotency key uses a one-way work-record scope when available. It is
+    intentionally tied to the operational route, not evidence/ruleset freshness,
+    so a source refresh does not create a second permit task for the same job.
     """
     workflow = result.get("workflow")
     if not isinstance(workflow, Mapping):
@@ -109,10 +109,11 @@ def build_decision_identity(
             "confidence": _text(result.get("confidence")),
         },
     )
+    recommended_route = _text(workflow.get("recommended_route"))
     routing_fingerprint = _digest(
         "ppr",
         {
-            "recommended_route": _text(workflow.get("recommended_route")),
+            "recommended_route": recommended_route,
             "quote_handling": _text(workflow.get("quote_handling")),
             "automation_safe": bool(workflow.get("automation_safe", False)),
             "freshness_status": _text(
@@ -148,13 +149,9 @@ def build_decision_identity(
     idempotency_key = _digest(
         "ppidem",
         {
-            "identity_version": IDENTITY_VERSION,
-            "scope_fingerprint": scope_fingerprint,
-            "input_fingerprint": input_fingerprint,
-            "decision_fingerprint": decision_fingerprint,
-            "routing_fingerprint": routing_fingerprint,
-            "ruleset_fingerprint": ruleset_fingerprint,
-            "evidence_fingerprint": evidence_fingerprint,
+            "idempotency_version": IDEMPOTENCY_VERSION,
+            "scope_or_input": scope_fingerprint or input_fingerprint,
+            "recommended_route": recommended_route,
         },
     )
     bundle_id = _digest(
@@ -171,6 +168,7 @@ def build_decision_identity(
 
     return {
         "identity_version": IDENTITY_VERSION,
+        "idempotency_version": IDEMPOTENCY_VERSION,
         "bundle_id": bundle_id,
         "input_fingerprint": input_fingerprint,
         "decision_fingerprint": decision_fingerprint,
