@@ -74,12 +74,16 @@ def main() -> None:
     if body.get("jurisdiction") != "ottawa_on":
         raise SystemExit(f"Unexpected Bazaar input example: {body}")
 
-    input_schema = input_info.get("schema") or input_info.get("inputSchema") or {}
+    # x402 v2 puts the JSON Schema for `info` at extensions.bazaar.schema.
+    # The request-body schema lives under schema.properties.input.properties.body;
+    # it is not serialized as info.input.schema.
+    extension_schema = bazaar.get("schema") or {}
+    schema_properties = extension_schema.get("properties") or {}
+    input_schema = (((schema_properties.get("input") or {}).get("properties") or {}).get("body") or {})
     jurisdiction_schema = ((input_schema.get("properties") or {}).get("jurisdiction") or {})
-    if jurisdiction_schema:
-        enum = set(jurisdiction_schema.get("enum") or [])
-        if not EXPECTED_JURISDICTIONS.issubset(enum):
-            raise SystemExit(f"Jurisdiction enum missing from Bazaar schema: {enum}")
+    enum = set(jurisdiction_schema.get("enum") or [])
+    if not EXPECTED_JURISDICTIONS.issubset(enum):
+        raise SystemExit(f"Jurisdiction enum missing from Bazaar extension schema: {enum}")
 
     output = info.get("output") or {}
     example = output.get("example") or {}
@@ -96,9 +100,16 @@ def main() -> None:
     tasks = bundle.get("tasks") or []
     if not tasks or tasks[0].get("task_type") != "ATTACH_EVIDENCE":
         raise SystemExit(f"Bazaar action bundle missing proposed task: {bundle}")
-    output_schema = output.get("schema") or output.get("outputSchema") or {}
-    if "action_bundle" not in (output_schema.get("properties") or {}):
-        raise SystemExit(f"Bazaar output schema missing action_bundle: {output_schema}")
+
+    # OutputConfig.schema is folded into the schema for info.output.example by the
+    # current x402 Python SDK. `info.output` itself only contains type/format/example.
+    output_example_schema = (
+        ((((schema_properties.get("output") or {}).get("properties") or {}).get("example") or {}))
+    )
+    if "action_bundle" not in (output_example_schema.get("properties") or {}):
+        raise SystemExit(
+            f"Bazaar extension schema missing action_bundle output contract: {output_example_schema}"
+        )
 
     print("http_bazaar_action_bundle=PASS")
     print("http_bazaar_seven_jurisdictions=PASS")
