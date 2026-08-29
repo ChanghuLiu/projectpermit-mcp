@@ -1,0 +1,37 @@
+name: External Directory Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 13 * * *'
+  push:
+    branches: [main]
+    paths:
+      - scripts/external_directory_audit.py
+      - .github/workflows/external-directory-audit.yml
+  pull_request:
+    paths:
+      - scripts/external_directory_audit.py
+      - .github/workflows/external-directory-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Read public directory visibility
+        run: |
+          set -euo pipefail
+          python scripts/external_directory_audit.py | tee /tmp/projectpermit-directory-audit.json
+          {
+            echo '## ProjectPermit external directory audit'
+            echo '```json'
+            cat /tmp/projectpermit-directory-audit.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
