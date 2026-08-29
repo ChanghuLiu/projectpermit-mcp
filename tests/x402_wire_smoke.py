@@ -2,6 +2,7 @@ import os
 
 os.environ['PROJECTPERMIT_X402_ENABLED'] = 'true'
 os.environ['PROJECTPERMIT_X402_PRICE_USD'] = '$0.01'
+os.environ['PROJECTPERMIT_X402_BATCH_PRICE_USD'] = '$0.05'
 os.environ['PROJECTPERMIT_X402_NETWORK'] = 'eip155:84532'
 os.environ['PROJECTPERMIT_X402_PAY_TO'] = '0xDAAef0FD525278aAD0bA11066A96c338642A3d1A'
 os.environ['PROJECTPERMIT_X402_FACILITATOR_URL'] = 'https://x402.org/facilitator'
@@ -41,4 +42,22 @@ output_info = info.get('output') or {}
 assert output_info.get('type') == 'json', output_info
 assert (output_info.get('example') or {}).get('engine_version') == 'phase0-0.1.0', output_info
 
-print('x402 unpaid wire smoke: 402 + PAYMENT-REQUIRED + HTTP Bazaar metadata OK')
+batch_response = client.post('/v1/check-project-requirements-batch', json={
+    'items': [
+        {
+            'client_ref': 'wire-smoke-001',
+            'jurisdiction': 'ottawa_on',
+            'project': {'family': 'window_door', 'action': 'replace_same_size'},
+            'property': {'heritage': False},
+        }
+    ]
+})
+assert batch_response.status_code == 402, (batch_response.status_code, batch_response.text)
+batch_header = batch_response.headers.get('payment-required')
+assert batch_header, dict(batch_response.headers)
+batch_challenge = decode_payment_required_header(batch_header).model_dump(by_alias=True, exclude_none=True)
+assert batch_challenge.get('x402Version') == 2, batch_challenge
+assert batch_challenge.get('accepts'), batch_challenge
+assert any(item.get('network') == 'eip155:84532' for item in batch_challenge['accepts']), batch_challenge
+
+print('x402 unpaid wire smoke: single + bulk 402 challenges + single HTTP Bazaar metadata OK')
