@@ -4,11 +4,13 @@ The adapter deliberately performs no ServiceM8 network calls and no mutations.
 It copies only the minimum work context needed for ProjectPermit:
 
     ServiceM8 Job -> address + scope text -> structured ProjectPermit facts
+    ProjectPermit result/action bundle -> proposed ServiceM8 routing/tasks
 
 Natural-language scope normalization remains the caller/agent's responsibility.
 """
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
@@ -60,8 +62,6 @@ def extract_servicem8_work_object(
 
     address = _text(payload.get("job_address"))
     if not address:
-        # Some API responses expose already-geocoded components. Reconstructing a
-        # civic address from those fields is safe and avoids requiring client data.
         street = " ".join(
             part
             for part in (_text(payload.get("geo_number")), _text(payload.get("geo_street")))
@@ -91,8 +91,6 @@ def extract_servicem8_work_object(
     for material in job_materials or ():
         if not isinstance(material, Mapping):
             continue
-        # If a material carries a job_uuid, reject material rows belonging to some
-        # other job rather than silently blending scopes.
         material_job_id = _text(material.get("job_uuid"))
         if material_job_id and material_job_id != source_id:
             continue
@@ -154,8 +152,7 @@ def build_preflight_facts(
     }
 
 
-def build_servicem8_routing_summary(result: Mapping[str, Any]) -> dict[str, str]:
-    """Create proposed compact routing metadata without mutating ServiceM8."""
+def _legacy_result_hints(result: Mapping[str, Any]) -> dict[str, Any]:
     determination = _text(result.get("determination"))
     if not determination:
         raise ServiceM8AdapterError("ProjectPermit result.determination is required")
@@ -179,9 +176,70 @@ def build_servicem8_routing_summary(result: Mapping[str, Any]) -> dict[str, str]
             if rule_version and evidence_url:
                 break
 
+    workflow = result.get("workflow")
+    if not isinstance(workflow, Mapping):
+        workflow = {}
+    freshness = workflow.get("evidence_freshness")
+    if not isinstance(freshness, Mapping):
+        freshness = {}
+
     return {
-        "projectpermit_preflight": determination,
-        "projectpermit_confidence": confidence,
-        "projectpermit_rule_version": rule_version,
-        "projectpermit_evidence_url": evidence_url,
+        "permit_status": determination,
+        "confidence": confidence,
+        "recommended_route": _text(workflow.get("recommended_route")),
+        "quote_handling": _text(workflow.get("quote_handling")),
+        "automation_safe": bool(workflow.get("automation_safe", False)),
+        "rule_version": rule_version,
+        "evidence_url": evidence_url,
+        "freshness_status": _text(freshness.get("status")),
+    }
+
+
+def _writeback_hints(result: Mapping[str, Any]) -> dict[str, Any]:
+    bundle = result.get("action_bundle")
+    if isinstance(bundle, Mapping) and isinstance(bundle.get("writeback_hints"), Mapping):
+        return dict(bundle["writeback_hints"])
+    return _legacy_result_hints(result)
+
+
+def build_servicem8_routing_summary(result: Mapping[str, Any]) -> dict[str, str]:
+    """Create proposed compact routing metadata without mutating ServiceM8."""
+    hints = _writeback_hints(result)
+    return {
+        "projectpermit_preflight": _text(hints.get("permit_status")),
+        "projectpermit_confidence": _text(hints.get("confidence")),
+        "projectpermit_rule_version": _text(hints.get("rule_version")),
+        "projectpermit_evidence_url": _text(hints.get("evidence_url")),
+        "projectpermit_route": _text(hints.get("recommended_route")),
+        "projectpermit_quote_handling": _text(hints.get("quote_handling")),
+        "projectpermit_automation_safe": "true" if bool(hints.get("automation_safe")) else "false",
+        "projectpermit_freshness": _text(hints.get("freshness_status")),
+    }
+
+
+def build_servicem8_action_proposal(result: Mapping[str, Any]) -> dict[str, Any]:
+    """Map the action bundle into a read-only ServiceM8 integration proposal.
+
+    This function performs no ServiceM8 API call and creates no actual job activity,
+    note, task, or field mutation.
+    """
+    bundle = result.get("action_bundle")
+    if not isinstance(bundle, Mapping):
+        raise ServiceM8AdapterError("ProjectPermit result.action_bundle is required")
+
+    tasks = bundle.get("tasks") if isinstance(bundle.get("tasks"), list) else []
+    required_inputs = (
+        bundle.get("required_inputs") if isinstance(bundle.get("required_inputs"), list) else []
+    )
+    evidence = bundle.get("evidence") if isinstance(bundle.get("evidence"), list) else []
+    audit = bundle.get("audit") if isinstance(bundle.get("audit"), Mapping) else {}
+
+    return {
+        "source_platform": "servicem8",
+        "mutation_performed": False,
+        "proposed_routing_fields": build_servicem8_routing_summary(result),
+        "proposed_tasks": deepcopy(tasks),
+        "required_inputs": deepcopy(required_inputs),
+        "evidence": deepcopy(evidence),
+        "audit": deepcopy(dict(audit)),
     }
