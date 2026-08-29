@@ -67,6 +67,20 @@ def _structured_or_text(result):
         return {"_rendered": rendered}
 
 
+def _assert_action_bundle(payload: dict, *, expected_route: str | None = None) -> None:
+    bundle = payload.get("action_bundle") or {}
+    if not bundle:
+        raise SystemExit(f"action_bundle missing from preflight result: {payload}")
+    if bundle.get("bundle_version") != "2026-08-29.1":
+        raise SystemExit(f"Unexpected action bundle version: {bundle}")
+    routing = bundle.get("routing") or {}
+    if expected_route and routing.get("recommended_route") != expected_route:
+        raise SystemExit(f"Unexpected action bundle route: {bundle}")
+    audit = bundle.get("audit") or {}
+    if audit.get("generated_from") != "deterministic_preflight":
+        raise SystemExit(f"Action bundle audit missing deterministic origin: {bundle}")
+
+
 async def main() -> None:
     print(f"mcp_url={URL}")
     async with streamable_http_client(URL) as (read_stream, write_stream):
@@ -102,6 +116,12 @@ async def main() -> None:
                 raise SystemExit(f"Bulk tool missing from info: {info}")
             if info.get("bulk_max_items") != 50:
                 raise SystemExit(f"Unexpected bulk_max_items: {info.get('bulk_max_items')}")
+            bundle_info = info.get("action_bundle") or {}
+            if bundle_info.get("field") != "action_bundle":
+                raise SystemExit(f"Action bundle missing from free MCP info: {bundle_info}")
+            if "tasks" not in (bundle_info.get("includes") or []):
+                raise SystemExit(f"Action bundle task contract missing from info: {bundle_info}")
+            print("remote_mcp_info_action_bundle=PASS")
             print("remote_mcp_info=PASS")
 
             batch_result = await session.call_tool(
@@ -134,8 +154,10 @@ async def main() -> None:
             good, bad = batch_items
             if good.get("client_ref") != "smoke-good" or good.get("ok") is not True:
                 raise SystemExit(f"Bulk MCP good-item correlation failed: {good}")
-            if (good.get("result") or {}).get("determination") != "LIKELY_NOT_REQUIRED":
+            good_result = good.get("result") or {}
+            if good_result.get("determination") != "LIKELY_NOT_REQUIRED":
                 raise SystemExit(f"Bulk MCP good-item determination failed: {good}")
+            _assert_action_bundle(good_result, expected_route="CONTINUE_WITH_EVIDENCE")
             if bad.get("client_ref") != "smoke-bad" or bad.get("ok") is not False:
                 raise SystemExit(f"Bulk MCP bad-item isolation failed: {bad}")
             if (bad.get("error") or {}).get("type") != "validation_error":
@@ -143,6 +165,7 @@ async def main() -> None:
             audit = batch.get("audit") or {}
             if int(audit.get("unique_rule_ids") or 0) < 1 or int(audit.get("evidence_links") or 0) < 1:
                 raise SystemExit(f"Bulk MCP audit incomplete: {audit}")
+            print("remote_bulk_mcp_action_bundle=PASS")
             print("remote_bulk_mcp_smoke=PASS")
 
             for jurisdiction, project, property_facts, expected in CASES:
@@ -165,6 +188,7 @@ async def main() -> None:
                     raise SystemExit(
                         f"Unexpected determination for {jurisdiction}: expected {expected}, got {actual}: {payload}"
                     )
+                _assert_action_bundle(payload)
 
             address_result = await session.call_tool(
                 "check_project_requirements",
@@ -179,6 +203,7 @@ async def main() -> None:
             if address_result.is_error:
                 raise SystemExit(f"Vancouver address-aware MCP call failed: {address_result}")
             address_payload = _structured_or_text(address_result)
+            _assert_action_bundle(address_payload)
             address_context = address_payload.get("address_context") or {}
             resolution = address_context.get("address_resolution") or {}
             matched = str(resolution.get("matched_address") or "")
@@ -190,6 +215,7 @@ async def main() -> None:
                 raise SystemExit(f"Vancouver zoning was not resolved: {address_payload}")
             print("vancouver_address_aware_preflight=PASS")
 
+            print("remote_mcp_action_bundle=PASS")
             print("remote_mcp_seven_jurisdictions=PASS")
             print("remote_mcp_smoke=PASS")
 

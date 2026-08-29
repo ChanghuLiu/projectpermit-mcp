@@ -1,13 +1,14 @@
 """Shared address-aware ProjectPermit preflight service.
 
 HTTP, standard MCP and x402-paid MCP all call this module so municipal address/
-overlay resolution and property merging cannot drift between transports.
+overlay resolution, workflow routing and action packaging cannot drift between transports.
 """
 from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any, Callable, Dict
 
+from .action_bundle import build_action_bundle
 from .address import GatineauAddressAdapter, OttawaAddressAdapter, TorontoAddressAdapter
 from .http_fetch import fetch_json
 from .jurisdiction_router import evaluate_project
@@ -50,8 +51,14 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
     caller's explicit value.
 
     A deterministic workflow-guidance layer is attached after rule evaluation. It
-    never changes the permit determination; it only tells calling agents how to
-    route the result and which missing facts are worth collecting next.
+    never changes the permit determination; it tells calling agents how to route the
+    result, whether evidence freshness allows unattended automation, and which
+    missing facts are worth collecting next.
+
+    A platform-neutral `action_bundle` is then generated from the completed result.
+    It packages the decision, route, official evidence, tasks, missing inputs and
+    audit metadata for Jobber/ServiceM8/other field-service adapters without
+    mutating those platforms.
 
     A privacy-minimal usage event is emitted after successful evaluation. The event
     never contains the civic address, coordinates or raw property identifiers.
@@ -80,5 +87,6 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
     if address_context is not None:
         result["address_context"] = address_context
     result["workflow"] = build_workflow_guidance(prepared, result)
+    result["action_bundle"] = build_action_bundle(prepared, result)
     emit_preflight_event(prepared, result)
     return result

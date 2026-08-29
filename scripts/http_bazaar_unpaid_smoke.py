@@ -50,6 +50,8 @@ def main() -> None:
     for city in ("Gatineau", "Ottawa", "Toronto", "Mississauga", "Laval", "Longueuil", "Vancouver"):
         if city not in description:
             raise SystemExit(f"Jurisdiction missing from x402 resource description: {city}: {description}")
+    if "action" not in description.lower() or "evidence" not in description.lower():
+        raise SystemExit(f"x402 resource description missing action/evidence bundle positioning: {description}")
 
     accepts = challenge.get("accepts") or []
     if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
@@ -86,7 +88,19 @@ def main() -> None:
     workflow = example.get("workflow") or {}
     if workflow.get("recommended_route") != "CONTINUE_WITH_EVIDENCE":
         raise SystemExit(f"Bazaar output example missing workflow routing: {workflow}")
+    bundle = example.get("action_bundle") or {}
+    if not bundle:
+        raise SystemExit(f"Bazaar output example missing action_bundle: {example}")
+    if (bundle.get("routing") or {}).get("recommended_route") != "CONTINUE_WITH_EVIDENCE":
+        raise SystemExit(f"Bazaar action bundle missing routing: {bundle}")
+    tasks = bundle.get("tasks") or []
+    if not tasks or tasks[0].get("task_type") != "ATTACH_EVIDENCE":
+        raise SystemExit(f"Bazaar action bundle missing proposed task: {bundle}")
+    output_schema = output.get("schema") or output.get("outputSchema") or {}
+    if "action_bundle" not in (output_schema.get("properties") or {}):
+        raise SystemExit(f"Bazaar output schema missing action_bundle: {output_schema}")
 
+    print("http_bazaar_action_bundle=PASS")
     print("http_bazaar_seven_jurisdictions=PASS")
     print("http_bazaar_unpaid_smoke=PASS")
 

@@ -1,17 +1,18 @@
 """Read-only helpers for a future Jobber integration.
 
 The adapter deliberately does not call Jobber, mutate Jobber, or classify natural
-language into a ProjectPermit project family.  Its job is to isolate platform
-shape from the deterministic permit engine:
+language into a ProjectPermit project family. Its job is to isolate platform shape
+from the deterministic permit engine:
 
     Jobber GraphQL object -> minimal work object -> structured ProjectPermit facts
-    ProjectPermit result -> proposed Jobber custom-field values
+    ProjectPermit result/action bundle -> proposed Jobber fields/tasks
 
 Natural-language scope normalization remains the caller/agent's responsibility,
 consistent with ProjectPermit's no-server-side-LLM architecture.
 """
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
@@ -80,7 +81,7 @@ def _format_address(property_payload: Mapping[str, Any]) -> str:
 
 
 def _line_item_text(item: Mapping[str, Any]) -> str:
-    # Only scope-relevant fields are copied.  Price, client and billing fields are
+    # Only scope-relevant fields are copied. Price, client and billing fields are
     # intentionally ignored.
     pieces: list[str] = []
     for key in ("name", "title", "description"):
@@ -98,7 +99,7 @@ def extract_jobber_work_object(
     """Extract the minimum Jobber Request/Quote/Job context needed for preflight.
 
     `payload` is expected to be one decoded GraphQL work object, not the entire
-    GraphQL response envelope.  The output intentionally excludes client/contact,
+    GraphQL response envelope. The output intentionally excludes client/contact,
     pricing, invoice, payment and assignee data.
     """
     if not isinstance(payload, Mapping):
@@ -182,36 +183,95 @@ def build_preflight_facts(
     }
 
 
-def build_jobber_writeback(result: Mapping[str, Any]) -> dict[str, str]:
-    """Return proposed text custom-field values; this function performs no mutation."""
+def _legacy_result_hints(result: Mapping[str, Any]) -> dict[str, Any]:
+    """Backwards-compatible hints for older stored results without action_bundle."""
     determination = _text(result.get("determination"))
     if not determination:
         raise JobberAdapterError("ProjectPermit result.determination is required")
 
     confidence = _text(result.get("confidence"))
-    requirements = result.get("requirements")
-    if not isinstance(requirements, list):
-        requirements = []
-
     rule_version = ""
     evidence_url = ""
-    for requirement in requirements:
-        if not isinstance(requirement, Mapping):
-            continue
-        if not rule_version:
-            rule_version = _text(requirement.get("rule_version"))
-        evidence = requirement.get("evidence")
-        if isinstance(evidence, list):
-            for source in evidence:
-                if isinstance(source, Mapping) and _text(source.get("url")):
-                    evidence_url = _text(source.get("url"))
-                    break
-        if evidence_url and rule_version:
-            break
+    requirements = result.get("requirements")
+    if isinstance(requirements, list):
+        for requirement in requirements:
+            if not isinstance(requirement, Mapping):
+                continue
+            if not rule_version:
+                rule_version = _text(requirement.get("rule_version"))
+            evidence = requirement.get("evidence")
+            if isinstance(evidence, list):
+                for source in evidence:
+                    if isinstance(source, Mapping) and _text(source.get("url")):
+                        evidence_url = _text(source.get("url"))
+                        break
+            if evidence_url and rule_version:
+                break
+
+    workflow = result.get("workflow")
+    if not isinstance(workflow, Mapping):
+        workflow = {}
+    freshness = workflow.get("evidence_freshness")
+    if not isinstance(freshness, Mapping):
+        freshness = {}
 
     return {
-        "projectpermit_preflight": determination,
-        "projectpermit_confidence": confidence,
-        "projectpermit_rule_version": rule_version,
-        "projectpermit_evidence_url": evidence_url,
+        "permit_status": determination,
+        "confidence": confidence,
+        "recommended_route": _text(workflow.get("recommended_route")),
+        "quote_handling": _text(workflow.get("quote_handling")),
+        "automation_safe": bool(workflow.get("automation_safe", False)),
+        "rule_version": rule_version,
+        "evidence_url": evidence_url,
+        "freshness_status": _text(freshness.get("status")),
+    }
+
+
+def _writeback_hints(result: Mapping[str, Any]) -> dict[str, Any]:
+    bundle = result.get("action_bundle")
+    if isinstance(bundle, Mapping) and isinstance(bundle.get("writeback_hints"), Mapping):
+        return dict(bundle["writeback_hints"])
+    return _legacy_result_hints(result)
+
+
+def build_jobber_writeback(result: Mapping[str, Any]) -> dict[str, str]:
+    """Return proposed Jobber text custom-field values; this function performs no mutation."""
+    hints = _writeback_hints(result)
+    return {
+        "projectpermit_preflight": _text(hints.get("permit_status")),
+        "projectpermit_confidence": _text(hints.get("confidence")),
+        "projectpermit_rule_version": _text(hints.get("rule_version")),
+        "projectpermit_evidence_url": _text(hints.get("evidence_url")),
+        "projectpermit_route": _text(hints.get("recommended_route")),
+        "projectpermit_quote_handling": _text(hints.get("quote_handling")),
+        "projectpermit_automation_safe": "true" if bool(hints.get("automation_safe")) else "false",
+        "projectpermit_freshness": _text(hints.get("freshness_status")),
+    }
+
+
+def build_jobber_action_proposal(result: Mapping[str, Any]) -> dict[str, Any]:
+    """Map ProjectPermit's action bundle into a read-only Jobber integration proposal.
+
+    The returned object describes what an authorized integration *could* write or
+    create. No Jobber API call is performed here.
+    """
+    bundle = result.get("action_bundle")
+    if not isinstance(bundle, Mapping):
+        raise JobberAdapterError("ProjectPermit result.action_bundle is required")
+
+    tasks = bundle.get("tasks") if isinstance(bundle.get("tasks"), list) else []
+    required_inputs = (
+        bundle.get("required_inputs") if isinstance(bundle.get("required_inputs"), list) else []
+    )
+    evidence = bundle.get("evidence") if isinstance(bundle.get("evidence"), list) else []
+    audit = bundle.get("audit") if isinstance(bundle.get("audit"), Mapping) else {}
+
+    return {
+        "source_platform": "jobber",
+        "mutation_performed": False,
+        "proposed_custom_fields": build_jobber_writeback(result),
+        "proposed_tasks": deepcopy(tasks),
+        "required_inputs": deepcopy(required_inputs),
+        "evidence": deepcopy(evidence),
+        "audit": deepcopy(dict(audit)),
     }

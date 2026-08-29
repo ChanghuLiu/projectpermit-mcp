@@ -79,6 +79,32 @@ HTTP_DISCOVERY_OUTPUT_EXAMPLE: dict[str, Any] = {
         "automation_safe": True,
         "summary": "No permit requirement was identified by the supplied facts; retain the official evidence with the job record.",
         "follow_up_questions": [],
+        "evidence_freshness": {
+            "status": "CURRENT",
+            "automation_blocked": False,
+        },
+    },
+    "action_bundle": {
+        "bundle_version": "2026-08-29.1",
+        "decision": {
+            "determination": "LIKELY_NOT_REQUIRED",
+            "confidence": "HIGH",
+            "project_family": "window_door",
+        },
+        "routing": {
+            "recommended_route": "CONTINUE_WITH_EVIDENCE",
+            "quote_handling": "NO_PERMIT_ALLOWANCE_SIGNAL",
+            "automation_safe": True,
+        },
+        "required_inputs": [],
+        "tasks": [
+            {
+                "task_type": "ATTACH_EVIDENCE",
+                "blocking": False,
+            }
+        ],
+        "evidence": [],
+        "audit": {"generated_from": "deterministic_preflight"},
     },
     "engine_version": "phase0-0.1.0",
 }
@@ -109,6 +135,7 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
                 "automation_safe": {"type": "boolean"},
                 "summary": {"type": "string"},
                 "follow_up_questions": {"type": "array"},
+                "evidence_freshness": {"type": "object"},
             },
             "required": [
                 "mode",
@@ -117,6 +144,30 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
                 "automation_safe",
                 "summary",
                 "follow_up_questions",
+                "evidence_freshness",
+            ],
+        },
+        "action_bundle": {
+            "type": "object",
+            "properties": {
+                "bundle_version": {"type": "string"},
+                "decision": {"type": "object"},
+                "routing": {"type": "object"},
+                "required_inputs": {"type": "array"},
+                "tasks": {"type": "array"},
+                "evidence": {"type": "array"},
+                "audit": {"type": "object"},
+                "writeback_hints": {"type": "object"},
+                "disclaimer": {"type": "string"},
+            },
+            "required": [
+                "bundle_version",
+                "decision",
+                "routing",
+                "required_inputs",
+                "tasks",
+                "evidence",
+                "audit",
             ],
         },
         "disclaimer": {"type": "string"},
@@ -129,6 +180,7 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
         "requirements",
         "confidence",
         "workflow",
+        "action_bundle",
         "engine_version",
     ],
 }
@@ -218,8 +270,9 @@ def configure_x402(app: Any) -> None:
     common_description = (
         "Evidence-linked municipal construction permit/planning preflight for Gatineau, "
         "Ottawa, Toronto, Mississauga, Laval, Longueuil and Vancouver. Returns "
-        "deterministic rule results, official-source evidence, and agent-ready workflow "
-        "routing with targeted missing-fact questions. Not municipal authorization or "
+        "deterministic rule results, official-source evidence, freshness-guarded workflow "
+        "routing, targeted missing-fact questions and a platform-neutral evidence/action "
+        "bundle for contractor or field-service Agents. Not municipal authorization or "
         "legal advice."
     )
 
@@ -251,7 +304,7 @@ def configure_x402(app: Any) -> None:
             mime_type="application/json",
             description=(
                 "Paid bulk ProjectPermit preflight for 1-50 normalized projects with "
-                "per-item error isolation, workflow routing, and batch audit metadata. "
+                "per-item error isolation, workflow/action bundles, and batch audit metadata. "
                 + common_description
             ),
         ),

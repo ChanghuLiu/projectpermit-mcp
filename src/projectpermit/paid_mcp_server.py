@@ -117,9 +117,10 @@ def build_paid_server() -> MCPServer:
         instructions=(
             "Paid evidence-linked municipal construction permit preflight for contractor "
             "and field-service agents. Start with projectpermit_info for capabilities. "
-            "The check_project_requirements tool uses x402 USDC payment and returns both "
-            "the permit determination and machine-readable workflow routing/follow-up "
-            "guidance. Results are preflight information, not municipal authorization."
+            "The check_project_requirements tool uses x402 USDC payment and returns the "
+            "permit determination, workflow guidance, evidence freshness and a platform-neutral "
+            "action bundle with proposed tasks, missing inputs, official evidence, audit metadata "
+            "and writeback hints. Results are preflight information, not municipal authorization."
         ),
     )
 
@@ -146,8 +147,9 @@ def build_paid_server() -> MCPServer:
             description=(
                 "Evidence-linked municipal construction permit/planning preflight for "
                 "Gatineau, Ottawa, Toronto, Mississauga, Laval, Longueuil and Vancouver. "
-                "Returns deterministic requirements, official-source evidence and "
-                "agent-ready workflow routing with targeted missing-fact questions."
+                "Returns deterministic requirements, official-source evidence, freshness-guarded "
+                "workflow routing, targeted missing-fact questions and a platform-neutral "
+                "evidence/action bundle for downstream contractor or field-service Agents."
             ),
             transport="streamable-http",
             input_schema=INPUT_SCHEMA,
@@ -162,9 +164,9 @@ def build_paid_server() -> MCPServer:
             resource=ResourceInfo(
                 url=f"mcp://tool/{TOOL_NAME}",
                 description=(
-                    "Evidence-linked Canadian municipal permit preflight with agent-ready "
-                    "workflow routing and follow-up guidance. Not municipal authorization, "
-                    "legal advice, or engineering certification."
+                    "Evidence-linked Canadian municipal permit preflight with freshness-guarded "
+                    "workflow routing and a platform-neutral action/evidence bundle. Not municipal "
+                    "authorization, legal advice, or engineering certification."
                 ),
                 service_name="ProjectPermit",
                 tags=[
@@ -174,6 +176,8 @@ def build_paid_server() -> MCPServer:
                     "contractor-workflow",
                     "field-service",
                     "agent-routing",
+                    "evidence-bundle",
+                    "action-bundle",
                     "ontario",
                     "quebec",
                     "british-columbia",
@@ -220,7 +224,21 @@ def build_paid_server() -> MCPServer:
                     "quote_handling",
                     "automation_safe",
                     "follow_up_questions",
+                    "evidence_freshness",
                 ],
+            },
+            "action_bundle": {
+                "field": "action_bundle",
+                "includes": [
+                    "decision",
+                    "routing",
+                    "required_inputs",
+                    "tasks",
+                    "evidence",
+                    "audit",
+                    "writeback_hints",
+                ],
+                "integration_proposals": ["jobber", "servicem8"],
             },
             "example": EXAMPLE,
             "disclaimer": "Preflight information only; not municipal authorization.",
@@ -236,7 +254,7 @@ def build_paid_server() -> MCPServer:
         context: dict[str, Any] | None = None,
         resolve_address: bool = False,
     ) -> CallToolResult:
-        """Paid evidence-linked permit preflight with agent workflow guidance. Requires x402 USDC payment."""
+        """Paid evidence-linked permit preflight with workflow guidance and action bundle. Requires x402 USDC payment."""
         request_meta = dict(ctx.request_context.meta or {})
         tool_context = {**(context or {}), "_transport": "paid_mcp"}
         result = paid_tool(

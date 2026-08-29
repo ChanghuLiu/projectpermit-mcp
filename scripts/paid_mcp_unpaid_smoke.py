@@ -65,7 +65,18 @@ async def main() -> None:
             workflow = info_payload.get("workflow_guidance") or {}
             if workflow.get("field") != "workflow":
                 raise SystemExit(f"Paid MCP info missing workflow guidance: {workflow}")
+            bundle = info_payload.get("action_bundle") or {}
+            if bundle.get("field") != "action_bundle":
+                raise SystemExit(f"Paid MCP info missing action bundle: {bundle}")
+            if "tasks" not in (bundle.get("includes") or []):
+                raise SystemExit(f"Paid MCP action bundle missing task contract: {bundle}")
+            if "evidence" not in (bundle.get("includes") or []):
+                raise SystemExit(f"Paid MCP action bundle missing evidence contract: {bundle}")
+            integrations = set(bundle.get("integration_proposals") or [])
+            if not {"jobber", "servicem8"}.issubset(integrations):
+                raise SystemExit(f"Paid MCP action bundle missing integration proposals: {bundle}")
             print(f"free_info_jurisdictions={sorted(jurisdictions)}")
+            print("free_info_action_bundle=PASS")
             print("free_info=PASS")
 
             result = await session.call_tool(
