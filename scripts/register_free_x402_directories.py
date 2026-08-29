@@ -34,11 +34,6 @@ DIRECTORIES = (
         "https://true402.dev/api/v1/services",
         {"url": ORIGIN},
     ),
-    (
-        "x402dash",
-        "https://api.x402dash.com/v1/register",
-        {"url": CANONICAL_PAID_ENDPOINT},
-    ),
 )
 
 
@@ -101,7 +96,7 @@ def main() -> None:
     parser.add_argument(
         "--execute",
         action="store_true",
-        help="Submit the origin/paid endpoint to free directories after production validation.",
+        help="Submit the origin to free directories after production validation.",
     )
     args = parser.parse_args()
 
