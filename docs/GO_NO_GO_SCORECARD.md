@@ -8,9 +8,9 @@ Decision status:
 
 This is not a product-quality score. It is a commercial evidence score for whether ProjectPermit deserves more independent-developer time/cash.
 
-## Current score: 49 / 100
+## Current score: 48 / 100
 
-Raw weighted score: **48.5 / 100**. The displayed score rounds to 49. The project remains below the formal pause / re-scope boundary and is limited to rescue / falsification work.
+Raw weighted score: **47.5 / 100**. The displayed score rounds to 48. The project remains below the formal pause / re-scope boundary and is limited to rescue / falsification work.
 
 | Dimension | Weight | Current rating | Weighted points | Why |
 |---|---:|---:|---:|---|
@@ -20,13 +20,13 @@ Raw weighted score: **48.5 / 100**. The displayed score rounds to 49. The projec
 | Repeat frequency | 10 | 5/10 | 5.0 | Ordinary contractor building-permit cadence appears modest; aggregated workflow can be larger. **E4 remains 0.** |
 | Distribution fit | 10 | 5/10 | 5.0 | Real quote-first workflows exist, but no production integration partner exists. Registry/Bazaar/x402 payment plumbing proves discoverability and settlement capability, not buyer demand; a 2026 population-scale study also cautions that raw x402 settlement counts are heavily concentrated and often internal/fictitious. ProjectPermit itself still has E4=0 despite being discoverable. |
 | Competitive headroom | 10 | 0/10 | 0.0 | LandLogic/Parcella now combines a delivered permit/approval product, 80+ Ontario-municipality maintained intelligence, a white-label AI Property Lead Engine for builders and proptech/platforms, configurable APIs with automatic updates, and One Ontario's free first-phase permitting experience. The remaining ProjectPermit differences are contract-shape/auditability/pricing differences, not demonstrated commercial whitespace. PlanEdge separately claims an even closer Canadian requirement engine but remains delivery/API-unverified. |
-| Defensibility | 10 | 1/10 | 1.0 | Local/few-city rule ownership is already easy to replicate, and CivCheck/Clariti now independently demonstrates that a commercial platform can maintain and calibrate regulatory/code logic across multiple jurisdictions, achieve useful city-benchmarked accuracy, and distribute through established govtech channels. The remaining defensibility is only the exact upstream deterministic/evidence-versioned/fail-safe machine contract and low-cost developer-native delivery; buyer value for that narrower contract is unproven. |
+| Defensibility | 10 | 0/10 | 0.0 | CivCheck/Clariti already demonstrates reusable cross-jurisdiction regulatory maintenance, calibration and govtech distribution; Clariti Guide separately productizes the upstream pre-application `project/location -> permits/rules/instructions` layer with GIS, no-code rule logic and cloneable permit configurations used by real municipalities. ProjectPermit's remaining API/evidence-version/fail-safe/price differences have no buyer validation and therefore cannot be counted as a demonstrated moat. |
 | Cash-cost fit | 5 | 9/10 | 4.5 | Deterministic rules + first-party/open municipal data; no paid LLM/property-data/human-review dependency required by default. |
 | Technical feasibility | 5 | 9/10 | 4.5 | Seven jurisdictions, address adapters, HTTP/MCP/x402, tests and production services already work. |
 | Evidence maturity | 5 | 3/10 | 1.5 | No independent representative E3 completed; E4 = 0; E5 = 0. |
-| **Total** | **100** |  | **48.5 -> 49 displayed** |  |
+| **Total** | **100** |  | **47.5 -> 48 displayed** |  |
 
-## Why the score moved 61 -> 59 -> 58 -> 57 -> 56 -> 53 -> 52 -> 51 -> 50 -> 49
+## Why the score moved 61 -> 59 -> 58 -> 57 -> 56 -> 53 -> 52 -> 51 -> 50 -> 49 -> 48
 
 ### 61 -> 59: current-family volume correction
 
@@ -208,7 +208,36 @@ Accordingly:
 - displayed score falls **50 -> 49**;
 - decision remains **PAUSE / RE-SCOPE — rescue / falsification only**.
 
-The remaining 1/10 is narrow: ProjectPermit's exact upstream deterministic/evidence-versioned/fail-safe machine contract and very low-cost developer-native delivery are still different in contract shape, but no buyer has validated that difference as commercially valuable.
+The remaining 1/10 was intentionally narrow: ProjectPermit's exact upstream deterministic/evidence-versioned/fail-safe machine contract and very low-cost developer-native delivery were still different in contract shape, but no buyer had validated that difference as commercially valuable.
+
+### 49 -> 48: Clariti Guide productizes the upstream pre-application requirements layer
+
+The CivCheck deduction stopped at 1/10 because CivCheck itself was downstream of permit-type selection. A separate product in the same Clariti portfolio removes that assumption.
+
+Clariti Guide (formerly Camino Development Guide) is explicitly a **pre-application permitting assistant**. Its current public workflow uses project details and parcel/GIS context to determine applicable rules and regulations, provide personalized instructions, and tell applicants what permits and supporting documents they need before formal application.
+
+Guide also productizes cross-jurisdiction reuse:
+
+- municipal staff can build/edit decision logic with a no-code visual rule builder;
+- Community Templates expose thousands of permit-type configurations that customers can clone and adapt;
+- location-based alerts use parcel context;
+- Guide can operate standalone or integrate with another permitting system;
+- Clariti says permit types can be implemented in weeks rather than built from zero.
+
+This is not merely vendor positioning. The current City of McKinney website directs applicants to its Development Navigation Assistant to answer project questions and receive a custom step-by-step permitting guide; Bainbridge Island's current City website directs applicants to the Clariti Permit Guide and says it provides prompts based on project type and GIS mapping.
+
+See `docs/CLARITI_GUIDE_UPSTREAM_REQUIREMENTS_THREAT_20260828.md`.
+
+The remaining ProjectPermit differences are implementation/delivery details—deterministic rule IDs/versioning, explicit fail-safe unknown states, API/MCP/x402, and proposed low per-call economics. None currently has E2/E4/E5 buyer evidence showing that it creates a commercial moat.
+
+Accordingly:
+
+- **defensibility falls from 1/10 to 0/10**;
+- raw weighted score falls **48.5 -> 47.5**;
+- displayed score falls **49 -> 48**;
+- decision remains **PAUSE / RE-SCOPE — rescue / falsification only**.
+
+This does not by itself create an irreversible No-Go. A private software/agent buyer may still prefer ProjectPermit's lightweight developer-native contract to a municipality-oriented Clariti implementation, but that preference must now be proven rather than counted as defensibility.
 
 ## Municipality-specific technical value still exists
 
@@ -229,7 +258,7 @@ Interpretation:
 - municipality-specific rule logic has real **technical** value;
 - property/address-specific value is currently much narrower in the implemented rules;
 - neither synthetic result proves real workflow incidence, repeated usage or willingness to pay;
-- technical non-uniformity does not prove buyers prefer ProjectPermit's external API contract over LandLogic/Parcella, a bundled vertical checker or a narrow internal implementation.
+- technical non-uniformity does not prove buyers prefer ProjectPermit's external API contract over LandLogic/Parcella, Clariti Guide, a bundled vertical checker or a narrow internal implementation.
 
 The score therefore does not rise because the synthetic municipal matrix is favorable.
 
@@ -240,9 +269,9 @@ The project still has assets worth validating before deletion or abandonment:
 - the deterministic engine works;
 - municipality-specific routing can genuinely diverge;
 - operating cash cost is low;
-- ProjectPermit's seven-city footprint is not identical to LandLogic/Parcella's currently verified Ontario footprint, but Gatineau URBAIN and Vancouver PRET show that local geographic coverage itself is **not** a moat; the unresolved value is one maintained cross-city machine contract;
-- ProjectPermit's exact upstream deterministic evidence/version/safety contract is narrower than the broader public conversational/compliance alternatives;
-- no representative software buyer has yet said whether that narrower contract is worth paying for;
+- ProjectPermit's seven-city footprint is not identical to LandLogic/Parcella's currently verified Ontario footprint, but Gatineau URBAIN, Vancouver PRET and configurable products such as Clariti Guide show that geographic/rule coverage itself is **not** a moat;
+- ProjectPermit's developer-native deterministic evidence/version/safety contract remains a different delivery shape from municipality-oriented Guide products and broader platforms;
+- no representative software buyer has yet said whether that delivery difference is worth paying for;
 - no independent representative E3 benchmark has been completed;
 - E4 and E5 remain zero.
 
@@ -250,6 +279,7 @@ See:
 
 - `docs/GATINEAU_URBAIN_FIRST_PARTY_BOUNDARY_20260828.md`
 - `docs/VANCOUVER_PRET_FIRST_PARTY_BOUNDARY_20260828.md`
+- `docs/CLARITI_GUIDE_UPSTREAM_REQUIREMENTS_THREAT_20260828.md`
 
 But these facts no longer justify building more product.
 
@@ -265,7 +295,7 @@ The critical commercial facts remain missing:
 
 1. How often is `permit required?` unresolved when a Request/assessment/estimate/quote is created?
 2. How many of those events map to a current family?
-3. Will software buyers pay for a separate deterministic/auditable API instead of using LandLogic/Parcella, PlanEdge, embedded products like GoBuild/BuilderAI, municipal first-party tools, or their own local automation?
+3. Will software buyers pay for a separate deterministic/auditable API instead of using LandLogic/Parcella, PlanEdge, Clariti Guide/CivCheck, embedded products like GoBuild/BuilderAI, municipal first-party tools, or their own local automation?
 4. What exact reliability/auditability/economics/cross-province blocker makes those alternatives insufficient?
 5. How often does municipality-specific logic change a generic answer in representative real projects?
 6. How often does derived address/property context materially change safe routing?
@@ -277,7 +307,7 @@ The critical commercial facts remain missing:
 
 Two or three strong independent signals would be required, not marginal improvements:
 
-- one genuine E2 workflow with **>=500 current-family candidate events/month** in covered geography plus a clear reason LandLogic/Parcella/other alternatives do not fit;
+- one genuine E2 workflow with **>=500 current-family candidate events/month** in covered geography plus a clear reason LandLogic/Parcella/Clariti Guide/other alternatives do not fit;
 - one representative independent E3 benchmark with no dangerous false `LIKELY_NOT_REQUIRED` pattern;
 - representative evidence that municipality-specific logic changes a material share of safe routing decisions;
 - representative evidence that derived property/address context changes a material share of decisions;
@@ -285,7 +315,7 @@ Two or three strong independent signals would be required, not marginal improvem
 - three external integrations / 100+ non-owner successful calls;
 - one partner showing **>=2,000 current-family candidate events/month** or equivalent proven aggregation;
 - one E5 willingness-to-pay/resource commitment at a commercially useful price;
-- representative software buyers explicitly preferring ProjectPermit's external deterministic/evidence-linked maintenance over LandLogic/Parcella/internal RAG/municipal first-party alternatives for a concrete cost/reliability/auditability reason;
+- representative software buyers explicitly preferring ProjectPermit's external developer-native deterministic/evidence-linked maintenance over LandLogic/Parcella/Clariti Guide/internal RAG/municipal first-party alternatives for a concrete cost/reliability/auditability/integration reason;
 - repeat paid usage from multiple unrelated agent/API buyers discovered without direct sales.
 
 ## What would turn pause / re-scope into No-Go
@@ -297,15 +327,15 @@ Serious kill signals include:
 - representative E3 cases show material false-negative risk requiring expert review on most calls;
 - permit necessity is usually known before the workflow reaches our insertion point;
 - external users treat the tool as one-off research instead of infrastructure;
-- free/general bundled or municipal first-party checkers are considered sufficient;
+- free/general bundled, Clariti-style, or municipal first-party checkers are considered sufficient;
 - municipality specificity rarely changes the answer in representative work;
 - property/address context rarely changes the answer;
 - buyers will not pay for scope-only municipal preflight and the address-aware premium proves too rare;
 - multiple representative software buyers say they would simply build/maintain the relevant one-city/few-city checker internally;
-- buyers say LandLogic/Parcella/One Ontario or another existing external platform is already good enough;
+- buyers say LandLogic/Parcella/One Ontario/Clariti Guide or another existing external platform is already good enough;
 - PlanEdge independently verifies an externally callable cross-municipality permit-requirement engine at meaningful production scale/economics;
 - LandLogic exposes permit-requirement output as an ordinary external machine contract at economics that remove the remaining deterministic-contract wedge;
-- CivCheck/Clariti or another multi-jurisdiction platform exposes direct pre-application permit-type/applicability output through an ordinary external machine contract;
+- Clariti Guide or another pre-application requirements platform exposes an ordinary third-party developer API at economics that remove the remaining delivery-shape difference;
 - multiple municipal first-party applicability systems become externally queryable/reusable enough that cross-city aggregation is mainly orchestration rather than maintained regulatory knowledge;
 - agent/x402 discovery continues to produce only probes/one-off use rather than repeat independent workflows after credible exposure;
 - rule maintenance costs several hours/month per low-volume jurisdiction;
@@ -321,19 +351,19 @@ Unless external rescue evidence materially changes the decision:
 
 ## Current highest-value rescue / falsification experiments
 
-1. **Buyer vs LandLogic/Parcella/municipal-first-party test** — ask software buyers exactly why delivered external/first-party alternatives are insufficient and whether they would pay for deterministic evidence/versioning instead.
+1. **Private-software buyer vs existing upstream alternatives** — ask exactly why a software/agent buyer would prefer and pay for ProjectPermit's developer-native contract instead of Clariti Guide, LandLogic/Parcella, municipal tools or internal logic.
 2. **Representative CHBA/RMI-style pre-contract incidence** — measure how often `permit required?` is genuinely unresolved before contract rather than merely how long approvals take.
-3. **PlanEdge / external-machine-contract verification** — verify whether PlanEdge, LandLogic or another current platform actually exposes the requirement/applicability engine to ordinary third-party software at meaningful multi-municipality scale/economics.
+3. **External machine-contract verification** — verify whether PlanEdge, LandLogic, Clariti or another current platform exposes requirement/applicability output to ordinary third-party software at meaningful multi-municipality scale/economics.
 4. **Representative E3 divergence-sensitive cases** — especially basement/window/deck/accessory/plumbing/overlay boundaries.
 5. **External E4 / E5** — repeated operational use and actual willingness to pay/resource commitment.
 
 ## Bottom line
 
-ProjectPermit is now a **49/100 pause / re-scope project** with a raw weighted score of **48.5**.
+ProjectPermit is now a **48/100 pause / re-scope project** with a raw weighted score of **47.5**.
 
-The feature/category is real and the technical engine works, but the last clear commercial whitespace has been substantially occupied by delivered external alternatives, municipal first-party tools, and reusable cross-jurisdiction regulatory-automation platforms. The surviving thesis is narrower:
+The feature/category is real and the technical engine works, but both the local and cross-jurisdiction pre-application requirements surface are already occupied by first-party municipal tools and configurable commercial platforms. The remaining ProjectPermit thesis is no longer a defensibility thesis; it is a **delivery-preference thesis**:
 
-> **some buyers may pay specifically for an upstream deterministic, evidence/version-linked, fail-safe and very low-cost permit-applicability machine contract even when broader maintained cross-city permitting/property intelligence and regulatory-compliance platforms already exist.**
+> **some private software/agent buyers may still prefer and pay for a lightweight developer-native deterministic, evidence/version-linked, fail-safe permit-applicability machine contract rather than municipality-oriented Guide products, broader platforms or internal local logic.**
 
 That thesis has no E2/E3/E4/E5 support yet.
 
