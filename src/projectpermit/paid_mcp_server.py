@@ -115,10 +115,11 @@ def build_paid_server() -> MCPServer:
     server = MCPServer(
         "ProjectPermit x402",
         instructions=(
-            "Paid evidence-linked municipal construction permit preflight. "
-            "Start with projectpermit_info for capabilities. "
-            "The check_project_requirements tool uses x402 USDC payment. "
-            "Results are preflight information, not municipal authorization."
+            "Paid evidence-linked municipal construction permit preflight for contractor "
+            "and field-service agents. Start with projectpermit_info for capabilities. "
+            "The check_project_requirements tool uses x402 USDC payment and returns both "
+            "the permit determination and machine-readable workflow routing/follow-up "
+            "guidance. Results are preflight information, not municipal authorization."
         ),
     )
 
@@ -145,7 +146,8 @@ def build_paid_server() -> MCPServer:
             description=(
                 "Evidence-linked municipal construction permit/planning preflight for "
                 "Gatineau, Ottawa, Toronto, Mississauga, Laval, Longueuil and Vancouver. "
-                "Returns deterministic requirements and official-source evidence."
+                "Returns deterministic requirements, official-source evidence and "
+                "agent-ready workflow routing with targeted missing-fact questions."
             ),
             transport="streamable-http",
             input_schema=INPUT_SCHEMA,
@@ -160,14 +162,18 @@ def build_paid_server() -> MCPServer:
             resource=ResourceInfo(
                 url=f"mcp://tool/{TOOL_NAME}",
                 description=(
-                    "Evidence-linked Canadian municipal permit preflight. Not municipal "
-                    "authorization, legal advice, or engineering certification."
+                    "Evidence-linked Canadian municipal permit preflight with agent-ready "
+                    "workflow routing and follow-up guidance. Not municipal authorization, "
+                    "legal advice, or engineering certification."
                 ),
                 service_name="ProjectPermit",
                 tags=[
                     "building-permit",
                     "construction",
                     "renovation",
+                    "contractor-workflow",
+                    "field-service",
+                    "agent-routing",
                     "ontario",
                     "quebec",
                     "british-columbia",
@@ -207,6 +213,15 @@ def build_paid_server() -> MCPServer:
             "jurisdictions": list(SUPPORTED_JURISDICTIONS),
             "address_resolution_jurisdictions": list(SUPPORTED_ADDRESS_JURISDICTIONS),
             "project_families": list(PROJECT_FAMILIES),
+            "workflow_guidance": {
+                "field": "workflow",
+                "includes": [
+                    "recommended_route",
+                    "quote_handling",
+                    "automation_safe",
+                    "follow_up_questions",
+                ],
+            },
             "example": EXAMPLE,
             "disclaimer": "Preflight information only; not municipal authorization.",
         }
@@ -221,7 +236,7 @@ def build_paid_server() -> MCPServer:
         context: dict[str, Any] | None = None,
         resolve_address: bool = False,
     ) -> CallToolResult:
-        """Paid evidence-linked permit preflight. Requires x402 USDC payment."""
+        """Paid evidence-linked permit preflight with agent workflow guidance. Requires x402 USDC payment."""
         request_meta = dict(ctx.request_context.meta or {})
         tool_context = {**(context or {}), "_transport": "paid_mcp"}
         result = paid_tool(
