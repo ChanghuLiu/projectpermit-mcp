@@ -60,7 +60,7 @@ Commercial x402 resources are configured on **Base mainnet** (`eip155:8453`) wit
 
 - single paid HTTP preflight: **$0.05 USDC / call**
 - single paid MCP preflight: **$0.05 USDC / call**
-- paid HTTP batch, up to 50 normalized projects: **$5.00 USDC** *(experimental/legacy pricing; not the current launch focus)*
+- paid HTTP batch, up to 50 normalized projects: **$2.00 USDC / batch** *(full 50-item batch = $0.04/item, 20% below 50 single calls)*
 
 The production facilitator is `https://facilitator.payai.network`.
 
