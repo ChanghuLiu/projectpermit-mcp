@@ -42,12 +42,7 @@ def extract_servicem8_work_object(
     *,
     job_materials: Iterable[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Extract the minimum ServiceM8 Job context required for preflight.
-
-    `payload` should be one decoded ServiceM8 Job record. Optional JobMaterial
-    objects may be supplied when description text alone is insufficient. Customer,
-    billing, payment, staff and price fields are intentionally ignored.
-    """
+    """Extract the minimum ServiceM8 Job context required for preflight."""
     if not isinstance(payload, Mapping):
         raise ServiceM8AdapterError("ServiceM8 Job must be a mapping")
 
@@ -122,8 +117,14 @@ def build_preflight_facts(
     project: Mapping[str, Any],
     resolve_address: bool = True,
     client_tag: str = "servicem8-integration",
+    prior_decision_identity: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build ProjectPermit's existing fact shape after explicit scope normalization."""
+    """Build ProjectPermit facts after explicit scope normalization.
+
+    A prior public `action_bundle.identity` may be supplied for deterministic change
+    classification. Raw ServiceM8 UUIDs remain request context only; only one-way
+    scope/idempotency fingerprints are returned.
+    """
     if _text(extracted.get("source_platform")).lower() != "servicem8":
         raise ServiceM8AdapterError("extracted object is not a ServiceM8 work object")
     if not _text(jurisdiction):
@@ -135,19 +136,23 @@ def build_preflight_facts(
     if resolve_address and not address:
         raise ServiceM8AdapterError("address is required when resolve_address=true")
 
+    context: dict[str, Any] = {
+        "client_tag": client_tag,
+        "_transport": "servicem8_adapter",
+        "source_platform": "servicem8",
+        "source_object_type": "job",
+        "source_object_id": _text(extracted.get("source_object_id")),
+        "source_status": _text(extracted.get("source_status")),
+    }
+    if isinstance(prior_decision_identity, Mapping):
+        context["prior_decision_identity"] = dict(prior_decision_identity)
+
     return {
         "jurisdiction": jurisdiction.strip(),
         "project": dict(project),
         "address": address or None,
         "property": {},
-        "context": {
-            "client_tag": client_tag,
-            "_transport": "servicem8_adapter",
-            "source_platform": "servicem8",
-            "source_object_type": "job",
-            "source_object_id": _text(extracted.get("source_object_id")),
-            "source_status": _text(extracted.get("source_status")),
-        },
+        "context": context,
         "resolve_address": bool(resolve_address),
     }
 
@@ -192,6 +197,9 @@ def _legacy_result_hints(result: Mapping[str, Any]) -> dict[str, Any]:
         "rule_version": rule_version,
         "evidence_url": evidence_url,
         "freshness_status": _text(freshness.get("status")),
+        "bundle_id": "",
+        "idempotency_key": "",
+        "change_classification": "",
     }
 
 
@@ -214,14 +222,17 @@ def build_servicem8_routing_summary(result: Mapping[str, Any]) -> dict[str, str]
         "projectpermit_quote_handling": _text(hints.get("quote_handling")),
         "projectpermit_automation_safe": "true" if bool(hints.get("automation_safe")) else "false",
         "projectpermit_freshness": _text(hints.get("freshness_status")),
+        "projectpermit_bundle_id": _text(hints.get("bundle_id")),
+        "projectpermit_idempotency_key": _text(hints.get("idempotency_key")),
+        "projectpermit_change": _text(hints.get("change_classification")),
     }
 
 
 def build_servicem8_action_proposal(result: Mapping[str, Any]) -> dict[str, Any]:
     """Map the action bundle into a read-only ServiceM8 integration proposal.
 
-    This function performs no ServiceM8 API call and creates no actual job activity,
-    note, task, or field mutation.
+    The idempotency key may be stored as a duplicate-suppression marker for the same
+    ServiceM8 work-record scope/result. No ServiceM8 API mutation is performed.
     """
     bundle = result.get("action_bundle")
     if not isinstance(bundle, Mapping):
@@ -233,10 +244,14 @@ def build_servicem8_action_proposal(result: Mapping[str, Any]) -> dict[str, Any]
     )
     evidence = bundle.get("evidence") if isinstance(bundle.get("evidence"), list) else []
     audit = bundle.get("audit") if isinstance(bundle.get("audit"), Mapping) else {}
+    identity = bundle.get("identity") if isinstance(bundle.get("identity"), Mapping) else {}
+    change = bundle.get("change") if isinstance(bundle.get("change"), Mapping) else {}
 
     return {
         "source_platform": "servicem8",
         "mutation_performed": False,
+        "idempotency_key": _text(identity.get("idempotency_key")),
+        "change": deepcopy(dict(change)),
         "proposed_routing_fields": build_servicem8_routing_summary(result),
         "proposed_tasks": deepcopy(tasks),
         "required_inputs": deepcopy(required_inputs),
