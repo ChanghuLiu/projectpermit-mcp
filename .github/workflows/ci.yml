@@ -35,7 +35,7 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: PYTHONPATH=src python -m unittest discover -s tests -v
       - run: python -m compileall -q src
-      - run: python -m py_compile scripts/bulk_http_remote_smoke.py scripts/mcp_remote_smoke.py
+      - run: python -m py_compile scripts/bulk_http_remote_smoke.py scripts/mcp_remote_smoke.py scripts/paid_bulk_http_unpaid_smoke.py
 
   optional-integrations:
     runs-on: ubuntu-latest
@@ -150,6 +150,18 @@ jobs:
           set -euo pipefail
           for attempt in 1 2 3; do
             if python scripts/http_bazaar_unpaid_smoke.py; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 3))
+          done
+      - name: Run paid bulk HTTP unpaid challenge with retry
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if python scripts/paid_bulk_http_unpaid_smoke.py; then
               exit 0
             fi
             if [ "$attempt" -eq 3 ]; then
