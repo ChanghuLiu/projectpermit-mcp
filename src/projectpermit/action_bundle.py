@@ -2,7 +2,8 @@
 
 The bundle is designed for contractor, field-service and property workflow agents.
 It packages the deterministic permit decision, workflow routing, official evidence,
-blocking tasks, missing facts and audit metadata into one stable object.
+blocking tasks, missing facts, audit metadata and deterministic decision identity
+into one stable object.
 
 It never mutates an upstream platform and never represents municipal authorization.
 """
@@ -11,8 +12,10 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, Mapping
 
+from .decision_identity import build_decision_identity, classify_identity_change
 
-BUNDLE_VERSION = "2026-08-29.1"
+
+BUNDLE_VERSION = "2026-08-29.2"
 
 
 def _text(value: Any) -> str:
@@ -79,7 +82,13 @@ def _collect_evidence(result: Mapping[str, Any]) -> list[dict[str, Any]]:
             }
         )
 
-    output.sort(key=lambda item: (item.get("authority") or "", item.get("source_id") or "", item.get("url") or ""))
+    output.sort(
+        key=lambda item: (
+            item.get("authority") or "",
+            item.get("source_id") or "",
+            item.get("url") or "",
+        )
+    )
     return output
 
 
@@ -171,6 +180,14 @@ def _build_tasks(workflow: Mapping[str, Any], evidence: list[dict[str, Any]]) ->
     return tasks
 
 
+def _prior_identity(facts: Mapping[str, Any]) -> Mapping[str, Any] | None:
+    context = facts.get("context")
+    if not isinstance(context, Mapping):
+        return None
+    prior = context.get("prior_decision_identity")
+    return prior if isinstance(prior, Mapping) else None
+
+
 def build_action_bundle(facts: Mapping[str, Any], result: Mapping[str, Any]) -> dict[str, Any]:
     """Build a stable, platform-neutral action package from a completed preflight."""
     workflow = result.get("workflow")
@@ -179,6 +196,9 @@ def build_action_bundle(facts: Mapping[str, Any], result: Mapping[str, Any]) -> 
 
     evidence = _collect_evidence(result)
     audit = _collect_audit(result, evidence)
+    identity = build_decision_identity(facts, result, evidence=evidence, audit=audit)
+    change = classify_identity_change(_prior_identity(facts), identity)
+
     follow_ups = workflow.get("follow_up_questions")
     if not isinstance(follow_ups, list):
         follow_ups = []
@@ -192,10 +212,14 @@ def build_action_bundle(facts: Mapping[str, Any], result: Mapping[str, Any]) -> 
 
     return {
         "bundle_version": BUNDLE_VERSION,
+        "identity": identity,
+        "change": change,
         "decision": {
             "determination": _text(result.get("determination")),
             "confidence": _text(result.get("confidence")),
-            "jurisdiction": result.get("jurisdiction") if isinstance(result.get("jurisdiction"), Mapping) else {},
+            "jurisdiction": result.get("jurisdiction")
+            if isinstance(result.get("jurisdiction"), Mapping)
+            else {},
             "project_family": _text((facts.get("project") or {}).get("family"))
             if isinstance(facts.get("project"), Mapping)
             else "",
@@ -219,6 +243,9 @@ def build_action_bundle(facts: Mapping[str, Any], result: Mapping[str, Any]) -> 
             "rule_version": first_rule_version,
             "evidence_url": first_evidence_url,
             "freshness_status": _text(freshness.get("status")),
+            "bundle_id": identity["bundle_id"],
+            "idempotency_key": identity["idempotency_key"],
+            "change_classification": change["classification"],
         },
         "disclaimer": _text(result.get("disclaimer")),
     }
