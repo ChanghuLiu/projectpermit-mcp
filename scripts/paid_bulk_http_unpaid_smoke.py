@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+from decimal import Decimal
 
 import httpx
 from x402.http import decode_payment_required_header
@@ -15,6 +16,8 @@ URL = os.getenv(
     f"{BASE_URL}/v1/check-project-requirements-batch",
 )
 EXPECTED_NETWORK = os.getenv("PROJECTPERMIT_SMOKE_X402_NETWORK", "eip155:8453")
+EXPECTED_PRICE_USD = os.getenv("PROJECTPERMIT_SMOKE_X402_BATCH_AMOUNT", "5.00")
+EXPECTED_WIRE_AMOUNT = str(int(Decimal(EXPECTED_PRICE_USD) * Decimal("1000000")))
 
 PAYLOAD = {
     "items": [
@@ -32,6 +35,7 @@ PAYLOAD = {
 def main() -> None:
     print(f"paid_bulk_http_url={URL}")
     print(f"expected_network={EXPECTED_NETWORK}")
+    print(f"expected_price_usd={EXPECTED_PRICE_USD}")
     with httpx.Client(timeout=30.0, follow_redirects=True) as client:
         capabilities_response = client.get(f"{BASE_URL}/v1/capabilities")
         capabilities_response.raise_for_status()
@@ -80,9 +84,20 @@ def main() -> None:
         raise SystemExit(f"Paid-bulk resource description missing Layer 5 positioning: {description}")
 
     accepts = challenge.get("accepts") or []
-    if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
+    matching = [item for item in accepts if item.get("network") == EXPECTED_NETWORK]
+    if not matching:
         raise SystemExit(f"Expected payment network missing: {EXPECTED_NETWORK}: {accepts}")
+    if not any(
+        str(item.get("amount")) == EXPECTED_WIRE_AMOUNT
+        and ((item.get("extra") or {}).get("name") == "USDC")
+        for item in matching
+    ):
+        raise SystemExit(
+            f"Paid bulk runtime price mismatch: expected ${EXPECTED_PRICE_USD} USDC "
+            f"({EXPECTED_WIRE_AMOUNT} base units): {matching}"
+        )
 
+    print("paid_bulk_runtime_price=PASS")
     print("paid_bulk_http_402_challenge=PASS")
     print("paid_bulk_http_unpaid_smoke=PASS")
 

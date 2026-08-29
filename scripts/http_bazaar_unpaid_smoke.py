@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+from decimal import Decimal
 
 import httpx
 from x402.http import decode_payment_required_header
@@ -13,6 +14,7 @@ URL = os.getenv(
 BASE_URL = URL.split("/v1/", 1)[0]
 EXPECTED_NETWORK = os.getenv("PROJECTPERMIT_SMOKE_X402_NETWORK", "eip155:8453")
 EXPECTED_SINGLE_AMOUNT = os.getenv("PROJECTPERMIT_SMOKE_X402_SINGLE_AMOUNT", "0.05")
+EXPECTED_SINGLE_WIRE_AMOUNT = str(int(Decimal(EXPECTED_SINGLE_AMOUNT) * Decimal("1000000")))
 EXPECTED_BATCH_AMOUNT = os.getenv("PROJECTPERMIT_SMOKE_X402_BATCH_AMOUNT", "5.00")
 
 PAYLOAD = {
@@ -75,6 +77,7 @@ def _verify_openapi_discovery() -> None:
 def main() -> None:
     print(f"paid_http_url={URL}")
     print(f"expected_network={EXPECTED_NETWORK}")
+    print(f"expected_single_price_usd={EXPECTED_SINGLE_AMOUNT}")
     _verify_openapi_discovery()
 
     response = httpx.post(URL, json=PAYLOAD, timeout=30.0, follow_redirects=True)
@@ -100,8 +103,19 @@ def main() -> None:
             raise SystemExit(f"x402 resource description missing {required_term} positioning: {description}")
 
     accepts = challenge.get("accepts") or []
-    if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
+    matching = [item for item in accepts if item.get("network") == EXPECTED_NETWORK]
+    if not matching:
         raise SystemExit(f"Expected payment network missing: {EXPECTED_NETWORK}: {accepts}")
+    if not any(
+        str(item.get("amount")) == EXPECTED_SINGLE_WIRE_AMOUNT
+        and ((item.get("extra") or {}).get("name") == "USDC")
+        for item in matching
+    ):
+        raise SystemExit(
+            f"Paid HTTP runtime price mismatch: expected ${EXPECTED_SINGLE_AMOUNT} USDC "
+            f"({EXPECTED_SINGLE_WIRE_AMOUNT} base units): {matching}"
+        )
+    print("http_runtime_price=PASS")
 
     bazaar = (challenge.get("extensions") or {}).get("bazaar")
     if not bazaar:
