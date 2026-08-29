@@ -55,6 +55,7 @@ class ActionBundleTest(unittest.TestCase):
             result,
         )
 
+        self.assertEqual("2026-08-29.3", bundle["bundle_version"])
         self.assertEqual("REQUIRED", bundle["decision"]["determination"])
         self.assertEqual("addition", bundle["decision"]["project_family"])
         self.assertEqual("ADD_PERMIT_TASK", bundle["routing"]["recommended_route"])
@@ -69,6 +70,8 @@ class ActionBundleTest(unittest.TestCase):
         )
         self.assertEqual(2, len(bundle["audit"]["rule_ids"]))
         self.assertEqual("deterministic_preflight", bundle["audit"]["generated_from"])
+        self.assertEqual("BLOCKED", bundle["mutation_gate"]["state"])
+        self.assertIn("MISSING_WORK_RECORD_SCOPE", bundle["mutation_gate"]["reason_codes"])
 
     def test_missing_facts_are_preserved_as_required_inputs(self):
         question = {
@@ -102,6 +105,9 @@ class ActionBundleTest(unittest.TestCase):
         self.assertTrue(bundle["tasks"][0]["blocking"])
         self.assertEqual("UNKNOWN", bundle["routing"]["evidence_freshness"]["status"])
         self.assertEqual("COLLECT_MISSING_FACTS", bundle["writeback_hints"]["recommended_route"])
+        self.assertEqual("BLOCKED", bundle["mutation_gate"]["state"])
+        self.assertIn("AUTOMATION_NOT_SAFE", bundle["mutation_gate"]["reason_codes"])
+        self.assertIn("REQUIRED_INPUTS_PENDING", bundle["mutation_gate"]["reason_codes"])
 
     def test_continue_with_evidence_has_nonblocking_task_and_writeback_hints(self):
         result = {
@@ -136,7 +142,14 @@ class ActionBundleTest(unittest.TestCase):
         }
 
         bundle = build_action_bundle(
-            {"project": {"family": "interior_renovation"}},
+            {
+                "project": {"family": "interior_renovation"},
+                "context": {
+                    "source_platform": "jobber",
+                    "source_object_type": "quote",
+                    "source_object_id": "opaque-direct-builder-test",
+                },
+            },
             result,
         )
 
@@ -146,6 +159,9 @@ class ActionBundleTest(unittest.TestCase):
         self.assertEqual("https://vancouver.example/permit", bundle["writeback_hints"]["evidence_url"])
         self.assertEqual("2026-08-26.1", bundle["writeback_hints"]["rule_version"])
         self.assertEqual("CURRENT", bundle["writeback_hints"]["freshness_status"])
+        self.assertEqual("READY_FOR_EXPLICIT_WRITE", bundle["mutation_gate"]["state"])
+        self.assertEqual("UPSERT_OPERATIONAL_ROUTE", bundle["mutation_gate"]["recommended_operation"])
+        self.assertTrue(bundle["mutation_gate"]["mutation_allowed"])
 
     def test_workflow_is_required(self):
         with self.assertRaisesRegex(ValueError, "result.workflow"):
