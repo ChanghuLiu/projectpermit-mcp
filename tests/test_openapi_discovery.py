@@ -102,6 +102,23 @@ class OpenApiDiscoveryTest(unittest.TestCase):
                 else:
                     os.environ[key] = value
 
+    def test_launch_defaults_keep_full_batch_cheaper_than_50_singles(self):
+        keys = (
+            "PROJECTPERMIT_X402_PRICE_USD",
+            "PROJECTPERMIT_X402_BATCH_PRICE_USD",
+            "PROJECTPERMIT_X402_NETWORK",
+        )
+        previous = {key: os.environ.pop(key, None) for key in keys}
+        try:
+            settings = discovery_settings()
+            self.assertEqual("0.05", settings["single_amount"])
+            self.assertEqual("2.00", settings["batch_amount"])
+            self.assertLess(float(settings["batch_amount"]), 50 * float(settings["single_amount"]))
+        finally:
+            for key, value in previous.items():
+                if value is not None:
+                    os.environ[key] = value
+
     def test_actual_fastapi_openapi_exposes_paid_contract(self):
         from projectpermit.api import app
 
