@@ -2,8 +2,8 @@
 
 The bundle is designed for contractor, field-service and property workflow agents.
 It packages the deterministic permit decision, workflow routing, official evidence,
-blocking tasks, missing facts, audit metadata and deterministic decision identity
-into one stable object.
+blocking tasks, missing facts, audit metadata, deterministic decision identity and
+safe-writeback mutation gate into one stable object.
 
 It never mutates an upstream platform and never represents municipal authorization.
 """
@@ -13,9 +13,10 @@ from collections import defaultdict
 from typing import Any, Mapping
 
 from .decision_identity import build_decision_identity, classify_identity_change
+from .mutation_gate import build_mutation_gate
 
 
-BUNDLE_VERSION = "2026-08-29.2"
+BUNDLE_VERSION = "2026-08-29.3"
 
 
 def _text(value: Any) -> str:
@@ -162,8 +163,9 @@ def build_action_bundle(facts: Mapping[str, Any], result: Mapping[str, Any]) -> 
 
     evidence = _collect_evidence(result)
     audit = _collect_audit(result, evidence)
+    prior_identity = _prior_identity(facts)
     identity = build_decision_identity(facts, result, evidence=evidence, audit=audit)
-    change = classify_identity_change(_prior_identity(facts), identity)
+    change = classify_identity_change(prior_identity, identity)
 
     follow_ups = workflow.get("follow_up_questions")
     if not isinstance(follow_ups, list):
@@ -174,7 +176,7 @@ def build_action_bundle(facts: Mapping[str, Any], result: Mapping[str, Any]) -> 
     first_evidence_url = _text(evidence[0].get("url")) if evidence else ""
     first_rule_version = audit["rule_versions"][0] if audit["rule_versions"] else ""
 
-    return {
+    bundle = {
         "bundle_version": BUNDLE_VERSION,
         "identity": identity,
         "change": change,
@@ -209,3 +211,8 @@ def build_action_bundle(facts: Mapping[str, Any], result: Mapping[str, Any]) -> 
         },
         "disclaimer": _text(result.get("disclaimer")),
     }
+    bundle["mutation_gate"] = build_mutation_gate(
+        bundle,
+        prior_identity=prior_identity,
+    )
+    return bundle
