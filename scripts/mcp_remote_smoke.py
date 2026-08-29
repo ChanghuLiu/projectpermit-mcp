@@ -122,8 +122,8 @@ def _assert_action_bundle(payload: dict, *, expected_route: str | None = None) -
     bundle = payload.get("action_bundle") or {}
     if not bundle:
         raise SystemExit(f"action_bundle missing from preflight result: {payload}")
-    if bundle.get("bundle_version") != "2026-08-29.2":
-        raise SystemExit(f"Unexpected action bundle version: {bundle}")
+    if bundle.get("bundle_version") != "2026-08-29.3":
+        raise SystemExit(f"Unexpected Layer 5 action bundle version: {bundle}")
     routing = bundle.get("routing") or {}
     if expected_route and routing.get("recommended_route") != expected_route:
         raise SystemExit(f"Unexpected action bundle route: {bundle}")
