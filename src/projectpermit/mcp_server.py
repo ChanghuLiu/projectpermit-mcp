@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from .batch_service import MAX_BATCH_ITEMS, run_batch_preflight
 from .capabilities import PROJECT_FAMILIES
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
@@ -28,8 +29,9 @@ def build_server():
             "Use it when proposed renovation/building work needs an evidence-linked "
             "permit-applicability check before quoting, scheduling or design lock. "
             "Start with projectpermit_info to discover supported jurisdiction ids, "
-            "project families and a valid example. Normalize the proposed scope into "
-            "structured facts before calling check_project_requirements. Preserve "
+            "project families and valid examples. Normalize the proposed scope into "
+            "structured facts before calling check_project_requirements, or use "
+            "check_project_requirements_batch for up to 50 normalized projects. Preserve "
             "unknown facts rather than guessing them; the engine can return review or "
             "municipal-confirmation states when the facts do not support a safe yes/no. "
             "Do not use ProjectPermit as municipal authorization, legal advice, engineering "
@@ -42,10 +44,12 @@ def build_server():
 
     @server.tool()
     def projectpermit_info() -> dict[str, Any]:
-        """Use first to get supported Canadian cities/families and a valid starter example. This is capability discovery only; it does not decide whether a project needs a permit."""
+        """Use first to get supported Canadian cities/families and starter examples. This is capability discovery only; it does not decide whether a project needs a permit."""
         return {
             "service": "ProjectPermit",
             "tool": "check_project_requirements",
+            "bulk_tool": "check_project_requirements_batch",
+            "bulk_max_items": MAX_BATCH_ITEMS,
             "jurisdictions": list(SUPPORTED_JURISDICTIONS),
             "address_resolution_jurisdictions": list(SUPPORTED_ADDRESS_JURISDICTIONS),
             "project_families": list(PROJECT_FAMILIES),
@@ -55,9 +59,28 @@ def build_server():
                 "property": {"heritage": False},
                 "resolve_address": False,
             },
+            "bulk_example": {
+                "items": [
+                    {
+                        "client_ref": "lead-001",
+                        "jurisdiction": "ottawa_on",
+                        "project": {"family": "window_door", "action": "replace_same_size"},
+                        "property": {"heritage": False},
+                    },
+                    {
+                        "client_ref": "lead-002",
+                        "jurisdiction": "toronto_on",
+                        "project": {
+                            "family": "window_door",
+                            "action": "enlarge_existing_opening",
+                        },
+                    },
+                ]
+            },
             "validation_hint": (
                 "For repeat pilot usage, context.client_tag may be a stable "
-                "non-sensitive integration label; it is hashed before telemetry."
+                "non-sensitive integration label; it is hashed before telemetry. "
+                "Batch client_ref values are echoed for correlation but are not telemetry tags."
             ),
             "disclaimer": (
                 "Preflight information only; not municipal authorization or legal advice."
@@ -83,6 +106,15 @@ def build_server():
                 "context": {**(context or {}), "_transport": "standard_mcp"},
                 "resolve_address": resolve_address,
             }
+        )
+
+    @server.tool()
+    def check_project_requirements_batch(items: list[dict[str, Any]]) -> dict[str, Any]:
+        """Evaluate 1-50 normalized projects in one call. Each item may include client_ref, jurisdiction, project, property/context and optional address/resolve_address. A bad item is isolated instead of failing the whole batch. Returns per-item determinations plus batch-level rule/source freshness audit metadata."""
+        return run_batch_preflight(
+            items,
+            allow_address=True,
+            transport="standard_mcp_batch",
         )
 
     return server
