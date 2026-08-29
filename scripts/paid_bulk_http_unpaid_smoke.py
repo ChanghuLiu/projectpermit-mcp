@@ -14,6 +14,7 @@ URL = os.getenv(
     "PROJECTPERMIT_PAID_BULK_HTTP_URL",
     f"{BASE_URL}/v1/check-project-requirements-batch",
 )
+EXPECTED_NETWORK = os.getenv("PROJECTPERMIT_SMOKE_X402_NETWORK", "eip155:8453")
 
 PAYLOAD = {
     "items": [
@@ -30,6 +31,7 @@ PAYLOAD = {
 
 def main() -> None:
     print(f"paid_bulk_http_url={URL}")
+    print(f"expected_network={EXPECTED_NETWORK}")
     with httpx.Client(timeout=30.0, follow_redirects=True) as client:
         capabilities_response = client.get(f"{BASE_URL}/v1/capabilities")
         capabilities_response.raise_for_status()
@@ -38,6 +40,9 @@ def main() -> None:
             raise SystemExit(f"Paid bulk resource missing from capabilities: {capabilities}")
         if capabilities.get("bulk_max_items") != 50:
             raise SystemExit(f"Unexpected bulk_max_items: {capabilities.get('bulk_max_items')}")
+        workflow = capabilities.get("workflow_guidance") or {}
+        if workflow.get("field") != "workflow":
+            raise SystemExit(f"Workflow guidance missing from capabilities: {workflow}")
         print("paid_bulk_capabilities=PASS")
 
         response = client.post(URL, json=PAYLOAD)
@@ -62,8 +67,8 @@ def main() -> None:
         raise SystemExit(f"Paid-bulk resource description is incomplete: {description}")
 
     accepts = challenge.get("accepts") or []
-    if not any(item.get("network") == "eip155:84532" for item in accepts):
-        raise SystemExit(f"Base Sepolia payment option missing: {accepts}")
+    if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
+        raise SystemExit(f"Expected payment network missing: {EXPECTED_NETWORK}: {accepts}")
 
     print("paid_bulk_http_402_challenge=PASS")
     print("paid_bulk_http_unpaid_smoke=PASS")
