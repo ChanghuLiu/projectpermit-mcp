@@ -1,12 +1,16 @@
 # ProjectPermit Status
 
-Updated: 2026-08-27
+Updated: 2026-08-29
 
 ## Current state
 
 **Seven-jurisdiction deterministic permit-preflight engine: LIVE.**
 
-**Distribution validation: ACTIVE.** Replies are lead signals only. E3 representative historical benchmarks, E4 repeated external usage and E5 economic behavior remain the decision gates.
+**Agent workflow differentiation: LIVE.** Every successful preflight now adds deterministic routing metadata for contractor/field-service agents without changing the permit determination.
+
+**Commercial x402 launch: BASE MAINNET.** Single paid HTTP/MCP preflights are configured at `$0.20 USDC`; paid HTTP bulk (up to 50 normalized projects) is configured at `$5.00 USDC`.
+
+**Distribution validation: ACTIVE IN PARALLEL.** Replies are lead signals only. E3 representative historical benchmarks, E4 repeated external usage and E5 economic behavior remain evidence gates, but product differentiation and distribution work do not wait for replies.
 
 ProjectPermit is an evidence-linked cross-jurisdiction B2B/Agent permit-preflight layer. It is **not** a homeowner-only wizard, municipal application portal, managed permit-expediting service, legal opinion or municipal authorization.
 
@@ -22,7 +26,7 @@ The calling agent normalizes project scope into structured facts. The ProjectPer
 - `longueuil_qc` — conservative deterministic rules; address/GIS adapter pending
 - `vancouver_bc` — deterministic rules + City Open Data property-address/zoning/heritage adapter
 
-Municipality expansion is paused until external workflow evidence justifies maintenance.
+Geography expansion remains evidence-led because every new municipality creates ongoing rules/source maintenance. It is not a blocker on differentiated product development; requested geographies or credible repeated-volume workflows move to the front of the expansion queue.
 
 ## Live services
 
@@ -30,17 +34,42 @@ Municipality expansion is paused until external workflow evidence justifies main
 - Free MCP developer-validation preview: `https://projectpermit-mcp-production.up.railway.app/mcp`
 - Paid x402 MCP: `https://projectpermit-x402-mcp-production.up.railway.app/mcp`
 
-Current Base Sepolia discovery price is `$0.01 USDC/call`; this is not the intended commercial price.
+Commercial x402 configuration:
 
-Real buyer-side HTTP and MCP x402 settlement have already been proven. Do not spend test USDC merely to re-prove payment plumbing.
+- network: Base mainnet `eip155:8453`
+- facilitator: `https://facilitator.payai.network`
+- single HTTP preflight: `$0.20 USDC`
+- single MCP preflight: `$0.20 USDC`
+- HTTP batch, up to 50 projects: `$5.00 USDC`
+
+Historical real buyer-side HTTP and MCP x402 settlement were proven on testnet. Mainnet services are now live and can be verified without spending through their unpaid `402 Payment Required` challenges. Do not spend mainnet USDC merely to re-prove plumbing unless a real settlement test is intentionally required.
+
+## Agent workflow differentiation
+
+The shared preflight service now adds a `workflow` object to every successful result. Stable routes include:
+
+- `ADD_PERMIT_TASK`
+- `CONTINUE_WITH_EVIDENCE`
+- `COLLECT_MISSING_FACTS`
+- `ROUTE_SPECIAL_REVIEW`
+- `MUNICIPAL_CONFIRMATION`
+- `MANUAL_SCOPE_REVIEW`
+
+The object also includes `quote_handling`, a narrow `automation_safe` signal, a short operational summary, and up to three targeted follow-up questions when missing facts can make another deterministic call more useful.
+
+This layer is additive. It never changes the underlying permit determination and never claims municipal authorization.
+
+See `docs/AGENT_WORKFLOW_GUIDANCE.md`.
 
 ## Core infrastructure completed
 
 - 7-jurisdiction deterministic router across 8 normalized project families
 - 5 first-party municipal/open-data address resolver jurisdictions
 - shared address-aware preflight service for HTTP/free MCP/paid MCP
+- deterministic Agent workflow routing + missing-fact guidance
 - official evidence + stable rule ids
 - FastAPI + MCP v2 + x402-native MCP
+- single + batch paid HTTP x402 resources
 - privacy-minimal structured usage telemetry
 - CI/owner traffic tagging
 - municipal request URL logging suppression to reduce address/query leakage
@@ -132,7 +161,7 @@ Stop adapter proliferation after Jobber + ServiceM8 unless a new platform brings
 
 Preferred flow:
 
-`Jobber Quote/Job -> property address + title/line items -> structured ProjectPermit facts -> preflight -> proposed routing/write-back metadata`
+`Jobber Quote/Job -> property address + title/line items -> structured ProjectPermit facts -> preflight -> workflow routing/write-back proposal`
 
 Completed:
 
@@ -239,7 +268,7 @@ This is a technical false-negative guard, not market E3.
 - Jobber: 20 synthetic/de-identified cases, all 8 project families
 - ServiceM8: 12 synthetic/de-identified cases, all 8 project families
 
-Both verify adapter -> structured facts -> engine -> proposed routing metadata without platform mutation or market-evidence inflation.
+Both verify adapter -> structured facts -> engine -> workflow routing metadata without platform mutation or market-evidence inflation.
 
 ## Objective municipal activity baseline
 
@@ -258,7 +287,12 @@ This reinforces that a 10k-calls/month product cannot rely on `one call only aft
 
 ## Commercial checkpoint
 
-Working price hypothesis remains roughly **$0.20-$0.50 per address-aware evidence-linked preflight**, subject to E5.
+Initial commercial launch price is now:
+
+- `$0.20` per single paid HTTP/MCP preflight
+- `$5.00` per paid HTTP batch of up to 50 normalized projects
+
+These are launch prices, not validated willingness-to-pay. E5 remains the price-evidence gate.
 
 First meaningful internal scale checkpoint: **~10,000 external successful preflights/month**.
 
@@ -270,17 +304,18 @@ Equivalent shapes include:
 - 5 integrations × 2,000/month
 - one platform workflow × 10,000/month
 
-At $0.25/call this is $2,500 gross/month; at $0.50/call $5,000 gross/month, before infrastructure, support and municipal-rule maintenance.
+At `$0.20/call`, 10,000 paid single preflights would be `$2,000` gross/month before infrastructure, support and municipal-rule maintenance. Batch mix changes realized unit revenue and must be measured rather than assumed.
 
 ## Next gates
 
-### Technical
+### Product / technical
 
-- live Jobber developer-account/token/schema probe
-- live ServiceM8 Free-account Read Only API-key probe
+- verify Base-mainnet unpaid x402 challenges for HTTP, bulk HTTP and paid MCP in production CI
+- keep Jobber and ServiceM8 read-only wedges aligned to the new `workflow` routing object
+- next differentiation: produce an evidence/action bundle that a platform adapter can attach to Quote/Job workflow without claiming municipal approval
 - do not build a third field-service adapter without new evidence
 
-### Market
+### Market — continues in parallel
 
 - 2 independent representative E3 historical benchmarks
 - 1 repeated external workflow with 20+ successful calls
@@ -288,10 +323,10 @@ At $0.25/call this is $2,500 gross/month; at $0.50/call $5,000 gross/month, befo
 - one credible workflow with 500+ candidate calls/month
 - one partner/integration with 2,000+ candidate calls/month
 - one credible path to 10,000+ calls/month
-- one E5 price/resource commitment around the working unit economics
+- one E5 price/resource commitment
 
 ### Geography
 
-- add/deepen municipalities only when requested geography is tied to credible repeated volume and passes the municipal-self-service substitution check
+- add/deepen municipalities when requested geography is tied to credible repeated volume or strategically expands a live integration, and passes the municipal-self-service substitution check
 
-GitHub issue #1, `Validate external distribution before expanding municipalities`, remains the canonical validation checklist.
+GitHub issue #1, `Validate external distribution before expanding municipalities`, remains the canonical validation checklist; it is no longer a stop-development gate.
