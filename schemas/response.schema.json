@@ -51,7 +51,7 @@
     "workflow": {
       "type": "object",
       "description": "Deterministic agent-routing guidance. It does not alter or replace the permit determination.",
-      "required": ["mode", "recommended_route", "quote_handling", "automation_safe", "summary", "follow_up_questions"],
+      "required": ["mode", "recommended_route", "quote_handling", "automation_safe", "summary", "follow_up_questions", "evidence_freshness"],
       "properties": {
         "mode": {"enum": ["PERMIT_PATH", "NO_PERMIT_SIGNAL", "NEEDS_MORE_CONTEXT", "NEEDS_REVIEW", "UNSUPPORTED_SCOPE"]},
         "recommended_route": {"enum": ["ADD_PERMIT_TASK", "CONTINUE_WITH_EVIDENCE", "COLLECT_MISSING_FACTS", "ROUTE_SPECIAL_REVIEW", "MUNICIPAL_CONFIRMATION", "MANUAL_SCOPE_REVIEW"]},
@@ -71,6 +71,21 @@
             },
             "additionalProperties": false
           }
+        },
+        "evidence_freshness": {
+          "type": "object",
+          "description": "ProjectPermit source-verification freshness policy. This is a product automation guardrail, not a municipal/legal validity period.",
+          "required": ["status", "oldest_verified_at", "newest_verified_at", "oldest_age_days", "review_after_days", "stale_after_days", "automation_blocked"],
+          "properties": {
+            "status": {"enum": ["CURRENT", "REVIEW_DUE", "STALE", "UNKNOWN"]},
+            "oldest_verified_at": {"type": ["string", "null"], "format": "date"},
+            "newest_verified_at": {"type": ["string", "null"], "format": "date"},
+            "oldest_age_days": {"type": ["integer", "null"], "minimum": 0},
+            "review_after_days": {"type": "integer", "minimum": 1},
+            "stale_after_days": {"type": "integer", "minimum": 1},
+            "automation_blocked": {"type": "boolean"}
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
