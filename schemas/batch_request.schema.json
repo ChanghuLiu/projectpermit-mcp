@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectpermit.example/schemas/check-project-requirements-batch.request.json",
+  "title": "check_project_requirements_batch request",
+  "type": "object",
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "allOf": [
+          {"$ref": "request.schema.json"},
+          {
+            "type": "object",
+            "properties": {
+              "client_ref": {
+                "type": ["string", "null"],
+                "maxLength": 200,
+                "description": "Optional caller-side correlation value echoed in the batch result. Do not use PII."
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "additionalProperties": false
+}
