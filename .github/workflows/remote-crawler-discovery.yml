@@ -1,0 +1,39 @@
+name: Remote Crawler Discovery
+
+on:
+  pull_request:
+    paths:
+      - scripts/crawler_discovery_remote_smoke.py
+      - .github/workflows/remote-crawler-discovery.yml
+  push:
+    branches: [main]
+    paths:
+      - src/projectpermit/crawler_discovery.py
+      - src/projectpermit/api.py
+      - scripts/crawler_discovery_remote_smoke.py
+      - .github/workflows/remote-crawler-discovery.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  remote-crawler-discovery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Verify production crawler discovery with retry
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if python scripts/crawler_discovery_remote_smoke.py; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 3))
+          done
