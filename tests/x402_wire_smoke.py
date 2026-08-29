@@ -40,7 +40,18 @@ assert input_info.get('bodyType') == 'json', input_info
 assert (input_info.get('body') or {}).get('jurisdiction') == 'ottawa_on', input_info
 output_info = info.get('output') or {}
 assert output_info.get('type') == 'json', output_info
-assert (output_info.get('example') or {}).get('engine_version') == 'phase0-0.1.0', output_info
+output_example = output_info.get('example') or {}
+assert output_example.get('engine_version') == 'phase0-0.1.0', output_info
+assert (output_example.get('action_bundle') or {}).get('bundle_version') == '2026-08-29.1', output_example
+
+# x402 v2 serializes the JSON Schema for `info` at extensions.bazaar.schema.
+# OutputConfig.schema is folded into schema.properties.output.properties.example.
+extension_schema = bazaar.get('schema') or {}
+schema_properties = extension_schema.get('properties') or {}
+input_body_schema = (((schema_properties.get('input') or {}).get('properties') or {}).get('body') or {})
+assert 'ottawa_on' in ((((input_body_schema.get('properties') or {}).get('jurisdiction') or {}).get('enum')) or []), input_body_schema
+output_example_schema = ((((schema_properties.get('output') or {}).get('properties') or {}).get('example') or {}))
+assert 'action_bundle' in (output_example_schema.get('properties') or {}), output_example_schema
 
 batch_response = client.post('/v1/check-project-requirements-batch', json={
     'items': [
@@ -60,4 +71,4 @@ assert batch_challenge.get('x402Version') == 2, batch_challenge
 assert batch_challenge.get('accepts'), batch_challenge
 assert any(item.get('network') == 'eip155:84532' for item in batch_challenge['accepts']), batch_challenge
 
-print('x402 unpaid wire smoke: single + bulk 402 challenges + single HTTP Bazaar metadata OK')
+print('x402 unpaid wire smoke: single + bulk 402 challenges + HTTP Bazaar action-bundle metadata OK')
