@@ -15,6 +15,7 @@ from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 from .public_agent_manifest import agent_manifest
 from .public_discovery import landing_html, llms_text
 from .public_x402_manifest import x402_service_manifest
+from .public_x402_well_known import x402_well_known
 from .x402_config import configure_x402
 
 app = FastAPI(title="ProjectPermit", version="0.6.0")
@@ -66,6 +67,12 @@ def public_robots_txt():
 def public_sitemap_xml():
     """Expose canonical public GET discovery resources without inventing GET paywalls."""
     return PlainTextResponse(sitemap_xml(), media_type="application/xml")
+
+
+@app.get("/.well-known/x402", include_in_schema=False)
+def public_x402_well_known():
+    """x402scan-compatible fallback discovery document; OpenAPI remains primary."""
+    return x402_well_known()
 
 
 @app.get("/.well-known/x402-service.json", include_in_schema=False)
