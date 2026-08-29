@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+from decimal import Decimal
 
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
@@ -13,6 +14,8 @@ URL = os.getenv(
     "https://projectpermit-x402-mcp-production.up.railway.app/mcp",
 )
 EXPECTED_NETWORK = os.getenv("PROJECTPERMIT_SMOKE_X402_NETWORK", "eip155:8453")
+EXPECTED_PRICE_USD = os.getenv("PROJECTPERMIT_SMOKE_X402_SINGLE_AMOUNT", "0.05")
+EXPECTED_WIRE_AMOUNT = str(int(Decimal(EXPECTED_PRICE_USD) * Decimal("1000000")))
 EXPECTED_JURISDICTIONS = {
     "gatineau_qc",
     "ottawa_on",
@@ -35,6 +38,7 @@ def _json_from_result(result):
 async def main() -> None:
     print(f"paid_mcp_url={URL}")
     print(f"expected_network={EXPECTED_NETWORK}")
+    print(f"expected_price_usd={EXPECTED_PRICE_USD}")
     async with streamable_http_client(URL) as (read_stream, write_stream):
         async with ClientSession(read_stream, write_stream) as session:
             init = await session.initialize()
@@ -111,8 +115,19 @@ async def main() -> None:
             if not challenge.get("accepts"):
                 raise SystemExit("x402 payment challenge did not include accepts")
             accepts = challenge["accepts"]
-            if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
+            matching = [item for item in accepts if item.get("network") == EXPECTED_NETWORK]
+            if not matching:
                 raise SystemExit(f"Expected payment network missing: {EXPECTED_NETWORK}: {accepts}")
+            if not any(
+                str(item.get("amount")) == EXPECTED_WIRE_AMOUNT
+                and ((item.get("extra") or {}).get("name") == "USDC")
+                for item in matching
+            ):
+                raise SystemExit(
+                    f"Paid MCP runtime price mismatch: expected ${EXPECTED_PRICE_USD} USDC "
+                    f"({EXPECTED_WIRE_AMOUNT} base units): {matching}"
+                )
+            print("paid_mcp_runtime_price=PASS")
             print("paid_mcp_safe_writeback_discovery=PASS")
             print("paid_mcp_identity_discovery=PASS")
             print("paid_mcp_seven_jurisdictions=PASS")
