@@ -2,17 +2,25 @@
 
 The permit rules engine decides permit applicability. This module translates that
 result into machine-readable workflow hints for contractor/field-service agents:
-what to do next, whether an automated workflow may continue, and which missing
-facts are worth collecting before another preflight call.
+what to do next, whether an automated workflow may continue, which missing facts
+are worth collecting, and whether the official-source verification dates are fresh
+enough for ProjectPermit's automation policy.
 
 It never changes the permit determination and never claims municipal approval.
 """
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 
 Question = tuple[str, str, str]
+
+# Product safety policy, not a municipal/legal threshold. A result may still be
+# displayed when evidence is old, but ProjectPermit will stop marking the workflow
+# automation-safe when the oldest relevant source verification is over 90 days old.
+FRESHNESS_REVIEW_AFTER_DAYS = 90
+FRESHNESS_STALE_AFTER_DAYS = 180
 
 PROPERTY_QUESTIONS: dict[str, Question] = {
     "heritage": (
@@ -215,12 +223,68 @@ def _follow_up_questions(
     return out
 
 
+def _evidence_freshness(
+    result: dict[str, Any], *, as_of: date | None = None
+) -> dict[str, Any]:
+    """Summarize relevant rule-source verification age for automation policy.
+
+    `source_verified_at` means the date ProjectPermit last verified the official
+    source used by that rule. This is not the municipality's publication date.
+    """
+    today = as_of or date.today()
+    verified_dates: list[date] = []
+
+    for requirement in result.get("requirements") or []:
+        raw = str(requirement.get("source_verified_at") or "").strip()
+        if not raw:
+            continue
+        try:
+            verified_dates.append(date.fromisoformat(raw))
+        except ValueError:
+            continue
+
+    if not verified_dates:
+        return {
+            "status": "UNKNOWN",
+            "oldest_verified_at": None,
+            "newest_verified_at": None,
+            "oldest_age_days": None,
+            "review_after_days": FRESHNESS_REVIEW_AFTER_DAYS,
+            "stale_after_days": FRESHNESS_STALE_AFTER_DAYS,
+            "automation_blocked": True,
+        }
+
+    oldest = min(verified_dates)
+    newest = max(verified_dates)
+    age_days = max(0, (today - oldest).days)
+    if age_days > FRESHNESS_STALE_AFTER_DAYS:
+        status = "STALE"
+    elif age_days > FRESHNESS_REVIEW_AFTER_DAYS:
+        status = "REVIEW_DUE"
+    else:
+        status = "CURRENT"
+
+    return {
+        "status": status,
+        "oldest_verified_at": oldest.isoformat(),
+        "newest_verified_at": newest.isoformat(),
+        "oldest_age_days": age_days,
+        "review_after_days": FRESHNESS_REVIEW_AFTER_DAYS,
+        "stale_after_days": FRESHNESS_STALE_AFTER_DAYS,
+        "automation_blocked": status != "CURRENT",
+    }
+
+
 def build_workflow_guidance(
-    facts: dict[str, Any], result: dict[str, Any]
+    facts: dict[str, Any],
+    result: dict[str, Any],
+    *,
+    as_of: date | None = None,
 ) -> dict[str, Any]:
     """Return additive agent-routing guidance without changing the legal determination."""
     determination = str(result.get("determination") or "OUT_OF_SCOPE")
     confidence = str(result.get("confidence") or "LOW")
+    freshness = _evidence_freshness(result, as_of=as_of)
     follow_ups = (
         _follow_up_questions(facts, result)
         if determination == "MUNICIPAL_CONFIRMATION_REQUIRED"
@@ -269,6 +333,12 @@ def build_workflow_guidance(
         automation_safe = False
         summary = "The current ruleset does not cover this scope well enough for automated routing."
 
+    # Freshness is an independent trust guardrail. Old evidence does not rewrite the
+    # legal/preflight determination or routing signal; it only prevents the caller
+    # from treating the result as safe for unattended automation.
+    if freshness["automation_blocked"]:
+        automation_safe = False
+
     return {
         "mode": mode,
         "recommended_route": route,
@@ -276,4 +346,5 @@ def build_workflow_guidance(
         "automation_safe": automation_safe,
         "summary": summary,
         "follow_up_questions": follow_ups,
+        "evidence_freshness": freshness,
     }
