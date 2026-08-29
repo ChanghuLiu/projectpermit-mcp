@@ -2,7 +2,11 @@ import os
 import unittest
 from unittest.mock import patch
 
-from projectpermit.x402_config import load_x402_settings, validate_x402_settings
+from projectpermit.x402_config import (
+    _pin_bazaar_http_method,
+    load_x402_settings,
+    validate_x402_settings,
+)
 
 
 class X402ConfigTest(unittest.TestCase):
@@ -65,6 +69,54 @@ class X402ConfigTest(unittest.TestCase):
         with patch.dict(os.environ, env, clear=True):
             with self.assertRaises(RuntimeError):
                 validate_x402_settings(load_x402_settings())
+
+    def test_pin_bazaar_http_method_adds_post_without_touching_body_schema(self):
+        body_schema = {
+            'type': 'object',
+            'properties': {'jurisdiction': {'type': 'string'}},
+            'required': ['jurisdiction'],
+        }
+        extensions = {
+            'bazaar': {
+                'info': {
+                    'input': {
+                        'type': 'http',
+                        'bodyType': 'json',
+                        'body': {'jurisdiction': 'ottawa_on'},
+                    }
+                },
+                'schema': {
+                    'type': 'object',
+                    'properties': {
+                        'input': {
+                            'type': 'object',
+                            'properties': {
+                                'method': {'type': 'string', 'enum': ['POST', 'PUT', 'PATCH']},
+                                'body': body_schema,
+                            },
+                            'required': ['method', 'body'],
+                        }
+                    },
+                },
+            }
+        }
+
+        result = _pin_bazaar_http_method(extensions, 'POST')
+
+        self.assertIs(result, extensions)
+        self.assertEqual('POST', result['bazaar']['info']['input']['method'])
+        self.assertEqual(body_schema, result['bazaar']['schema']['properties']['input']['properties']['body'])
+        self.assertNotIn('method', body_schema['properties'])
+
+    def test_pin_bazaar_http_method_rejects_conflicting_method(self):
+        extensions = {
+            'bazaar': {
+                'info': {'input': {'type': 'http', 'method': 'PUT'}},
+                'schema': {},
+            }
+        }
+        with self.assertRaisesRegex(RuntimeError, 'method mismatch'):
+            _pin_bazaar_http_method(extensions, 'POST')
 
 
 if __name__ == '__main__':
