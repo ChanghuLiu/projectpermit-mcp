@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .batch_service import MAX_BATCH_ITEMS, run_batch_preflight
 from .capabilities import PROJECT_FAMILIES
+from .crawler_discovery import robots_text, sitemap_xml
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 from .openapi_discovery import install_openapi_discovery
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
@@ -53,6 +54,18 @@ def public_landing():
 def public_llms_text():
     """Compact agent-readable capability, pricing and discovery guide."""
     return llms_text()
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse, include_in_schema=False)
+def public_robots_txt():
+    """Permit indexing of public discovery resources and advertise the sitemap."""
+    return robots_text()
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+def public_sitemap_xml():
+    """Expose canonical public GET discovery resources without inventing GET paywalls."""
+    return PlainTextResponse(sitemap_xml(), media_type="application/xml")
 
 
 @app.get("/.well-known/x402-service.json", include_in_schema=False)
