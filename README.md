@@ -30,7 +30,24 @@ First-party municipal/open-data address resolution is available for Gatineau, Ot
 
 The engine deliberately does **not** call an LLM. A calling agent normalizes natural-language scope into structured facts; BuildRequirements applies deterministic municipal rules.
 
-## Live endpoints
+## Agent workflow differentiation
+
+Every successful preflight now includes an additive deterministic `workflow` object so a contractor, property or field-service agent can use the result inside a real operating workflow instead of merely displaying a permit answer.
+
+Stable routing signals include:
+
+- `ADD_PERMIT_TASK`
+- `CONTINUE_WITH_EVIDENCE`
+- `COLLECT_MISSING_FACTS`
+- `ROUTE_SPECIAL_REVIEW`
+- `MUNICIPAL_CONFIRMATION`
+- `MANUAL_SCOPE_REVIEW`
+
+The workflow package also includes a quote-handling signal, a deliberately narrow `automation_safe` flag, and up to three high-value follow-up questions when another deterministic call can resolve missing context. Workflow guidance never changes the underlying permit determination and never represents municipal authorization.
+
+See [`docs/AGENT_WORKFLOW_GUIDANCE.md`](docs/AGENT_WORKFLOW_GUIDANCE.md).
+
+## Live endpoints and commercial x402 pricing
 
 - HTTP API: `https://projectpermit-api-v2-production.up.railway.app`
 - Free HTTP developer-validation preview: `POST https://projectpermit-api-v2-production.up.railway.app/v1/preview-project-requirements`
@@ -39,7 +56,15 @@ The engine deliberately does **not** call an LLM. A calling agent normalizes nat
 
 The HTTP API exposes free machine-readable capability discovery at `GET /v1/capabilities`.
 
-The paid MCP exposes a free `projectpermit_info` tool and the x402-paid `check_project_requirements` tool. The current **testnet discovery price** is **$0.01 USDC** on Base Sepolia (`eip155:84532`); it is not the intended commercial price.
+Commercial x402 resources are configured on **Base mainnet** (`eip155:8453`) with USDC payment:
+
+- single paid HTTP preflight: **$0.20 USDC**
+- single paid MCP preflight: **$0.20 USDC**
+- paid HTTP batch, up to 50 normalized projects: **$5.00 USDC**
+
+The production facilitator is `https://facilitator.payai.network`.
+
+The paid MCP exposes a free `projectpermit_info` tool and the x402-paid `check_project_requirements` tool. The paid HTTP routes return an x402 `402 Payment Required` challenge when no valid payment is supplied.
 
 The result is a preflight information package, **not municipal authorization, legal advice, engineering certification, or building-code design approval**.
 
@@ -47,18 +72,18 @@ The result is a preflight information package, **not municipal authorization, le
 
 The business target is not a homeowner-only `Do I need a permit?` wizard and not a managed permit-submission service. ProjectPermit is intended to become a **cross-jurisdiction permit-requirements intelligence layer** embedded in contractor, property-management, construction/design, permitting, and real-estate software/Agent workflows.
 
-Seven jurisdictions are now enough to validate distribution. Additional city expansion is intentionally paused until repeated external usage, a credible high-volume integration, or a design partner requests more coverage with measurable call volume.
+Market validation remains active in parallel with product development. Differentiated product work and commercial distribution no longer wait for outreach replies. Geography expansion remains evidence-led because every additional municipality adds ongoing rule/source maintenance cost; priority goes to requested geographies or workflows with credible repeated volume.
 
 The first commercially meaningful internal checkpoint is roughly **10,000 monthly external preflight calls**. A preferred proof shape is approximately **5 integrations × 2,000 calls/month**, or one platform workflow capable of the same volume. This is a validation target, not a forecast.
 
 Read:
 
 - `docs/MARKET_VALIDATION.md` — market background, pricing thesis and original call-volume model
-- `docs/DISTRIBUTION_VALIDATION.md` — 2026 platform evidence, competition and 30-day validation plan
+- `docs/DISTRIBUTION_VALIDATION.md` — 2026 platform evidence, competition and validation plan
 - `docs/CALL_VOLUME_THRESHOLDS.md` — bottom-up monthly-call and revenue thresholds
 - `docs/PAIN_EVIDENCE.md` — observed field/community pain evidence separated from assumptions
 - `docs/TARGET_ACCOUNT_RANKING.md` — ranked design-partner targets by pain and distribution leverage
-- `docs/OUTREACH_BATCH_01.md` — tailored first outreach batch, prepared but not sent
+- `docs/OUTREACH_BATCH_01.md` — tailored first outreach batch
 - `docs/DESIGN_PARTNER_TRIAL.md` — low-friction 20-case pilot protocol
 - `docs/EXTERNAL_USAGE_BASELINE.md` — clean external-usage starting baseline
 - `docs/INTEGRATION_QUICKSTART.md` — copy-paste developer integration examples
@@ -67,7 +92,7 @@ Read:
 
 All transports call the same shared address-aware preflight pipeline:
 
-`HTTP / standard MCP / x402 paid MCP -> preflight_service -> municipal address/GIS adapters -> jurisdiction router -> deterministic rules`
+`HTTP / standard MCP / x402 paid MCP -> preflight_service -> municipal address/GIS adapters -> jurisdiction router -> deterministic rules -> workflow guidance`
 
 Resolved non-null municipal property facts can enrich a request before rule evaluation. Unknown overlays remain unknown and never silently overwrite an explicit caller value.
 
@@ -123,11 +148,25 @@ Both use the same normalized project shape; the anonymous free preview intention
 }
 ```
 
+A successful preflight response also contains `workflow`, for example:
+
+```json
+{
+  "workflow": {
+    "mode": "NO_PERMIT_SIGNAL",
+    "recommended_route": "CONTINUE_WITH_EVIDENCE",
+    "quote_handling": "NO_PERMIT_ALLOWANCE_SIGNAL",
+    "automation_safe": true,
+    "follow_up_questions": []
+  }
+}
+```
+
 For an address-aware jurisdiction, set `resolve_address=true` and supply `address` through the standard MCP preview or paid route; the anonymous HTTP preview deliberately does not accept address resolution.
 
 ## Developer-validation workflow
 
-The standard MCP endpoint is temporarily free so a design partner can test workflow fit without a wallet or billing setup. A recommended pilot uses **20 anonymized real scopes**, a stable non-PII `context.client_tag`, and measures whether the result actually changes the next workflow step.
+The standard MCP endpoint remains free so a design partner can test workflow fit without a wallet or billing setup. A recommended pilot uses **20 anonymized real scopes**, a stable non-PII `context.client_tag`, and measures whether the result actually changes the next workflow step.
 
 Partner evidence is tracked in:
 
@@ -141,7 +180,7 @@ Summarize validation evidence with:
 python scripts/summarize_partner_feedback.py
 ```
 
-Unknown interview values remain unknown rather than being silently converted to zero. The commercial gates therefore depend on recorded external evidence, not optimistic inference.
+Unknown interview values remain unknown rather than being silently converted to zero. Commercial decisions therefore depend on recorded external evidence, not optimistic inference, while engineering/distribution work continues in parallel.
 
 ## Repository map
 
@@ -151,6 +190,7 @@ Unknown interview values remain unknown rather than being silently converted to 
 - `src/projectpermit/vancouver_rules.py` — Vancouver rules
 - `src/projectpermit/jurisdiction_router.py` — public jurisdiction dispatcher
 - `src/projectpermit/preflight_service.py` — shared address-aware preflight pipeline
+- `src/projectpermit/workflow_advice.py` — deterministic agent routing and missing-fact guidance
 - `src/projectpermit/address.py` — Gatineau/Ottawa/Toronto address/GIS adapters
 - `src/projectpermit/mississauga_address.py` — Mississauga address/property adapter
 - `src/projectpermit/vancouver_address.py` — Vancouver first-party open-data adapter
@@ -167,11 +207,12 @@ Unknown interview values remain unknown rather than being silently converted to 
 - `schemas/` — public request/response schemas
 - `scripts/mcp_remote_smoke.py` — seven-city + Vancouver address-aware public MCP smoke
 - `scripts/paid_mcp_unpaid_smoke.py` — no-cost remote payment-challenge test
-- `scripts/paid_mcp_buyer_smoke.py` — real buyer-side testnet paid MCP call
+- `scripts/paid_mcp_buyer_smoke.py` — historical buyer-side paid smoke tooling; do not spend merely to re-prove plumbing
 - `scripts/facilitator_capability_probe.py` — no-cost facilitator capability matrix
 - `scripts/projectpermit_bazaar_lookup.py` — read-only Bazaar catalog lookup
 - `scripts/summarize_usage_logs.py` — external/internal usage-log summarizer
 - `scripts/summarize_partner_feedback.py` — partner conversation/call-volume gate summarizer
+- `docs/AGENT_WORKFLOW_GUIDANCE.md` — workflow-routing response contract and integration pattern
 - `docs/PHASE0_SPEC.md` — original product/engineering scope
 - `docs/PHASE0_RELEASE_READINESS.md` — completed Phase 0 release gate
 - `docs/MARKET_VALIDATION.md` — market background and original business gates
@@ -190,19 +231,24 @@ Unknown interview values remain unknown rather than being silently converted to 
 
 The seven-city public MCP footprint and Vancouver address-aware resolution have been verified from GitHub Actions against Railway production. The Vancouver production smoke resolved the City Hall civic address `453 W 12TH AV` and City zoning `CD-1 (46)` through Vancouver first-party open data.
 
-Real buyer-side paid HTTP and paid MCP flows were already verified end-to-end earlier. No additional paid smoke calls should be made merely to prove plumbing that has already passed.
+Historical buyer-side paid HTTP and paid MCP settlement were verified end-to-end on testnet. The commercial production services are now configured for Base mainnet and can be verified without spending funds by checking their x402 `402 Payment Required` challenges. A real mainnet payment should only be made when there is a reason to verify actual settlement or a genuine buyer call.
 
-## x402 / Bazaar status
+## x402 / discovery status
 
-The canonical paid HTTP resource is:
+Canonical paid HTTP resources:
 
-`https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements`
+- `https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements`
+- `https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements-batch`
 
-It is indexed by the current Bazaar-capable facilitator canary with canonical HTTPS discovery metadata.
+Canonical paid MCP resource:
 
-Current facilitator canary:
+- `https://projectpermit-x402-mcp-production.up.railway.app/mcp`
 
-`https://facilitator.goplausible.xyz`
+Commercial network: `eip155:8453` (Base mainnet)
+
+Production facilitator: `https://facilitator.payai.network`
+
+The single HTTP resource publishes Bazaar discovery metadata; paid MCP publishes MCP x402 discovery metadata. Both advertise the Agent workflow-routing differentiation.
 
 ## CI / verification
 
@@ -210,6 +256,7 @@ Current CI covers:
 
 - Python 3.11 + 3.13
 - deterministic jurisdiction-rule and schema tests
+- workflow-guidance routing tests
 - address-adapter and shared-preflight regressions
 - telemetry privacy contract
 - municipal request-log privacy guard
@@ -223,10 +270,10 @@ Current CI covers:
 - public Vancouver address-aware MCP invocation
 - public paid-MCP unpaid challenge
 - public HTTP Bazaar unpaid challenge
+- public paid-bulk HTTP unpaid challenge
 - facilitator capability checks
-- canonical HTTPS Bazaar catalog state
 
-See `STATUS.md` for the current engineering state and the distribution documents above for the commercial gates.
+See `STATUS.md` for the broader engineering/validation state and the distribution documents above for market evidence.
 
 ## Safety boundary
 
