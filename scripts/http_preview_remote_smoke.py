@@ -51,8 +51,8 @@ def _first_rule_id(payload: dict) -> str | None:
 
 def _identity(payload: dict) -> dict:
     bundle = payload.get("action_bundle") or {}
-    if bundle.get("bundle_version") != "2026-08-29.2":
-        raise SystemExit(f"HTTP preview missing action bundle: {bundle}")
+    if bundle.get("bundle_version") != "2026-08-29.3":
+        raise SystemExit(f"HTTP preview missing Layer 5 action bundle: {bundle}")
     identity = bundle.get("identity") or {}
     if not identity.get("bundle_id") or not identity.get("idempotency_key"):
         raise SystemExit(f"HTTP preview missing decision identity: {bundle}")
