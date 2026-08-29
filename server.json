@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.ChanghuLiu/projectpermit",
   "title": "ProjectPermit",
-  "description": "Building permit requirements MCP for contractors and AI agents. Deterministic renovation and construction permit preflight across 7 Canadian municipalities with official-source evidence.",
+  "description": "Building permit requirements MCP for contractors and AI agents across 7 Canadian municipalities.",
   "version": "0.4.1",
   "repository": {
     "url": "https://github.com/ChanghuLiu/projectpermit-mcp",
