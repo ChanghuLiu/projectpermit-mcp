@@ -52,28 +52,47 @@ def _digest(prefix: str, payload: Any) -> str:
     return f"{prefix}_{hashlib.sha256(rendered).hexdigest()[:32]}"
 
 
-def _scope_fingerprint(facts: Mapping[str, Any]) -> str | None:
-    """Hash optional work-record scope without exposing raw platform identifiers."""
-    context = facts.get("context")
-    if not isinstance(context, Mapping):
-        return None
+def build_scope_fingerprint(
+    *,
+    source_platform: str = "",
+    source_object_type: str = "",
+    source_object_id: str = "",
+    idempotency_scope: str = "",
+) -> str | None:
+    """Return the one-way work-record scope used by ProjectPermit idempotency.
 
-    explicit_scope = _text(context.get("idempotency_scope"))
+    External execution adapters can recompute this value from an explicitly selected
+    target before emitting a mutation plan. Matching it to the public identity binds
+    the mutation target to the same work record that was evaluated without exposing
+    the raw platform identifier in ProjectPermit output.
+    """
+    explicit_scope = _text(idempotency_scope)
     if explicit_scope:
         return _digest("pps", {"scope": explicit_scope})
 
-    platform = _text(context.get("source_platform"))
-    object_type = _text(context.get("source_object_type"))
-    object_id = _text(context.get("source_object_id"))
+    object_id = _text(source_object_id)
     if not object_id:
         return None
     return _digest(
         "pps",
         {
-            "platform": platform,
-            "object_type": object_type,
+            "platform": _text(source_platform),
+            "object_type": _text(source_object_type),
             "object_id": object_id,
         },
+    )
+
+
+def _scope_fingerprint(facts: Mapping[str, Any]) -> str | None:
+    """Hash optional work-record scope without exposing raw platform identifiers."""
+    context = facts.get("context")
+    if not isinstance(context, Mapping):
+        return None
+    return build_scope_fingerprint(
+        source_platform=_text(context.get("source_platform")),
+        source_object_type=_text(context.get("source_object_type")),
+        source_object_id=_text(context.get("source_object_id")),
+        idempotency_scope=_text(context.get("idempotency_scope")),
     )
 
 
