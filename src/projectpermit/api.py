@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from .batch_service import MAX_BATCH_ITEMS, run_batch_preflight
@@ -10,6 +11,7 @@ from .capabilities import PROJECT_FAMILIES
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 from .openapi_discovery import install_openapi_discovery
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
+from .public_discovery import landing_html, llms_text
 from .x402_config import configure_x402
 
 app = FastAPI(title="ProjectPermit", version="0.6.0")
@@ -37,6 +39,18 @@ class PreviewRequest(BaseModel):
 class BatchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     items: list[Any]
+
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def public_landing():
+    """Human-readable entry point for direct visits and search crawlers."""
+    return landing_html()
+
+
+@app.get("/llms.txt", response_class=PlainTextResponse, include_in_schema=False)
+def public_llms_text():
+    """Compact agent-readable capability, pricing and discovery guide."""
+    return llms_text()
 
 
 @app.get("/health")
