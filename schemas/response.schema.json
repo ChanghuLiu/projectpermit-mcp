@@ -90,6 +90,110 @@
       },
       "additionalProperties": false
     },
+    "action_bundle": {
+      "type": "object",
+      "description": "Platform-neutral package for contractor/field-service integrations. It packages the permit decision, workflow route, official evidence, missing inputs, proposed tasks and audit metadata without mutating upstream systems.",
+      "required": ["bundle_version", "decision", "routing", "required_inputs", "tasks", "evidence", "audit", "writeback_hints", "disclaimer"],
+      "properties": {
+        "bundle_version": {"type": "string"},
+        "decision": {
+          "type": "object",
+          "required": ["determination", "confidence", "jurisdiction", "project_family"],
+          "properties": {
+            "determination": {"type": "string"},
+            "confidence": {"type": "string"},
+            "jurisdiction": {"type": "object"},
+            "project_family": {"type": "string"}
+          },
+          "additionalProperties": false
+        },
+        "routing": {
+          "type": "object",
+          "required": ["recommended_route", "quote_handling", "automation_safe", "evidence_freshness"],
+          "properties": {
+            "recommended_route": {"type": "string"},
+            "quote_handling": {"type": "string"},
+            "automation_safe": {"type": "boolean"},
+            "evidence_freshness": {"type": "object"}
+          },
+          "additionalProperties": false
+        },
+        "required_inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["fact_path", "question", "why_it_matters"],
+            "properties": {
+              "fact_path": {"type": "string"},
+              "question": {"type": "string"},
+              "why_it_matters": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["task_type", "blocking", "action"],
+            "properties": {
+              "task_type": {"enum": ["PERMIT_PROCESS", "ATTACH_EVIDENCE", "COLLECT_MISSING_FACTS", "SPECIAL_REVIEW", "MUNICIPAL_CONFIRMATION", "MANUAL_SCOPE_REVIEW"]},
+              "blocking": {"type": "boolean"},
+              "action": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source_id", "authority", "title", "url", "rule_ids", "statuses", "source_verified_at"],
+            "properties": {
+              "source_id": {"type": "string"},
+              "authority": {"type": "string"},
+              "title": {"type": "string"},
+              "url": {"type": "string"},
+              "rule_ids": {"type": "array", "items": {"type": "string"}},
+              "statuses": {"type": "array", "items": {"type": "string"}},
+              "source_verified_at": {"type": ["string", "null"], "format": "date"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "audit": {
+          "type": "object",
+          "required": ["engine_version", "rule_ids", "rule_versions", "source_verified_at_oldest", "source_verified_at_newest", "evidence_source_count", "generated_from"],
+          "properties": {
+            "engine_version": {"type": "string"},
+            "rule_ids": {"type": "array", "items": {"type": "string"}},
+            "rule_versions": {"type": "array", "items": {"type": "string"}},
+            "source_verified_at_oldest": {"type": ["string", "null"], "format": "date"},
+            "source_verified_at_newest": {"type": ["string", "null"], "format": "date"},
+            "evidence_source_count": {"type": "integer", "minimum": 0},
+            "generated_from": {"const": "deterministic_preflight"}
+          },
+          "additionalProperties": false
+        },
+        "writeback_hints": {
+          "type": "object",
+          "required": ["permit_status", "confidence", "recommended_route", "quote_handling", "automation_safe", "rule_version", "evidence_url", "freshness_status"],
+          "properties": {
+            "permit_status": {"type": "string"},
+            "confidence": {"type": "string"},
+            "recommended_route": {"type": "string"},
+            "quote_handling": {"type": "string"},
+            "automation_safe": {"type": "boolean"},
+            "rule_version": {"type": "string"},
+            "evidence_url": {"type": "string"},
+            "freshness_status": {"type": "string"}
+          },
+          "additionalProperties": false
+        },
+        "disclaimer": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
     "disclaimer": {"type": "string"},
     "engine_version": {"type": "string"}
   }
