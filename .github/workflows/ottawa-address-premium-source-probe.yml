@@ -1,0 +1,27 @@
+name: Ottawa Address Premium Source Probe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'market_research/ottawa_permit_source_probe.py'
+      - '.github/workflows/ottawa-address-premium-source-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Probe official Ottawa 2026 permit item metadata only
+        run: python market_research/ottawa_permit_source_probe.py | tee ottawa_permit_source_probe.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ottawa-permit-source-probe
+          path: ottawa_permit_source_probe.json
+          if-no-files-found: error
