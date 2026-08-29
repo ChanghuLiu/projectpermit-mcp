@@ -43,6 +43,16 @@ def main() -> None:
         workflow = capabilities.get("workflow_guidance") or {}
         if workflow.get("field") != "workflow":
             raise SystemExit(f"Workflow guidance missing from capabilities: {workflow}")
+        gate = capabilities.get("mutation_gate") or {}
+        if set(gate.get("states") or []) != {
+            "READY_FOR_EXPLICIT_WRITE",
+            "NOOP_UNCHANGED",
+            "BLOCKED",
+        }:
+            raise SystemExit(f"Mutation gate missing from paid-bulk capabilities: {gate}")
+        if gate.get("unconditional_create_allowed") is not False:
+            raise SystemExit(f"Paid-bulk capabilities must forbid unconditional create: {gate}")
+        print("paid_bulk_safe_writeback_capabilities=PASS")
         print("paid_bulk_capabilities=PASS")
 
         response = client.post(URL, json=PAYLOAD)
@@ -63,8 +73,11 @@ def main() -> None:
     if resource.get("url") != URL:
         raise SystemExit(f"Unexpected paid-bulk resource URL: {resource}")
     description = str(resource.get("description") or "")
-    if "bulk" not in description.lower() or "1-50" not in description:
+    lower_description = description.lower()
+    if "bulk" not in lower_description or "1-50" not in description:
         raise SystemExit(f"Paid-bulk resource description is incomplete: {description}")
+    if "mutation" not in lower_description or "writeback" not in lower_description:
+        raise SystemExit(f"Paid-bulk resource description missing Layer 5 positioning: {description}")
 
     accepts = challenge.get("accepts") or []
     if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
