@@ -12,6 +12,7 @@ from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 from .openapi_discovery import install_openapi_discovery
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 from .public_discovery import landing_html, llms_text
+from .public_x402_manifest import x402_service_manifest
 from .x402_config import configure_x402
 
 app = FastAPI(title="ProjectPermit", version="0.6.0")
@@ -51,6 +52,12 @@ def public_landing():
 def public_llms_text():
     """Compact agent-readable capability, pricing and discovery guide."""
     return llms_text()
+
+
+@app.get("/.well-known/x402-service.json", include_in_schema=False)
+def public_x402_service_manifest():
+    """Machine-readable seller manifest for zero-cost x402 directory discovery."""
+    return x402_service_manifest()
 
 
 @app.get("/health")
