@@ -11,7 +11,7 @@ class PublicDiscoveryTests(unittest.TestCase):
     def test_landing_targets_problem_intent_and_launch_price(self) -> None:
         with patch.dict(os.environ, {}, clear=True):
             html = landing_html()
-        self.assertIn("Building Permit Requirements API &amp; MCP", html)
+        self.assertIn("Building permit requirements API &amp; MCP", html)
         self.assertIn("contractors and AI agents", html)
         self.assertIn("Toronto building permit", html)
         self.assertIn("Ottawa renovation permit", html)
