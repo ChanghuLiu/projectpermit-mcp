@@ -9,6 +9,7 @@ from copy import deepcopy
 from typing import Any, Callable, Dict
 
 from .address import GatineauAddressAdapter, OttawaAddressAdapter, TorontoAddressAdapter
+from .decision_fingerprint import DECISION_FINGERPRINT_VERSION, compute_decision_fingerprint
 from .http_fetch import fetch_json
 from .jurisdiction_router import evaluate_project
 from .mississauga_address import MississaugaAddressAdapter
@@ -48,6 +49,10 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
     override caller-supplied values; unknown (`None`) overlays never overwrite a
     caller's explicit value.
 
+    Every successful result includes a stable decision fingerprint computed from the
+    normalized decision facts and rule/source/version material. Raw civic address and
+    caller context are excluded from the fingerprint.
+
     A privacy-minimal usage event is emitted after successful evaluation. The event
     never contains the civic address, coordinates or raw property identifiers.
     """
@@ -72,6 +77,8 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
         }
 
     result = evaluate_project(prepared)
+    result["decision_fingerprint_version"] = DECISION_FINGERPRINT_VERSION
+    result["decision_fingerprint"] = compute_decision_fingerprint(prepared, result)
     if address_context is not None:
         result["address_context"] = address_context
     emit_preflight_event(prepared, result)
