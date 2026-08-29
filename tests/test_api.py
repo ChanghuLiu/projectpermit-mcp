@@ -11,7 +11,7 @@ class ApiSmokeTest(unittest.TestCase):
         r = self.client.get('/health')
         self.assertEqual(200, r.status_code)
         self.assertTrue(r.json()['ok'])
-        self.assertEqual('phase1c-0.4.0', r.json()['engine_version'])
+        self.assertEqual('phase1c-0.5.0', r.json()['engine_version'])
 
     def test_free_capabilities(self):
         r = self.client.get('/v1/capabilities')
@@ -33,6 +33,11 @@ class ApiSmokeTest(unittest.TestCase):
             self.assertFalse(jurisdictions[jurisdiction]['address_resolution'])
         self.assertEqual(8, len(payload['project_families']))
         self.assertEqual('/v1/preview-project-requirements', payload['free_preview_resource'])
+        self.assertEqual(
+            '/v1/preview-project-requirements-batch',
+            payload['free_batch_preview_resource'],
+        )
+        self.assertEqual(50, payload['bulk_max_items'])
         self.assertFalse(payload['free_preview_address_resolution'])
 
     def test_free_preview_returns_deterministic_result(self):
@@ -51,6 +56,42 @@ class ApiSmokeTest(unittest.TestCase):
             'project': {'family': 'window_door', 'action': 'replace_same_size'},
             'address': '123 Example St',
             'resolve_address': True,
+        })
+        self.assertEqual(422, r.status_code)
+
+    def test_free_batch_preview_isolates_bad_items_and_returns_audit(self):
+        r = self.client.post('/v1/preview-project-requirements-batch', json={
+            'items': [
+                {
+                    'client_ref': 'lead-good',
+                    'jurisdiction': 'ottawa_on',
+                    'project': {'family': 'window_door', 'action': 'replace_same_size'},
+                    'property': {'heritage': False},
+                },
+                {
+                    'client_ref': 'lead-bad',
+                    'jurisdiction': 'ottawa_on',
+                },
+            ],
+        })
+        self.assertEqual(200, r.status_code)
+        payload = r.json()
+        self.assertEqual(2, payload['batch_size'])
+        self.assertEqual(1, payload['succeeded'])
+        self.assertEqual(1, payload['failed'])
+        self.assertEqual('lead-good', payload['results'][0]['client_ref'])
+        self.assertEqual('LIKELY_NOT_REQUIRED', payload['results'][0]['result']['determination'])
+        self.assertEqual('validation_error', payload['results'][1]['error']['type'])
+        self.assertGreaterEqual(payload['audit']['unique_rule_ids'], 1)
+        self.assertGreaterEqual(payload['audit']['evidence_links'], 1)
+
+    def test_free_batch_preview_rejects_batch_level_oversize(self):
+        item = {
+            'jurisdiction': 'ottawa_on',
+            'project': {'family': 'window_door', 'action': 'replace_same_size'},
+        }
+        r = self.client.post('/v1/preview-project-requirements-batch', json={
+            'items': [item] * 51,
         })
         self.assertEqual(422, r.status_code)
 

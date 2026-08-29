@@ -1,0 +1,23 @@
+{
+  "name": "check_project_requirements_batch",
+  "description": "Evaluate 1-50 normalized Canadian construction/renovation projects in one call with per-item error isolation, deterministic permit-applicability results, official-source evidence, rule/version metadata and a batch audit summary.",
+  "inputSchema": {"$ref": "../schemas/batch_request.schema.json"},
+  "outputSchema": {"$ref": "../schemas/batch_response.schema.json"},
+  "supported_jurisdictions": [
+    "gatineau_qc",
+    "ottawa_on",
+    "toronto_on",
+    "mississauga_on",
+    "laval_qc",
+    "longueuil_qc",
+    "vancouver_bc"
+  ],
+  "max_items": 50,
+  "non_goals": [
+    "legal opinion",
+    "municipal approval",
+    "building-code design certification",
+    "permit submission",
+    "engineering safety certification"
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectpermit.example/schemas/check-project-requirements-batch.response.json",
+  "title": "check_project_requirements_batch response",
+  "type": "object",
+  "required": ["batch_size", "succeeded", "failed", "determination_counts", "audit", "results"],
+  "properties": {
+    "batch_size": {"type": "integer", "minimum": 1, "maximum": 50},
+    "succeeded": {"type": "integer", "minimum": 0},
+    "failed": {"type": "integer", "minimum": 0},
+    "determination_counts": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "audit": {
+      "type": "object",
+      "required": ["engine_versions", "unique_rule_ids", "source_verified_at_oldest", "source_verified_at_newest", "evidence_links"],
+      "properties": {
+        "engine_versions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "unique_rule_ids": {"type": "integer", "minimum": 0},
+        "source_verified_at_oldest": {"type": ["string", "null"], "format": "date"},
+        "source_verified_at_newest": {"type": ["string", "null"], "format": "date"},
+        "evidence_links": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["index", "client_ref", "ok"],
+        "properties": {
+          "index": {"type": "integer", "minimum": 0},
+          "client_ref": {"type": ["string", "null"]},
+          "ok": {"type": "boolean"},
+          "result": {"$ref": "response.schema.json"},
+          "error": {
+            "type": "object",
+            "required": ["type", "message"],
+            "properties": {
+              "type": {"enum": ["validation_error", "evaluation_error"]},
+              "message": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
