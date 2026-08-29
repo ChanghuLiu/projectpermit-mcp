@@ -52,6 +52,23 @@ What it tells us:
 - this is a data-access/channel negative, not evidence that permit-applicability incidence is low;
 - CHBA was contacted following the referral.
 
+### Qualified conversation 3 — SubmitX
+
+Status: **E1 / qualified build-vs-buy signal / follow-up open**.
+
+On 2026-08-29 a human SubmitX respondent said the Quebec contractor ERP already integrates some light municipal/regulatory logic inside its generative-AI/compliance stack and that these kinds of problems are mainly handled internally. The same reply said an external solution could still be interesting if it offers materially deeper market coverage/depth at reasonable cost, and explicitly left the door open to partnership/innovation.
+
+No monthly denominator, repeated usage, integration-resource commitment or payment commitment was supplied in that reply.
+
+What it tells us:
+
+- the build-vs-buy threat is real: a Quebec vertical SaaS can internalize at least a light regulatory layer;
+- a buyer may still prefer an external layer if cross-municipality depth/maintenance is materially stronger than a lightweight internal implementation and economics are reasonable;
+- this does **not** validate willingness to pay or useful call volume;
+- a bounded monthly follow-up was sent asking for one band: `<50`, `50-200`, `200-500`, `500+`, or `too rare to automate` relevant projects/month.
+
+Evidence ledger: `data/submitx_build_vs_buy_reply_20260829.csv`.
+
 ## Not counted as qualified conversations
 
 ### Buildxact
@@ -80,7 +97,7 @@ Third-party-listed `.com` address bounced because the real public domain is `.ca
 
 ## Current count
 
-> **2 / 20 qualified conversations**
+> **3 / 20 qualified conversations**
 
 Of these:
 
@@ -88,7 +105,7 @@ Of these:
 - E3 representative historical benchmark: **0**
 - E4 repeated external operational usage: **0**
 - E5 economic/integration commitment: **0**
-- E1 substantive workflow boundary: **1** (Permitio)
+- E1 substantive workflow/build-vs-buy boundary: **2** (Permitio, SubmitX)
 - qualified data-access/channel negative: **1** (BILD)
 
 The project is therefore **not yet entitled to stop merely because many cold emails have not answered**. At the same time, the score must not improve because many emails were sent.
@@ -114,6 +131,7 @@ A broad set of targeted messages was sent or followed up on 2026-08-28, includin
 - CHBA / RenoMark
 - Contrax
 - Elper
+- SubmitX
 - SoumissionRenovation
 - TradeOps Solutions (delivery failure)
 - DigitalStaff
