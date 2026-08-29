@@ -67,8 +67,8 @@ async def main() -> None:
                 )
             bundle = info_payload.get("action_bundle") or {}
             includes = set(bundle.get("includes") or [])
-            if bundle.get("field") != "action_bundle" or not {"identity", "change", "tasks", "evidence"}.issubset(includes):
-                raise SystemExit(f"Paid MCP action bundle missing identity/change contract: {bundle}")
+            if bundle.get("field") != "action_bundle" or not {"identity", "change", "tasks", "evidence", "mutation_gate"}.issubset(includes):
+                raise SystemExit(f"Paid MCP action bundle missing identity/change/mutation gate contract: {bundle}")
             integrations = set(bundle.get("integration_proposals") or [])
             if not {"jobber", "servicem8"}.issubset(integrations):
                 raise SystemExit(f"Paid MCP action bundle missing integration proposals: {bundle}")
@@ -77,6 +77,23 @@ async def main() -> None:
                 raise SystemExit(f"Paid MCP decision identity contract missing: {identity}")
             if identity.get("idempotency_field") != "action_bundle.identity.idempotency_key":
                 raise SystemExit(f"Paid MCP idempotency contract missing: {identity}")
+            gate = info_payload.get("mutation_gate") or {}
+            if set(gate.get("states") or []) != {
+                "READY_FOR_EXPLICIT_WRITE",
+                "NOOP_UNCHANGED",
+                "BLOCKED",
+            }:
+                raise SystemExit(f"Paid MCP mutation gate states missing: {gate}")
+            if gate.get("write_contract") != "explicit_authorized_atomic_upsert_by_idempotency_key":
+                raise SystemExit(f"Paid MCP safe-writeback contract missing: {gate}")
+            if gate.get("unconditional_create_allowed") is not False:
+                raise SystemExit(f"Paid MCP must forbid unconditional creates: {gate}")
+            if gate.get("external_mutation_performed_by_projectpermit") is not False:
+                raise SystemExit(f"Paid MCP must advertise no external mutation execution: {gate}")
+            writeback = info_payload.get("safe_writeback_proposals") or {}
+            if writeback.get("jobber") != "mutation_gate_supported" or writeback.get("servicem8") != "mutation_gate_supported":
+                raise SystemExit(f"Paid MCP safe writeback proposals missing: {writeback}")
+            print("free_info_safe_writeback=PASS")
             print("free_info_identity=PASS")
 
             result = await session.call_tool(
@@ -96,6 +113,7 @@ async def main() -> None:
             accepts = challenge["accepts"]
             if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
                 raise SystemExit(f"Expected payment network missing: {EXPECTED_NETWORK}: {accepts}")
+            print("paid_mcp_safe_writeback_discovery=PASS")
             print("paid_mcp_identity_discovery=PASS")
             print("paid_mcp_seven_jurisdictions=PASS")
             print("paid_mcp_unpaid_smoke=PASS")

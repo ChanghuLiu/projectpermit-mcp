@@ -26,8 +26,8 @@
     },
     "action_bundle": {
       "type": "object",
-      "description": "Platform-neutral evidence/action package with deterministic identity, duplicate-suppression and change classification.",
-      "required": ["bundle_version", "identity", "change", "decision", "routing", "required_inputs", "tasks", "evidence", "audit", "writeback_hints", "disclaimer"],
+      "description": "Platform-neutral evidence/action package with deterministic identity, duplicate-suppression, change classification and safe-writeback mutation gating.",
+      "required": ["bundle_version", "identity", "change", "decision", "routing", "required_inputs", "tasks", "evidence", "audit", "writeback_hints", "mutation_gate", "disclaimer"],
       "properties": {
         "bundle_version": {"type": "string"},
         "identity": {
@@ -68,6 +68,43 @@
           "type": "object",
           "required": ["permit_status", "confidence", "recommended_route", "quote_handling", "automation_safe", "rule_version", "evidence_url", "freshness_status", "bundle_id", "idempotency_key", "change_classification"],
           "properties": {"permit_status": {"type": "string"}, "confidence": {"type": "string"}, "recommended_route": {"type": "string"}, "quote_handling": {"type": "string"}, "automation_safe": {"type": "boolean"}, "rule_version": {"type": "string"}, "evidence_url": {"type": "string"}, "freshness_status": {"type": "string"}, "bundle_id": {"type": "string"}, "idempotency_key": {"type": "string"}, "change_classification": {"type": "string"}},
+          "additionalProperties": false
+        },
+        "mutation_gate": {
+          "type": "object",
+          "required": ["gate_version", "state", "mutation_allowed", "execution_requires_explicit_request", "recommended_operation", "reason_codes", "idempotency", "safeguards", "execution_note"],
+          "properties": {
+            "gate_version": {"type": "string"},
+            "state": {"enum": ["READY_FOR_EXPLICIT_WRITE", "NOOP_UNCHANGED", "BLOCKED"]},
+            "mutation_allowed": {"type": "boolean"},
+            "execution_requires_explicit_request": {"const": true},
+            "recommended_operation": {"enum": ["UPSERT_OPERATIONAL_ROUTE", "UPSERT_METADATA", "NOOP", "NONE"]},
+            "reason_codes": {"type": "array", "items": {"enum": ["MISSING_IDEMPOTENCY_KEY", "MISSING_WORK_RECORD_SCOPE", "AUTOMATION_NOT_SAFE", "EVIDENCE_NOT_CURRENT", "REQUIRED_INPUTS_PENDING", "DUPLICATE_SUPPRESSED", "SAME_OPERATIONAL_ROUTE_METADATA_REFRESH", "SAFETY_GUARDS_PASSED"]}},
+            "idempotency": {
+              "type": "object",
+              "required": ["mode", "idempotency_key", "scope_fingerprint", "prior_same_key", "unconditional_create_allowed"],
+              "properties": {
+                "mode": {"const": "ATOMIC_UPSERT"},
+                "idempotency_key": {"type": ["string", "null"]},
+                "scope_fingerprint": {"type": ["string", "null"]},
+                "prior_same_key": {"type": "boolean"},
+                "unconditional_create_allowed": {"const": false}
+              },
+              "additionalProperties": false
+            },
+            "safeguards": {
+              "type": "object",
+              "required": ["automation_safe", "evidence_freshness", "required_inputs_pending", "change_classification"],
+              "properties": {
+                "automation_safe": {"type": "boolean"},
+                "evidence_freshness": {"enum": ["CURRENT", "REVIEW_DUE", "STALE", "UNKNOWN"]},
+                "required_inputs_pending": {"type": "boolean"},
+                "change_classification": {"enum": ["FIRST_OBSERVATION", "UNCHANGED", "DECISION_CHANGED", "ROUTE_CHANGED", "INPUT_CHANGED", "RULESET_CHANGED", "EVIDENCE_REFRESHED", "IDENTITY_VERSION_CHANGED", "UNKNOWN"]}
+              },
+              "additionalProperties": false
+            },
+            "execution_note": {"type": "string"}
+          },
           "additionalProperties": false
         },
         "disclaimer": {"type": "string"}

@@ -54,7 +54,8 @@ HTTP_DISCOVERY_INPUT_SCHEMA: dict[str, Any] = {
             "description": (
                 "Optional workflow/integration context. For repeated checks pass the prior "
                 "action_bundle.identity as prior_decision_identity. Platform work-object ids may "
-                "be supplied to scope idempotency; raw ids are not returned in decision identity."
+                "be supplied to scope idempotency and safe-writeback gating; raw ids are not "
+                "returned in decision identity."
             ),
         },
         "resolve_address": {
@@ -89,7 +90,7 @@ HTTP_DISCOVERY_OUTPUT_EXAMPLE: dict[str, Any] = {
         },
     },
     "action_bundle": {
-        "bundle_version": "2026-08-29.2",
+        "bundle_version": "2026-08-29.3",
         "identity": {
             "identity_version": "2026-08-29.1",
             "idempotency_version": "1",
@@ -127,6 +128,28 @@ HTTP_DISCOVERY_OUTPUT_EXAMPLE: dict[str, Any] = {
         ],
         "evidence": [],
         "audit": {"generated_from": "deterministic_preflight"},
+        "mutation_gate": {
+            "gate_version": "2026-08-29.1",
+            "state": "BLOCKED",
+            "mutation_allowed": False,
+            "execution_requires_explicit_request": True,
+            "recommended_operation": "NONE",
+            "reason_codes": ["MISSING_WORK_RECORD_SCOPE"],
+            "idempotency": {
+                "mode": "ATOMIC_UPSERT",
+                "idempotency_key": "ppidem_example",
+                "scope_fingerprint": None,
+                "prior_same_key": False,
+                "unconditional_create_allowed": False,
+            },
+            "safeguards": {
+                "automation_safe": True,
+                "evidence_freshness": "CURRENT",
+                "required_inputs_pending": False,
+                "change_classification": "FIRST_OBSERVATION",
+            },
+            "execution_note": "ProjectPermit has not performed a mutation; a scoped authorized integration is required for writeback.",
+        },
     },
     "engine_version": "phase0-0.1.0",
 }
@@ -217,6 +240,37 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
                 "evidence": {"type": "array"},
                 "audit": {"type": "object"},
                 "writeback_hints": {"type": "object"},
+                "mutation_gate": {
+                    "type": "object",
+                    "properties": {
+                        "gate_version": {"type": "string"},
+                        "state": {
+                            "type": "string",
+                            "enum": ["READY_FOR_EXPLICIT_WRITE", "NOOP_UNCHANGED", "BLOCKED"],
+                        },
+                        "mutation_allowed": {"type": "boolean"},
+                        "execution_requires_explicit_request": {"type": "boolean"},
+                        "recommended_operation": {
+                            "type": "string",
+                            "enum": ["UPSERT_OPERATIONAL_ROUTE", "UPSERT_METADATA", "NOOP", "NONE"],
+                        },
+                        "reason_codes": {"type": "array", "items": {"type": "string"}},
+                        "idempotency": {"type": "object"},
+                        "safeguards": {"type": "object"},
+                        "execution_note": {"type": "string"},
+                    },
+                    "required": [
+                        "gate_version",
+                        "state",
+                        "mutation_allowed",
+                        "execution_requires_explicit_request",
+                        "recommended_operation",
+                        "reason_codes",
+                        "idempotency",
+                        "safeguards",
+                        "execution_note",
+                    ],
+                },
                 "disclaimer": {"type": "string"},
             },
             "required": [
@@ -229,6 +283,7 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
                 "tasks",
                 "evidence",
                 "audit",
+                "mutation_gate",
             ],
         },
         "disclaimer": {"type": "string"},
@@ -333,8 +388,8 @@ def configure_x402(app: Any) -> None:
         "Ottawa, Toronto, Mississauga, Laval, Longueuil and Vancouver. Returns "
         "deterministic rule results, official-source evidence, freshness-guarded workflow "
         "routing, targeted missing-fact questions, a platform-neutral evidence/action bundle, "
-        "deterministic decision fingerprints, idempotency key and repeat-check change classification. "
-        "Not municipal authorization or legal advice."
+        "deterministic decision fingerprints, idempotency key, repeat-check change classification "
+        "and safe-writeback mutation gate. Not municipal authorization or legal advice."
     )
 
     routes = {
@@ -366,7 +421,7 @@ def configure_x402(app: Any) -> None:
             description=(
                 "Paid bulk ProjectPermit preflight for 1-50 normalized projects with "
                 "per-item error isolation, workflow/action bundles, decision identity/change metadata, "
-                "and batch audit metadata. " + common_description
+                "safe-writeback mutation gates and batch audit metadata. " + common_description
             ),
         ),
     }

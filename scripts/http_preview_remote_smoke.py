@@ -10,6 +10,11 @@ BASE = os.getenv(
     "https://projectpermit-api-v2-production.up.railway.app",
 ).rstrip("/")
 PREVIEW = f"{BASE}/v1/preview-project-requirements"
+WRITE_SCOPE_CONTEXT = {
+    "source_platform": "projectpermit_ci",
+    "source_object_type": "preview_record",
+    "source_object_id": "http-preview-smoke-ottawa-1",
+}
 
 
 def _preview(
@@ -46,14 +51,35 @@ def _first_rule_id(payload: dict) -> str | None:
 
 def _identity(payload: dict) -> dict:
     bundle = payload.get("action_bundle") or {}
-    if bundle.get("bundle_version") != "2026-08-29.2":
-        raise SystemExit(f"HTTP preview missing Layer 4 action bundle: {bundle}")
+    if bundle.get("bundle_version") != "2026-08-29.3":
+        raise SystemExit(f"HTTP preview missing Layer 5 action bundle: {bundle}")
     identity = bundle.get("identity") or {}
     if not identity.get("bundle_id") or not identity.get("idempotency_key"):
         raise SystemExit(f"HTTP preview missing decision identity: {bundle}")
     if not str(identity["bundle_id"]).startswith("ppb_"):
         raise SystemExit(f"Unexpected HTTP bundle id: {identity}")
+    if not bundle.get("mutation_gate"):
+        raise SystemExit(f"HTTP preview missing safe-writeback mutation gate: {bundle}")
     return identity
+
+
+def _gate(payload: dict) -> dict:
+    gate = ((payload.get("action_bundle") or {}).get("mutation_gate") or {})
+    required = {
+        "state",
+        "mutation_allowed",
+        "execution_requires_explicit_request",
+        "recommended_operation",
+        "idempotency",
+        "safeguards",
+    }
+    if not required.issubset(gate):
+        raise SystemExit(f"HTTP mutation gate contract incomplete: {gate}")
+    if gate.get("execution_requires_explicit_request") is not True:
+        raise SystemExit(f"Mutation gate must require explicit execution request: {gate}")
+    if (gate.get("idempotency") or {}).get("unconditional_create_allowed") is not False:
+        raise SystemExit(f"Mutation gate must forbid unconditional create: {gate}")
+    return gate
 
 
 def main() -> None:
@@ -66,27 +92,53 @@ def main() -> None:
         raise SystemExit(f"Free preview must advertise address resolution disabled: {info}")
     bundle_info = info.get("action_bundle") or {}
     includes = set(bundle_info.get("includes") or [])
-    if not {"identity", "change"}.issubset(includes):
-        raise SystemExit(f"HTTP capabilities missing decision identity/change: {bundle_info}")
+    if not {"identity", "change", "mutation_gate"}.issubset(includes):
+        raise SystemExit(f"HTTP capabilities missing identity/change/mutation gate: {bundle_info}")
     identity_capabilities = set(bundle_info.get("identity_capabilities") or [])
     if "work_record_scoped_idempotency" not in identity_capabilities:
         raise SystemExit(f"HTTP capabilities missing scoped idempotency: {bundle_info}")
+    gate_info = info.get("mutation_gate") or {}
+    if set(gate_info.get("states") or []) != {
+        "READY_FOR_EXPLICIT_WRITE",
+        "NOOP_UNCHANGED",
+        "BLOCKED",
+    }:
+        raise SystemExit(f"HTTP capabilities missing Layer 5 gate states: {gate_info}")
+    if gate_info.get("external_mutation_performed_by_projectpermit") is not False:
+        raise SystemExit(f"ProjectPermit must advertise no external mutation execution: {gate_info}")
 
     project = {"family": "window_door", "action": "replace_same_size"}
     property_facts = {"heritage": False}
-    payload = _preview("ottawa_on", project, property_facts)
+    payload = _preview(
+        "ottawa_on",
+        project,
+        property_facts,
+        context=WRITE_SCOPE_CONTEXT,
+    )
     if payload.get("determination") != "LIKELY_NOT_REQUIRED":
         raise SystemExit(f"Unexpected preview result: {payload}")
     first_identity = _identity(payload)
     first_bundle = payload.get("action_bundle") or {}
     if (first_bundle.get("change") or {}).get("classification") != "FIRST_OBSERVATION":
         raise SystemExit(f"Initial HTTP preview did not classify FIRST_OBSERVATION: {first_bundle}")
+    first_gate = _gate(payload)
+    if first_gate.get("state") != "READY_FOR_EXPLICIT_WRITE":
+        raise SystemExit(f"Scoped safe first observation must be READY: {first_gate}")
+    if first_gate.get("mutation_allowed") is not True:
+        raise SystemExit(f"READY gate must mark mutation_allowed=true: {first_gate}")
+    if first_gate.get("recommended_operation") != "UPSERT_OPERATIONAL_ROUTE":
+        raise SystemExit(f"Unexpected first writeback operation: {first_gate}")
+    if not str((first_gate.get("idempotency") or {}).get("scope_fingerprint") or "").startswith("pps_"):
+        raise SystemExit(f"Scoped first observation missing one-way scope fingerprint: {first_gate}")
 
     repeat = _preview(
         "ottawa_on",
         project,
         property_facts,
-        context={"prior_decision_identity": first_identity},
+        context={
+            **WRITE_SCOPE_CONTEXT,
+            "prior_decision_identity": first_identity,
+        },
     )
     repeat_identity = _identity(repeat)
     repeat_bundle = repeat.get("action_bundle") or {}
@@ -94,6 +146,14 @@ def main() -> None:
         raise SystemExit(f"Repeated HTTP preview did not classify UNCHANGED: {repeat_bundle}")
     if repeat_identity.get("idempotency_key") != first_identity.get("idempotency_key"):
         raise SystemExit(f"Repeated HTTP preview changed idempotency key: {repeat_bundle}")
+    repeat_gate = _gate(repeat)
+    if repeat_gate.get("state") != "NOOP_UNCHANGED":
+        raise SystemExit(f"Repeated safe writeback must be duplicate-suppressed NOOP: {repeat_gate}")
+    if repeat_gate.get("mutation_allowed") is not False:
+        raise SystemExit(f"NOOP gate must block duplicate mutation: {repeat_gate}")
+    if repeat_gate.get("recommended_operation") != "NOOP":
+        raise SystemExit(f"Repeated safe writeback must recommend NOOP: {repeat_gate}")
+    print("http_preview_safe_writeback_ready_then_noop=PASS")
     print("http_preview_identity_repeat=PASS")
 
     clean_basement = {
@@ -113,6 +173,9 @@ def main() -> None:
     for jurisdiction, (expected_determination, expected_rule_id) in divergence_expectations.items():
         result = _preview(jurisdiction, clean_basement)
         _identity(result)
+        gate = _gate(result)
+        if gate.get("state") != "BLOCKED" or "MISSING_WORK_RECORD_SCOPE" not in (gate.get("reason_codes") or []):
+            raise SystemExit(f"Unscoped informational preview must remain writeback-blocked: {gate}")
         determination = result.get("determination")
         rule_id = _first_rule_id(result)
         observed[jurisdiction] = str(determination)

@@ -81,6 +81,7 @@ def capabilities():
                 "evidence",
                 "audit",
                 "writeback_hints",
+                "mutation_gate",
             ],
             "identity_capabilities": [
                 "decision_fingerprint",
@@ -99,13 +100,35 @@ def capabilities():
             ],
             "purpose": (
                 "Provide one PII-minimal evidence/action package with deterministic "
-                "duplicate suppression and change detection for contractor, property "
-                "and field-service integrations without mutating upstream systems."
+                "duplicate suppression, change detection and safe-writeback gating for "
+                "contractor, property and field-service integrations."
             ),
+        },
+        "mutation_gate": {
+            "field": "action_bundle.mutation_gate",
+            "states": [
+                "READY_FOR_EXPLICIT_WRITE",
+                "NOOP_UNCHANGED",
+                "BLOCKED",
+            ],
+            "ready_requires": [
+                "work_record_scope",
+                "automation_safe",
+                "CURRENT_evidence",
+                "no_required_inputs",
+            ],
+            "write_contract": "explicit_authorized_atomic_upsert_by_idempotency_key",
+            "unconditional_create_allowed": False,
+            "external_mutation_performed_by_projectpermit": False,
         },
         "integration_proposals": {
             "jobber": "read_only_proposal_supported",
             "servicem8": "read_only_proposal_supported",
+        },
+        "safe_writeback_proposals": {
+            "jobber": "mutation_gate_supported",
+            "servicem8": "mutation_gate_supported",
+            "execution": "not_enabled_in_projectpermit",
         },
         "free_preview_resource": "/v1/preview-project-requirements",
         "free_batch_preview_resource": "/v1/preview-project-requirements-batch",

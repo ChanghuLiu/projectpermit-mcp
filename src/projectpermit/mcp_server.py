@@ -34,19 +34,21 @@ def build_server():
             "check_project_requirements_batch for up to 50 normalized projects. Results "
             "include deterministic workflow guidance plus a platform-neutral action_bundle "
             "containing decision/routing, proposed tasks, official evidence, audit metadata, "
-            "deterministic decision identity and an idempotency key for duplicate suppression. "
-            "For repeated checks of the same work record, pass the prior action_bundle.identity "
-            "as context.prior_decision_identity to receive change.classification. Preserve unknown "
-            "facts rather than guessing them; the engine can return review or municipal-confirmation "
-            "states when the facts do not support a safe yes/no. Do not use ProjectPermit as "
-            "municipal authorization, legal advice, engineering review, plan/code review, "
-            "permit filing or inspection approval."
+            "deterministic decision identity, duplicate-suppression idempotency and a safe "
+            "writeback mutation gate. For repeated checks of the same work record, pass the "
+            "prior action_bundle.identity as context.prior_decision_identity to receive "
+            "change.classification and NOOP_UNCHANGED when appropriate. A READY mutation gate "
+            "does not execute a write; an authorized integration must still explicitly request "
+            "an atomic upsert by idempotency_key. Preserve unknown facts rather than guessing them; "
+            "the engine can return review or municipal-confirmation states when the facts do not "
+            "support a safe yes/no. Do not use ProjectPermit as municipal authorization, legal "
+            "advice, engineering review, plan/code review, permit filing or inspection approval."
         ),
     )
 
     @server.tool()
     def projectpermit_info() -> dict[str, Any]:
-        """Use first to get supported Canadian cities/families, action-bundle identity semantics and starter examples. Capability discovery only; no permit determination is performed."""
+        """Use first to get supported Canadian cities/families, identity/idempotency and safe-writeback semantics. Capability discovery only; no permit determination is performed."""
         return {
             "service": "ProjectPermit",
             "tool": "check_project_requirements",
@@ -82,10 +84,12 @@ def build_server():
                     "evidence",
                     "audit",
                     "writeback_hints",
+                    "mutation_gate",
                 ],
                 "description": (
                     "Platform-neutral evidence/action package for contractor and field-service "
-                    "integrations. Jobber and ServiceM8 read-only proposal mapping is supported."
+                    "integrations. Jobber and ServiceM8 read-only proposal mapping plus safe "
+                    "writeback gating are supported; ProjectPermit performs no external mutation."
                 ),
             },
             "decision_identity": {
@@ -117,6 +121,28 @@ def build_server():
                     "from ruleset/evidence refreshes without returning raw platform object ids."
                 ),
             },
+            "mutation_gate": {
+                "field": "action_bundle.mutation_gate",
+                "states": [
+                    "READY_FOR_EXPLICIT_WRITE",
+                    "NOOP_UNCHANGED",
+                    "BLOCKED",
+                ],
+                "ready_requires": [
+                    "work_record_scope",
+                    "automation_safe",
+                    "CURRENT_evidence",
+                    "no_required_inputs",
+                ],
+                "write_contract": "explicit_authorized_atomic_upsert_by_idempotency_key",
+                "unconditional_create_allowed": False,
+                "external_mutation_performed_by_projectpermit": False,
+            },
+            "safe_writeback_proposals": {
+                "jobber": "mutation_gate_supported",
+                "servicem8": "mutation_gate_supported",
+                "execution": "not_enabled_in_projectpermit",
+            },
             "example": {
                 "jurisdiction": "ottawa_on",
                 "project": {"family": "window_door", "action": "replace_same_size"},
@@ -143,9 +169,9 @@ def build_server():
             },
             "validation_hint": (
                 "For repeat pilot usage, context.client_tag may be a stable non-sensitive "
-                "integration label. For work-record duplicate suppression, integrations may "
-                "supply context.source_platform/source_object_type/source_object_id; only a "
-                "one-way scope fingerprint is returned in decision identity."
+                "integration label. For work-record duplicate suppression and writeback gating, "
+                "integrations may supply context.source_platform/source_object_type/source_object_id; "
+                "only a one-way scope fingerprint is returned in decision identity."
             ),
             "disclaimer": (
                 "Preflight information only; not municipal authorization or legal advice."
@@ -161,7 +187,7 @@ def build_server():
         context: dict[str, Any] | None = None,
         resolve_address: bool = False,
     ) -> dict[str, Any]:
-        """Use for a proposed renovation/building scope when an agent needs permit applicability before quoting/scheduling. Returns determination, evidence, workflow/action bundle, deterministic identity, idempotency key and change classification when context.prior_decision_identity is supplied."""
+        """Use for proposed work before quoting/scheduling. Returns evidence-linked determination, workflow/action bundle, deterministic identity, duplicate-suppression idempotency and mutation gate. Pass context.prior_decision_identity for repeat checks."""
         return run_preflight(
             {
                 "jurisdiction": jurisdiction,
@@ -175,7 +201,7 @@ def build_server():
 
     @server.tool()
     def check_project_requirements_batch(items: list[dict[str, Any]]) -> dict[str, Any]:
-        """Evaluate 1-50 normalized projects in one call. Each item may include prior_decision_identity in context; results include per-item action-bundle identity/change metadata and batch-level audit."""
+        """Evaluate 1-50 normalized projects in one call. Results include per-item identity/change and safe-writeback mutation gates plus batch-level audit."""
         return run_batch_preflight(
             items,
             allow_address=True,

@@ -56,9 +56,9 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
     missing facts are worth collecting next.
 
     A platform-neutral `action_bundle` is then generated from the completed result.
-    It packages the decision, route, official evidence, tasks, missing inputs and
-    audit metadata for Jobber/ServiceM8/other field-service adapters without
-    mutating those platforms.
+    It packages the decision, route, official evidence, tasks, missing inputs, audit
+    metadata, deterministic identity and safe-writeback mutation gate for
+    Jobber/ServiceM8/other field-service adapters without mutating those platforms.
 
     A privacy-minimal usage event is emitted after successful evaluation. The event
     never contains the civic address, coordinates or raw property identifiers.

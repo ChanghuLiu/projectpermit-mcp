@@ -100,12 +100,30 @@ def _assert_identity(bundle: dict) -> dict:
     return identity
 
 
+def _assert_gate(bundle: dict) -> dict:
+    gate = bundle.get("mutation_gate") or {}
+    if gate.get("state") not in {
+        "READY_FOR_EXPLICIT_WRITE",
+        "NOOP_UNCHANGED",
+        "BLOCKED",
+    }:
+        raise SystemExit(f"Safe-writeback mutation gate missing/invalid: {gate}")
+    if gate.get("execution_requires_explicit_request") is not True:
+        raise SystemExit(f"Mutation gate must require explicit execution: {gate}")
+    idempotency = gate.get("idempotency") or {}
+    if idempotency.get("mode") != "ATOMIC_UPSERT":
+        raise SystemExit(f"Mutation gate must require atomic upsert: {gate}")
+    if idempotency.get("unconditional_create_allowed") is not False:
+        raise SystemExit(f"Mutation gate must forbid unconditional creates: {gate}")
+    return gate
+
+
 def _assert_action_bundle(payload: dict, *, expected_route: str | None = None) -> dict:
     bundle = payload.get("action_bundle") or {}
     if not bundle:
         raise SystemExit(f"action_bundle missing from preflight result: {payload}")
-    if bundle.get("bundle_version") != "2026-08-29.2":
-        raise SystemExit(f"Unexpected action bundle version: {bundle}")
+    if bundle.get("bundle_version") != "2026-08-29.3":
+        raise SystemExit(f"Unexpected Layer 5 action bundle version: {bundle}")
     routing = bundle.get("routing") or {}
     if expected_route and routing.get("recommended_route") != expected_route:
         raise SystemExit(f"Unexpected action bundle route: {bundle}")
@@ -113,7 +131,17 @@ def _assert_action_bundle(payload: dict, *, expected_route: str | None = None) -
     if audit.get("generated_from") != "deterministic_preflight":
         raise SystemExit(f"Action bundle audit missing deterministic origin: {bundle}")
     _assert_identity(bundle)
+    _assert_gate(bundle)
     return bundle
+
+
+def _scoped_context(jurisdiction: str) -> dict:
+    return {
+        **INTERNAL_CONTEXT,
+        "source_platform": "projectpermit_ci",
+        "source_object_type": "mcp_record",
+        "source_object_id": f"mcp-smoke-{jurisdiction}",
+    }
 
 
 async def main() -> None:
@@ -153,11 +181,21 @@ async def main() -> None:
                 raise SystemExit(f"Unexpected bulk_max_items: {info.get('bulk_max_items')}")
             bundle_info = info.get("action_bundle") or {}
             includes = set(bundle_info.get("includes") or [])
-            if bundle_info.get("field") != "action_bundle" or not {"identity", "change", "tasks"}.issubset(includes):
+            if bundle_info.get("field") != "action_bundle" or not {"identity", "change", "tasks", "mutation_gate"}.issubset(includes):
                 raise SystemExit(f"Identity/action bundle contract missing from free MCP info: {bundle_info}")
             identity_info = info.get("decision_identity") or {}
             if identity_info.get("repeat_check_input") != "context.prior_decision_identity":
                 raise SystemExit(f"Decision identity repeat contract missing from info: {identity_info}")
+            gate_info = info.get("mutation_gate") or {}
+            if set(gate_info.get("states") or []) != {
+                "READY_FOR_EXPLICIT_WRITE",
+                "NOOP_UNCHANGED",
+                "BLOCKED",
+            }:
+                raise SystemExit(f"Mutation gate discovery missing states: {gate_info}")
+            if gate_info.get("external_mutation_performed_by_projectpermit") is not False:
+                raise SystemExit(f"Free MCP must advertise no external mutation execution: {gate_info}")
+            print("remote_mcp_info_safe_writeback=PASS")
             print("remote_mcp_info_identity=PASS")
 
             batch_result = await session.call_tool(
@@ -188,7 +226,9 @@ async def main() -> None:
             if not good or good.get("client_ref") != "smoke-good" or good.get("ok") is not True:
                 raise SystemExit(f"Bulk MCP good-item correlation failed: {good}")
             good_result = good.get("result") or {}
-            _assert_action_bundle(good_result, expected_route="CONTINUE_WITH_EVIDENCE")
+            good_bundle = _assert_action_bundle(good_result, expected_route="CONTINUE_WITH_EVIDENCE")
+            if (good_bundle.get("mutation_gate") or {}).get("state") != "BLOCKED":
+                raise SystemExit(f"Unscoped batch item should remain writeback-blocked: {good_bundle}")
             if not bad or bad.get("client_ref") != "smoke-bad" or bad.get("ok") is not False:
                 raise SystemExit(f"Bulk MCP bad-item isolation failed: {bad}")
             print("remote_bulk_mcp_identity=PASS")
@@ -202,7 +242,7 @@ async def main() -> None:
                         "jurisdiction": jurisdiction,
                         "project": project,
                         "property": property_facts,
-                        "context": INTERNAL_CONTEXT,
+                        "context": _scoped_context(jurisdiction),
                     },
                 )
                 if result.is_error:
@@ -216,7 +256,10 @@ async def main() -> None:
                         f"Unexpected determination for {jurisdiction}: expected {expected}, got {actual}: {payload}"
                     )
                 bundle = _assert_action_bundle(payload)
+                gate = bundle.get("mutation_gate") or {}
                 if jurisdiction == "ottawa_on":
+                    if gate.get("state") != "READY_FOR_EXPLICIT_WRITE":
+                        raise SystemExit(f"Scoped safe Ottawa result should be READY: {gate}")
                     first_ottawa_identity = bundle["identity"]
                     first_ottawa_key = first_ottawa_identity["idempotency_key"]
 
@@ -227,7 +270,7 @@ async def main() -> None:
                     "project": {"family": "window_door", "action": "replace_same_size"},
                     "property": {"heritage": False},
                     "context": {
-                        **INTERNAL_CONTEXT,
+                        **_scoped_context("ottawa_on"),
                         "prior_decision_identity": first_ottawa_identity,
                     },
                 },
@@ -240,6 +283,12 @@ async def main() -> None:
                 raise SystemExit(f"Repeat check did not classify UNCHANGED: {repeat_bundle}")
             if (repeat_bundle.get("identity") or {}).get("idempotency_key") != first_ottawa_key:
                 raise SystemExit(f"Repeat check changed idempotency key: {repeat_bundle}")
+            repeat_gate = repeat_bundle.get("mutation_gate") or {}
+            if repeat_gate.get("state") != "NOOP_UNCHANGED":
+                raise SystemExit(f"Repeat scoped safe MCP check did not suppress duplicate: {repeat_gate}")
+            if repeat_gate.get("recommended_operation") != "NOOP":
+                raise SystemExit(f"Repeat scoped safe MCP check must recommend NOOP: {repeat_gate}")
+            print("remote_mcp_safe_writeback_ready_then_noop=PASS")
             print("remote_mcp_repeat_idempotency=PASS")
 
             address_result = await session.call_tool(
@@ -255,7 +304,9 @@ async def main() -> None:
             if address_result.is_error:
                 raise SystemExit(f"Vancouver address-aware MCP call failed: {address_result}")
             address_payload = _structured_or_text(address_result)
-            _assert_action_bundle(address_payload)
+            address_bundle = _assert_action_bundle(address_payload)
+            if (address_bundle.get("mutation_gate") or {}).get("state") != "BLOCKED":
+                raise SystemExit(f"Unscoped address query must remain writeback-blocked: {address_bundle}")
             resolution = ((address_payload.get("address_context") or {}).get("address_resolution") or {})
             matched = str(resolution.get("matched_address") or "")
             zoning = ((address_payload.get("address_context") or {}).get("property") or {}).get("zoning_code")
