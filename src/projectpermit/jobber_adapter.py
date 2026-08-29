@@ -147,11 +147,14 @@ def build_preflight_facts(
     project: Mapping[str, Any],
     resolve_address: bool = True,
     client_tag: str = "jobber-integration",
+    prior_decision_identity: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build the existing ProjectPermit fact shape after scope normalization.
+    """Build ProjectPermit facts after scope normalization.
 
     The caller must supply a structured `project` object, including `family`.
-    This prevents the integration layer from silently guessing permit semantics.
+    A prior public `action_bundle.identity` may be supplied to classify whether the
+    new preflight materially changed. Raw Jobber object ids remain in request
+    context only; ProjectPermit returns one-way scope/idempotency fingerprints.
     """
     if _text(extracted.get("source_platform")).lower() != "jobber":
         raise JobberAdapterError("extracted object is not a Jobber work object")
@@ -164,21 +167,22 @@ def build_preflight_facts(
     if resolve_address and not address:
         raise JobberAdapterError("address is required when resolve_address=true")
 
+    context: dict[str, Any] = {
+        "client_tag": client_tag,
+        "_transport": "jobber_adapter",
+        "source_platform": "jobber",
+        "source_object_type": _text(extracted.get("source_object_type")),
+        "source_object_id": _text(extracted.get("source_object_id")),
+    }
+    if isinstance(prior_decision_identity, Mapping):
+        context["prior_decision_identity"] = dict(prior_decision_identity)
+
     return {
         "jurisdiction": jurisdiction.strip(),
         "project": dict(project),
         "address": address or None,
         "property": {},
-        "context": {
-            "client_tag": client_tag,
-            "_transport": "jobber_adapter",
-            "source_platform": "jobber",
-            "source_object_type": _text(extracted.get("source_object_type")),
-            # The source id is useful to the authorized integration for correlation,
-            # but telemetry.py does not emit raw context fields other than a hash of
-            # client_tag.
-            "source_object_id": _text(extracted.get("source_object_id")),
-        },
+        "context": context,
         "resolve_address": bool(resolve_address),
     }
 
@@ -224,6 +228,9 @@ def _legacy_result_hints(result: Mapping[str, Any]) -> dict[str, Any]:
         "rule_version": rule_version,
         "evidence_url": evidence_url,
         "freshness_status": _text(freshness.get("status")),
+        "bundle_id": "",
+        "idempotency_key": "",
+        "change_classification": "",
     }
 
 
@@ -246,14 +253,17 @@ def build_jobber_writeback(result: Mapping[str, Any]) -> dict[str, str]:
         "projectpermit_quote_handling": _text(hints.get("quote_handling")),
         "projectpermit_automation_safe": "true" if bool(hints.get("automation_safe")) else "false",
         "projectpermit_freshness": _text(hints.get("freshness_status")),
+        "projectpermit_bundle_id": _text(hints.get("bundle_id")),
+        "projectpermit_idempotency_key": _text(hints.get("idempotency_key")),
+        "projectpermit_change": _text(hints.get("change_classification")),
     }
 
 
 def build_jobber_action_proposal(result: Mapping[str, Any]) -> dict[str, Any]:
     """Map ProjectPermit's action bundle into a read-only Jobber integration proposal.
 
-    The returned object describes what an authorized integration *could* write or
-    create. No Jobber API call is performed here.
+    The idempotency key is safe to persist as a duplicate-suppression marker for the
+    same work-record scope/result. This function still performs no Jobber API call.
     """
     bundle = result.get("action_bundle")
     if not isinstance(bundle, Mapping):
@@ -265,10 +275,14 @@ def build_jobber_action_proposal(result: Mapping[str, Any]) -> dict[str, Any]:
     )
     evidence = bundle.get("evidence") if isinstance(bundle.get("evidence"), list) else []
     audit = bundle.get("audit") if isinstance(bundle.get("audit"), Mapping) else {}
+    identity = bundle.get("identity") if isinstance(bundle.get("identity"), Mapping) else {}
+    change = bundle.get("change") if isinstance(bundle.get("change"), Mapping) else {}
 
     return {
         "source_platform": "jobber",
         "mutation_performed": False,
+        "idempotency_key": _text(identity.get("idempotency_key")),
+        "change": deepcopy(dict(change)),
         "proposed_custom_fields": build_jobber_writeback(result),
         "proposed_tasks": deepcopy(tasks),
         "required_inputs": deepcopy(required_inputs),
