@@ -49,8 +49,11 @@ async def main() -> None:
             paid_tool = next(tool for tool in tools.tools if tool.name == "check_project_requirements")
             schema = getattr(paid_tool, "input_schema", None) or {}
             properties = schema.get("properties") or {}
-            if "resolve_address" not in properties:
-                raise SystemExit("Paid MCP input schema missing resolve_address")
+            if "resolve_address" not in properties or "context" not in properties:
+                raise SystemExit("Paid MCP input schema missing resolve_address/context")
+            context_description = str((properties.get("context") or {}).get("description") or "")
+            if "prior_decision_identity" not in context_description:
+                raise SystemExit(f"Paid MCP context schema missing repeat identity contract: {context_description}")
 
             info = await session.call_tool("projectpermit_info", {})
             assert not info.is_error, info
@@ -62,22 +65,19 @@ async def main() -> None:
                 raise SystemExit(
                     f"Paid MCP info network mismatch: {info_payload.get('network')} != {EXPECTED_NETWORK}"
                 )
-            workflow = info_payload.get("workflow_guidance") or {}
-            if workflow.get("field") != "workflow":
-                raise SystemExit(f"Paid MCP info missing workflow guidance: {workflow}")
             bundle = info_payload.get("action_bundle") or {}
-            if bundle.get("field") != "action_bundle":
-                raise SystemExit(f"Paid MCP info missing action bundle: {bundle}")
-            if "tasks" not in (bundle.get("includes") or []):
-                raise SystemExit(f"Paid MCP action bundle missing task contract: {bundle}")
-            if "evidence" not in (bundle.get("includes") or []):
-                raise SystemExit(f"Paid MCP action bundle missing evidence contract: {bundle}")
+            includes = set(bundle.get("includes") or [])
+            if bundle.get("field") != "action_bundle" or not {"identity", "change", "tasks", "evidence"}.issubset(includes):
+                raise SystemExit(f"Paid MCP action bundle missing identity/change contract: {bundle}")
             integrations = set(bundle.get("integration_proposals") or [])
             if not {"jobber", "servicem8"}.issubset(integrations):
                 raise SystemExit(f"Paid MCP action bundle missing integration proposals: {bundle}")
-            print(f"free_info_jurisdictions={sorted(jurisdictions)}")
-            print("free_info_action_bundle=PASS")
-            print("free_info=PASS")
+            identity = info_payload.get("decision_identity") or {}
+            if identity.get("repeat_check_input") != "context.prior_decision_identity":
+                raise SystemExit(f"Paid MCP decision identity contract missing: {identity}")
+            if identity.get("idempotency_field") != "action_bundle.identity.idempotency_key":
+                raise SystemExit(f"Paid MCP idempotency contract missing: {identity}")
+            print("free_info_identity=PASS")
 
             result = await session.call_tool(
                 "check_project_requirements",
@@ -96,6 +96,7 @@ async def main() -> None:
             accepts = challenge["accepts"]
             if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
                 raise SystemExit(f"Expected payment network missing: {EXPECTED_NETWORK}: {accepts}")
+            print("paid_mcp_identity_discovery=PASS")
             print("paid_mcp_seven_jurisdictions=PASS")
             print("paid_mcp_unpaid_smoke=PASS")
 
