@@ -51,7 +51,11 @@ HTTP_DISCOVERY_INPUT_SCHEMA: dict[str, Any] = {
         },
         "context": {
             "type": "object",
-            "description": "Optional rule-version or workflow context.",
+            "description": (
+                "Optional workflow/integration context. For repeated checks pass the prior "
+                "action_bundle.identity as prior_decision_identity. Platform work-object ids may "
+                "be supplied to scope idempotency; raw ids are not returned in decision identity."
+            ),
         },
         "resolve_address": {
             "type": "boolean",
@@ -85,7 +89,24 @@ HTTP_DISCOVERY_OUTPUT_EXAMPLE: dict[str, Any] = {
         },
     },
     "action_bundle": {
-        "bundle_version": "2026-08-29.1",
+        "bundle_version": "2026-08-29.2",
+        "identity": {
+            "identity_version": "2026-08-29.1",
+            "bundle_id": "ppb_example",
+            "input_fingerprint": "ppi_example",
+            "decision_fingerprint": "ppd_example",
+            "routing_fingerprint": "ppr_example",
+            "ruleset_fingerprint": "pprules_example",
+            "evidence_fingerprint": "ppe_example",
+            "scope_fingerprint": None,
+            "idempotency_key": "ppidem_example",
+        },
+        "change": {
+            "classification": "FIRST_OBSERVATION",
+            "material_change": True,
+            "reasons": ["NO_PRIOR_IDENTITY"],
+            "prior_bundle_id": None,
+        },
         "decision": {
             "determination": "LIKELY_NOT_REQUIRED",
             "confidence": "HIGH",
@@ -151,6 +172,41 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
             "type": "object",
             "properties": {
                 "bundle_version": {"type": "string"},
+                "identity": {
+                    "type": "object",
+                    "properties": {
+                        "identity_version": {"type": "string"},
+                        "bundle_id": {"type": "string"},
+                        "input_fingerprint": {"type": "string"},
+                        "decision_fingerprint": {"type": "string"},
+                        "routing_fingerprint": {"type": "string"},
+                        "ruleset_fingerprint": {"type": "string"},
+                        "evidence_fingerprint": {"type": "string"},
+                        "scope_fingerprint": {"type": ["string", "null"]},
+                        "idempotency_key": {"type": "string"},
+                    },
+                    "required": [
+                        "identity_version",
+                        "bundle_id",
+                        "input_fingerprint",
+                        "decision_fingerprint",
+                        "routing_fingerprint",
+                        "ruleset_fingerprint",
+                        "evidence_fingerprint",
+                        "scope_fingerprint",
+                        "idempotency_key",
+                    ],
+                },
+                "change": {
+                    "type": "object",
+                    "properties": {
+                        "classification": {"type": "string"},
+                        "material_change": {"type": "boolean"},
+                        "reasons": {"type": "array", "items": {"type": "string"}},
+                        "prior_bundle_id": {"type": ["string", "null"]},
+                    },
+                    "required": ["classification", "material_change", "reasons", "prior_bundle_id"],
+                },
                 "decision": {"type": "object"},
                 "routing": {"type": "object"},
                 "required_inputs": {"type": "array"},
@@ -162,6 +218,8 @@ HTTP_DISCOVERY_OUTPUT_SCHEMA: dict[str, Any] = {
             },
             "required": [
                 "bundle_version",
+                "identity",
+                "change",
                 "decision",
                 "routing",
                 "required_inputs",
@@ -271,9 +329,9 @@ def configure_x402(app: Any) -> None:
         "Evidence-linked municipal construction permit/planning preflight for Gatineau, "
         "Ottawa, Toronto, Mississauga, Laval, Longueuil and Vancouver. Returns "
         "deterministic rule results, official-source evidence, freshness-guarded workflow "
-        "routing, targeted missing-fact questions and a platform-neutral evidence/action "
-        "bundle for contractor or field-service Agents. Not municipal authorization or "
-        "legal advice."
+        "routing, targeted missing-fact questions, a platform-neutral evidence/action bundle, "
+        "deterministic decision fingerprints, idempotency key and repeat-check change classification. "
+        "Not municipal authorization or legal advice."
     )
 
     routes = {
@@ -304,8 +362,8 @@ def configure_x402(app: Any) -> None:
             mime_type="application/json",
             description=(
                 "Paid bulk ProjectPermit preflight for 1-50 normalized projects with "
-                "per-item error isolation, workflow/action bundles, and batch audit metadata. "
-                + common_description
+                "per-item error isolation, workflow/action bundles, decision identity/change metadata, "
+                "and batch audit metadata. " + common_description
             ),
         ),
     }
