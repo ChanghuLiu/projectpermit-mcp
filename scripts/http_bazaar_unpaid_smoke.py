@@ -10,7 +10,10 @@ URL = os.getenv(
     "PROJECTPERMIT_PAID_HTTP_URL",
     "https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements",
 )
+BASE_URL = URL.split("/v1/", 1)[0]
 EXPECTED_NETWORK = os.getenv("PROJECTPERMIT_SMOKE_X402_NETWORK", "eip155:8453")
+EXPECTED_SINGLE_AMOUNT = os.getenv("PROJECTPERMIT_SMOKE_X402_SINGLE_AMOUNT", "0.20")
+EXPECTED_BATCH_AMOUNT = os.getenv("PROJECTPERMIT_SMOKE_X402_BATCH_AMOUNT", "5.00")
 
 PAYLOAD = {
     "jurisdiction": "ottawa_on",
@@ -30,9 +33,50 @@ EXPECTED_JURISDICTIONS = {
 }
 
 
+def _verify_openapi_discovery() -> None:
+    response = httpx.get(f"{BASE_URL}/openapi.json", timeout=30.0, follow_redirects=True)
+    if response.status_code != 200:
+        raise SystemExit(f"OpenAPI discovery unavailable: {response.status_code}: {response.text[:300]}")
+    schema = response.json()
+    info = schema.get("info") or {}
+    if not info.get("x-guidance"):
+        raise SystemExit(f"OpenAPI info.x-guidance missing: {info}")
+    projectpermit_info = info.get("x-projectpermit") or {}
+    if projectpermit_info.get("commercialNetwork") != EXPECTED_NETWORK:
+        raise SystemExit(f"OpenAPI commercial network mismatch: {projectpermit_info}")
+    if projectpermit_info.get("paymentProtocol") != "x402-v2":
+        raise SystemExit(f"OpenAPI x402 protocol metadata missing: {projectpermit_info}")
+
+    expectations = {
+        "/v1/check-project-requirements": EXPECTED_SINGLE_AMOUNT,
+        "/v1/check-project-requirements-batch": EXPECTED_BATCH_AMOUNT,
+    }
+    paths = schema.get("paths") or {}
+    for path, amount in expectations.items():
+        operation = ((paths.get(path) or {}).get("post") or {})
+        payment = operation.get("x-payment-info") or {}
+        price = payment.get("price") or {}
+        if price != {"mode": "fixed", "currency": "USD", "amount": amount}:
+            raise SystemExit(f"OpenAPI x-payment-info price mismatch for {path}: {payment}")
+        if payment.get("protocols") != [{"x402": {}}]:
+            raise SystemExit(f"OpenAPI x402 protocol declaration missing for {path}: {payment}")
+        if "402" not in (operation.get("responses") or {}):
+            raise SystemExit(f"OpenAPI 402 response missing for {path}: {operation}")
+        runtime = operation.get("x-projectpermit-payment") or {}
+        if runtime.get("network") != EXPECTED_NETWORK or runtime.get("asset") != "USDC":
+            raise SystemExit(f"OpenAPI runtime payment metadata mismatch for {path}: {runtime}")
+
+    preview = ((paths.get("/v1/preview-project-requirements") or {}).get("post") or {})
+    if "x-payment-info" in preview:
+        raise SystemExit(f"Free preview must not be marked as paid in OpenAPI: {preview}")
+    print("http_openapi_x402_discovery=PASS")
+
+
 def main() -> None:
     print(f"paid_http_url={URL}")
     print(f"expected_network={EXPECTED_NETWORK}")
+    _verify_openapi_discovery()
+
     response = httpx.post(URL, json=PAYLOAD, timeout=30.0, follow_redirects=True)
     print(f"status={response.status_code}")
     if response.status_code != 402:
