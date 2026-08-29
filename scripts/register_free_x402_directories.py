@@ -2,6 +2,7 @@
 
 This script never sends payment credentials and treats HTTP 402 from a directory as a hard
 failure. Registration is opt-in via --execute; the default mode validates production only.
+Transient directory outages are recorded but do not block registration with later directories.
 """
 from __future__ import annotations
 
@@ -73,17 +74,25 @@ def _safe_body(response: httpx.Response) -> str:
     return text[:1000]
 
 
-def _register(client: httpx.Client, name: str, url: str, body: dict[str, Any]) -> None:
-    response = client.post(url, json=body)
+def _register(client: httpx.Client, name: str, url: str, body: dict[str, Any]) -> str:
+    try:
+        response = client.post(url, json=body)
+    except httpx.RequestError as exc:
+        print(f"directory[{name}]=TRANSIENT_NETWORK_FAILURE error={type(exc).__name__}")
+        return "transient_failure"
+
     print(f"directory[{name}] status={response.status_code} body={_safe_body(response)}")
     if response.status_code == 402:
         raise RuntimeError(f"{name} unexpectedly requested payment; refusing to continue")
     if 200 <= response.status_code < 300:
         print(f"directory[{name}]=REGISTERED_OR_ACCEPTED")
-        return
+        return "accepted"
     if response.status_code == 409:
         print(f"directory[{name}]=ALREADY_REGISTERED")
-        return
+        return "accepted"
+    if 500 <= response.status_code < 600:
+        print(f"directory[{name}]=TRANSIENT_PROVIDER_FAILURE")
+        return "transient_failure"
     raise RuntimeError(f"{name} registration failed with HTTP {response.status_code}")
 
 
@@ -109,9 +118,13 @@ def main() -> None:
             print("directory_registration=DRY_RUN")
             return
 
+        transient_failures: list[str] = []
         for name, url, body in DIRECTORIES:
-            _register(client, name, url, body)
+            if _register(client, name, url, body) == "transient_failure":
+                transient_failures.append(name)
 
+    if transient_failures:
+        print("directory_transient_failures=" + ",".join(transient_failures))
     print("free_x402_directory_registration=PASS")
 
 
