@@ -102,6 +102,19 @@ class OpenApiDiscoveryTest(unittest.TestCase):
                 else:
                     os.environ[key] = value
 
+    def test_actual_fastapi_openapi_exposes_paid_contract(self):
+        from projectpermit.api import app
+
+        app.openapi_schema = None
+        schema = app.openapi()
+        self.assertTrue(schema["info"].get("x-guidance"))
+        for path in (SINGLE_PATH, BATCH_PATH):
+            operation = schema["paths"][path]["post"]
+            self.assertIn("x-payment-info", operation)
+            self.assertIn("402", operation["responses"])
+        preview = schema["paths"]["/v1/preview-project-requirements"]["post"]
+        self.assertNotIn("x-payment-info", preview)
+
 
 if __name__ == "__main__":
     unittest.main()
