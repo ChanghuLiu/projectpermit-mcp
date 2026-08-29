@@ -338,6 +338,35 @@ def validate_x402_settings(settings: dict[str, Any]) -> None:
         raise RuntimeError("PROJECTPERMIT_X402_NETWORK must be a CAIP-2 identifier, e.g. eip155:84532")
 
 
+def _pin_bazaar_http_method(extensions: dict[str, Any], method: str) -> dict[str, Any]:
+    """Pre-fill Bazaar's HTTP method before x402's declaration validator runs.
+
+    x402's Bazaar declaration schema requires info.input.method, while the helper
+    intentionally leaves the value unset for the runtime resource-server extension
+    to enrich from the request context. Some SDK paths validate the declaration
+    before that enrichment. Pinning the already-known static route method keeps the
+    declaration valid without changing ProjectPermit's business request schema.
+    """
+    bazaar = extensions.get("bazaar")
+    if not isinstance(bazaar, dict):
+        raise RuntimeError("x402 Bazaar declaration missing bazaar metadata")
+    info = bazaar.get("info")
+    if not isinstance(info, dict):
+        raise RuntimeError("x402 Bazaar declaration missing info metadata")
+    input_info = info.get("input")
+    if not isinstance(input_info, dict):
+        raise RuntimeError("x402 Bazaar declaration missing input metadata")
+
+    normalized_method = method.upper()
+    existing_method = input_info.get("method")
+    if existing_method not in (None, normalized_method):
+        raise RuntimeError(
+            f"x402 Bazaar declaration method mismatch: {existing_method!r} != {normalized_method!r}"
+        )
+    input_info["method"] = normalized_method
+    return extensions
+
+
 def configure_x402(app: Any) -> None:
     settings = load_x402_settings()
     validate_x402_settings(settings)
@@ -382,6 +411,7 @@ def configure_x402(app: Any) -> None:
             schema=HTTP_DISCOVERY_OUTPUT_SCHEMA,
         ),
     )
+    discovery_extensions = _pin_bazaar_http_method(discovery_extensions, "POST")
 
     common_description = (
         "Evidence-linked municipal construction permit/planning preflight for Gatineau, "
