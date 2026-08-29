@@ -25,6 +25,7 @@ projectpermit-api = "projectpermit.cli:run_api"
 projectpermit-mcp = "projectpermit.mcp_server:main"
 projectpermit-paid-mcp = "projectpermit.paid_mcp_server:main"
 projectpermit-source-watch = "projectpermit.source_watch:main"
+projectpermit-servicem8-exec = "projectpermit.servicem8_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
