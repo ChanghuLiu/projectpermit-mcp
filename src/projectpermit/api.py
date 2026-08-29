@@ -69,8 +69,29 @@ def capabilities():
                 "quote_handling",
                 "automation_safe",
                 "follow_up_questions",
+                "evidence_freshness",
             ],
             "purpose": "Route permit-preflight results directly inside contractor/field-service agent workflows.",
+        },
+        "action_bundle": {
+            "field": "action_bundle",
+            "includes": [
+                "decision",
+                "routing",
+                "required_inputs",
+                "tasks",
+                "evidence",
+                "audit",
+                "writeback_hints",
+            ],
+            "purpose": (
+                "Provide one platform-neutral evidence/action package for contractor, "
+                "property and field-service integrations without mutating upstream systems."
+            ),
+        },
+        "integration_proposals": {
+            "jobber": "read_only_proposal_supported",
+            "servicem8": "read_only_proposal_supported",
         },
         "free_preview_resource": "/v1/preview-project-requirements",
         "free_batch_preview_resource": "/v1/preview-project-requirements-batch",
