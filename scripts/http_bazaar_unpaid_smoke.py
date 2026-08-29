@@ -92,8 +92,8 @@ def main() -> None:
     if workflow.get("recommended_route") != "CONTINUE_WITH_EVIDENCE":
         raise SystemExit(f"Bazaar output example missing workflow routing: {workflow}")
     bundle = example.get("action_bundle") or {}
-    if bundle.get("bundle_version") != "2026-08-29.2":
-        raise SystemExit(f"Bazaar output example missing action bundle version: {bundle}")
+    if bundle.get("bundle_version") != "2026-08-29.3":
+        raise SystemExit(f"Bazaar output example missing Layer 5 action bundle version: {bundle}")
     identity = bundle.get("identity") or {}
     if not identity.get("bundle_id") or not identity.get("idempotency_key"):
         raise SystemExit(f"Bazaar output example missing decision identity: {bundle}")
