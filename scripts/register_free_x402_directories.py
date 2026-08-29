@@ -7,6 +7,7 @@ Transient directory outages are recorded but do not block registration with late
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from typing import Any
 
@@ -23,6 +24,16 @@ EXPECTED_PRICE = os.getenv("PROJECTPERMIT_EXPECTED_SINGLE_PRICE", "0.05")
 EXPECTED_NETWORK = "eip155:8453"
 EXPECTED_FACILITATOR = "https://facilitator.payai.network"
 
+PROBE_BODY = json.dumps(
+    {
+        "jurisdiction": "ottawa_on",
+        "project": {"family": "window_door", "action": "replace_same_size"},
+        "property": {"heritage": False},
+        "resolve_address": False,
+    },
+    separators=(",", ":"),
+)
+
 DIRECTORIES = (
     (
         "agent402_tools",
@@ -33,6 +44,25 @@ DIRECTORIES = (
         "true402",
         "https://true402.dev/api/v1/services",
         {"url": ORIGIN},
+    ),
+    (
+        "402index",
+        "https://402index.io/api/v1/register",
+        {
+            "url": CANONICAL_PAID_ENDPOINT,
+            "name": "ProjectPermit Building Permit Preflight",
+            "protocol": "x402",
+            "http_method": "POST",
+            "probe_body": PROBE_BODY,
+            "description": (
+                "Building permit requirements API for contractors and AI agents across 7 "
+                "Canadian municipalities with deterministic rules and official-source evidence."
+            ),
+            "price_usd": float(EXPECTED_PRICE),
+            "payment_asset": "USDC",
+            "payment_network": "Base",
+            "provider": "ProjectPermit",
+        },
     ),
 )
 
@@ -66,7 +96,7 @@ def _validate_manifest(payload: dict[str, Any]) -> None:
 
 def _safe_body(response: httpx.Response) -> str:
     text = response.text.strip().replace("\n", " ")
-    return text[:1000]
+    return text[:1500]
 
 
 def _register(client: httpx.Client, name: str, url: str, body: dict[str, Any]) -> str:
@@ -96,7 +126,7 @@ def main() -> None:
     parser.add_argument(
         "--execute",
         action="store_true",
-        help="Submit the origin to free directories after production validation.",
+        help="Submit the origin/endpoints to free directories after production validation.",
     )
     args = parser.parse_args()
 
