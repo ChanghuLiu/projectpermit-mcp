@@ -90,7 +90,7 @@ HTTP_DISCOVERY_OUTPUT_EXAMPLE: dict[str, Any] = {
         },
     },
     "action_bundle": {
-        "bundle_version": "2026-08-29.2",
+        "bundle_version": "2026-08-29.3",
         "identity": {
             "identity_version": "2026-08-29.1",
             "idempotency_version": "1",
