@@ -3,9 +3,9 @@
 BuildRequirements remains payment-agnostic. This module is imported by the FastAPI
 transport and is a no-op unless PROJECTPERMIT_X402_ENABLED=true.
 
-The HTTP route also declares Bazaar discovery metadata. This is intentionally a
-compatibility/discovery twin of the native paid MCP tool: both surfaces execute the
-same deterministic ProjectPermit jurisdiction router and use the same payment settings.
+The single-item HTTP route declares Bazaar discovery metadata. The paid bulk route
+uses the same x402 network/facilitator/pay-to settings with an independently
+configurable batch price, but intentionally does not publish Bazaar metadata yet.
 """
 from __future__ import annotations
 
@@ -17,6 +17,9 @@ from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 
 HTTP_PUBLIC_RESOURCE_URL = (
     "https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements"
+)
+HTTP_BATCH_PUBLIC_RESOURCE_URL = (
+    "https://projectpermit-api-v2-production.up.railway.app/v1/check-project-requirements-batch"
 )
 
 HTTP_DISCOVERY_INPUT: dict[str, Any] = {
@@ -108,9 +111,11 @@ def _truthy(value: str | None) -> bool:
 
 
 def load_x402_settings() -> dict[str, Any]:
+    price = os.getenv("PROJECTPERMIT_X402_PRICE_USD", "").strip()
     return {
         "enabled": _truthy(os.getenv("PROJECTPERMIT_X402_ENABLED")),
-        "price": os.getenv("PROJECTPERMIT_X402_PRICE_USD", "").strip(),
+        "price": price,
+        "batch_price": os.getenv("PROJECTPERMIT_X402_BATCH_PRICE_USD", price).strip(),
         "network": os.getenv("PROJECTPERMIT_X402_NETWORK", "").strip(),
         "pay_to": os.getenv("PROJECTPERMIT_X402_PAY_TO", "").strip(),
         "facilitator_url": os.getenv("PROJECTPERMIT_X402_FACILITATOR_URL", "").strip(),
@@ -120,11 +125,19 @@ def load_x402_settings() -> dict[str, Any]:
 def validate_x402_settings(settings: dict[str, Any]) -> None:
     if not settings["enabled"]:
         return
-    missing = [k for k in ("price", "network", "pay_to", "facilitator_url") if not settings.get(k)]
+    missing = [
+        k
+        for k in ("price", "batch_price", "network", "pay_to", "facilitator_url")
+        if not settings.get(k)
+    ]
     if missing:
         raise RuntimeError("x402 enabled but missing settings: " + ", ".join(missing))
     if not str(settings["price"]).startswith("$"):
         raise RuntimeError("PROJECTPERMIT_X402_PRICE_USD must use x402 dollar format, e.g. $0.10")
+    if not str(settings["batch_price"]).startswith("$"):
+        raise RuntimeError(
+            "PROJECTPERMIT_X402_BATCH_PRICE_USD must use x402 dollar format, e.g. $0.50"
+        )
     if ":" not in str(settings["network"]):
         raise RuntimeError("PROJECTPERMIT_X402_NETWORK must be a CAIP-2 identifier, e.g. eip155:84532")
 
@@ -174,6 +187,13 @@ def configure_x402(app: Any) -> None:
         ),
     )
 
+    common_description = (
+        "Evidence-linked municipal construction permit/planning preflight for Gatineau, "
+        "Ottawa, Toronto, Mississauga, Laval, Longueuil and Vancouver. Returns "
+        "deterministic rule results with official-source evidence. Not municipal "
+        "authorization or legal advice."
+    )
+
     routes = {
         "POST /v1/check-project-requirements": RouteConfig(
             accepts=[
@@ -186,13 +206,24 @@ def configure_x402(app: Any) -> None:
             ],
             resource=HTTP_PUBLIC_RESOURCE_URL,
             mime_type="application/json",
-            description=(
-                "Evidence-linked municipal construction permit/planning preflight for "
-                "Gatineau, Ottawa, Toronto, Mississauga, Laval, Longueuil and Vancouver. "
-                "Returns deterministic rule results with official-source evidence. Not "
-                "municipal authorization or legal advice."
-            ),
+            description=common_description,
             extensions={**discovery_extensions},
-        )
+        ),
+        "POST /v1/check-project-requirements-batch": RouteConfig(
+            accepts=[
+                PaymentOption(
+                    scheme="exact",
+                    pay_to=settings["pay_to"],
+                    price=settings["batch_price"],
+                    network=network,
+                )
+            ],
+            resource=HTTP_BATCH_PUBLIC_RESOURCE_URL,
+            mime_type="application/json",
+            description=(
+                "Paid bulk ProjectPermit preflight for 1-50 normalized projects with "
+                "per-item error isolation and batch audit metadata. " + common_description
+            ),
+        ),
     }
     app.add_middleware(PaymentMiddlewareASGI, routes=routes, server=resource_server)

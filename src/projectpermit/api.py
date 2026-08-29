@@ -11,7 +11,7 @@ from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 from .x402_config import configure_x402
 
-app = FastAPI(title="ProjectPermit", version="0.5.0")
+app = FastAPI(title="ProjectPermit", version="0.6.0")
 
 
 class PreflightRequest(BaseModel):
@@ -34,8 +34,8 @@ class PreviewRequest(BaseModel):
     context: Dict[str, Any] = Field(default_factory=dict)
 
 
-class BatchPreviewRequest(BaseModel):
-    """Free bulk preview; item validation is intentionally isolated per project."""
+class BatchRequest(BaseModel):
+    """Bulk request wrapper; item validation is intentionally isolated per project."""
 
     model_config = ConfigDict(extra="forbid")
     items: list[Any]
@@ -43,7 +43,7 @@ class BatchPreviewRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"ok": True, "engine_version": "phase1c-0.5.0"}
+    return {"ok": True, "engine_version": "phase1c-0.6.0"}
 
 
 @app.get("/v1/capabilities")
@@ -52,7 +52,7 @@ def capabilities():
     address_resolvers = set(SUPPORTED_ADDRESS_JURISDICTIONS)
     return {
         "service": "ProjectPermit",
-        "engine_version": "phase1c-0.5.0",
+        "engine_version": "phase1c-0.6.0",
         "jurisdictions": [
             {
                 "id": jurisdiction,
@@ -64,9 +64,10 @@ def capabilities():
         "project_families": list(PROJECT_FAMILIES),
         "free_preview_resource": "/v1/preview-project-requirements",
         "free_batch_preview_resource": "/v1/preview-project-requirements-batch",
+        "paid_resource": "/v1/check-project-requirements",
+        "paid_batch_resource": "/v1/check-project-requirements-batch",
         "bulk_max_items": MAX_BATCH_ITEMS,
         "free_preview_address_resolution": False,
-        "paid_resource": "/v1/check-project-requirements",
         "disclaimer": "Preflight information only; not municipal authorization or legal advice.",
     }
 
@@ -87,7 +88,7 @@ def preview_project_requirements(req: PreviewRequest):
 
 
 @app.post("/v1/preview-project-requirements-batch")
-def preview_project_requirements_batch(req: BatchPreviewRequest):
+def preview_project_requirements_batch(req: BatchRequest):
     """Free 1-50 item bulk preview with per-item error isolation and audit summary."""
     try:
         return run_batch_preflight(
@@ -109,6 +110,19 @@ def check_project_requirements(req: PreflightRequest):
         raise HTTPException(status_code=422, detail=f"municipal address resolution failed: {exc}") from exc
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"municipal GIS resolution failed: {exc}") from exc
+
+
+@app.post("/v1/check-project-requirements-batch")
+def check_project_requirements_batch(req: BatchRequest):
+    """Paid-capable 1-50 item bulk preflight; x402 middleware protects this route when enabled."""
+    try:
+        return run_batch_preflight(
+            req.items,
+            allow_address=True,
+            transport="http_api_batch",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=f"batch preflight failed: {exc}") from exc
 
 
 configure_x402(app)

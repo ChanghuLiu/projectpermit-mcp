@@ -11,7 +11,7 @@ class ApiSmokeTest(unittest.TestCase):
         r = self.client.get('/health')
         self.assertEqual(200, r.status_code)
         self.assertTrue(r.json()['ok'])
-        self.assertEqual('phase1c-0.5.0', r.json()['engine_version'])
+        self.assertEqual('phase1c-0.6.0', r.json()['engine_version'])
 
     def test_free_capabilities(self):
         r = self.client.get('/v1/capabilities')
@@ -37,6 +37,8 @@ class ApiSmokeTest(unittest.TestCase):
             '/v1/preview-project-requirements-batch',
             payload['free_batch_preview_resource'],
         )
+        self.assertEqual('/v1/check-project-requirements', payload['paid_resource'])
+        self.assertEqual('/v1/check-project-requirements-batch', payload['paid_batch_resource'])
         self.assertEqual(50, payload['bulk_max_items'])
         self.assertFalse(payload['free_preview_address_resolution'])
 
@@ -94,6 +96,32 @@ class ApiSmokeTest(unittest.TestCase):
             'items': [item] * 51,
         })
         self.assertEqual(422, r.status_code)
+
+    def test_paid_capable_batch_handler_allows_address_fields_when_x402_disabled(self):
+        r = self.client.post('/v1/check-project-requirements-batch', json={
+            'items': [
+                {
+                    'client_ref': 'lead-001',
+                    'jurisdiction': 'ottawa_on',
+                    'project': {'family': 'window_door', 'action': 'replace_same_size'},
+                    'property': {'heritage': False},
+                    'address': None,
+                    'resolve_address': False,
+                },
+                {
+                    'client_ref': 'lead-bad',
+                    'jurisdiction': 'ottawa_on',
+                },
+            ],
+        })
+        self.assertEqual(200, r.status_code)
+        payload = r.json()
+        self.assertEqual(2, payload['batch_size'])
+        self.assertEqual(1, payload['succeeded'])
+        self.assertEqual(1, payload['failed'])
+        self.assertEqual('lead-001', payload['results'][0]['client_ref'])
+        self.assertEqual('LIKELY_NOT_REQUIRED', payload['results'][0]['result']['determination'])
+        self.assertEqual('validation_error', payload['results'][1]['error']['type'])
 
     def test_ottawa_same_size_window(self):
         r = self.client.post('/v1/check-project-requirements', json={
