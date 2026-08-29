@@ -16,7 +16,7 @@ from fastapi.openapi.utils import get_openapi
 SINGLE_PATH = "/v1/check-project-requirements"
 BATCH_PATH = "/v1/check-project-requirements-batch"
 DEFAULT_SINGLE_PRICE = "$0.05"
-DEFAULT_BATCH_PRICE = "$5.00"
+DEFAULT_BATCH_PRICE = "$2.00"
 DEFAULT_NETWORK = "eip155:8453"
 
 
