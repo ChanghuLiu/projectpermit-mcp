@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from .batch_service import MAX_BATCH_ITEMS, run_batch_preflight
 from .capabilities import PROJECT_FAMILIES
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
+from .openapi_discovery import install_openapi_discovery
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 from .x402_config import configure_x402
 
@@ -182,4 +183,5 @@ def check_project_requirements_batch(req: BatchRequest):
         raise HTTPException(status_code=422, detail=f"batch preflight failed: {exc}") from exc
 
 
+install_openapi_discovery(app)
 configure_x402(app)
