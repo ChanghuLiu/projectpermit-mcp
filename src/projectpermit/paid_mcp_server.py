@@ -57,7 +57,11 @@ INPUT_SCHEMA: dict[str, Any] = {
         },
         "context": {
             "type": "object",
-            "description": "Optional rule-version/workflow context. For validation, client_tag may be a stable non-sensitive integration tag.",
+            "description": (
+                "Optional workflow/integration context. For repeated work-record checks, "
+                "pass prior action_bundle.identity as prior_decision_identity. Source platform/object "
+                "ids may be supplied for scoped idempotency; raw ids are not returned in identity."
+            ),
         },
         "resolve_address": {
             "type": "boolean",
@@ -119,8 +123,10 @@ def build_paid_server() -> MCPServer:
             "and field-service agents. Start with projectpermit_info for capabilities. "
             "The check_project_requirements tool uses x402 USDC payment and returns the "
             "permit determination, workflow guidance, evidence freshness and a platform-neutral "
-            "action bundle with proposed tasks, missing inputs, official evidence, audit metadata "
-            "and writeback hints. Results are preflight information, not municipal authorization."
+            "action bundle with proposed tasks, official evidence, audit metadata, deterministic "
+            "identity, idempotency key and change classification. Pass a prior identity in "
+            "context.prior_decision_identity for repeated checks. Results are preflight information, "
+            "not municipal authorization."
         ),
     )
 
@@ -148,8 +154,8 @@ def build_paid_server() -> MCPServer:
                 "Evidence-linked municipal construction permit/planning preflight for "
                 "Gatineau, Ottawa, Toronto, Mississauga, Laval, Longueuil and Vancouver. "
                 "Returns deterministic requirements, official-source evidence, freshness-guarded "
-                "workflow routing, targeted missing-fact questions and a platform-neutral "
-                "evidence/action bundle for downstream contractor or field-service Agents."
+                "workflow routing, action/evidence bundle, deterministic decision fingerprints, "
+                "idempotency key and repeat-check change classification for contractor/field-service Agents."
             ),
             transport="streamable-http",
             input_schema=INPUT_SCHEMA,
@@ -165,8 +171,8 @@ def build_paid_server() -> MCPServer:
                 url=f"mcp://tool/{TOOL_NAME}",
                 description=(
                     "Evidence-linked Canadian municipal permit preflight with freshness-guarded "
-                    "workflow routing and a platform-neutral action/evidence bundle. Not municipal "
-                    "authorization, legal advice, or engineering certification."
+                    "workflow routing, action/evidence bundle and duplicate-suppression identity. "
+                    "Not municipal authorization, legal advice, or engineering certification."
                 ),
                 service_name="ProjectPermit",
                 tags=[
@@ -178,6 +184,8 @@ def build_paid_server() -> MCPServer:
                     "agent-routing",
                     "evidence-bundle",
                     "action-bundle",
+                    "idempotency",
+                    "change-detection",
                     "ontario",
                     "quebec",
                     "british-columbia",
@@ -230,6 +238,8 @@ def build_paid_server() -> MCPServer:
             "action_bundle": {
                 "field": "action_bundle",
                 "includes": [
+                    "identity",
+                    "change",
                     "decision",
                     "routing",
                     "required_inputs",
@@ -239,6 +249,13 @@ def build_paid_server() -> MCPServer:
                     "writeback_hints",
                 ],
                 "integration_proposals": ["jobber", "servicem8"],
+            },
+            "decision_identity": {
+                "field": "action_bundle.identity",
+                "repeat_check_input": "context.prior_decision_identity",
+                "idempotency_field": "action_bundle.identity.idempotency_key",
+                "change_field": "action_bundle.change",
+                "purpose": "Suppress duplicate downstream work and distinguish operational change from rules/evidence refresh.",
             },
             "example": EXAMPLE,
             "disclaimer": "Preflight information only; not municipal authorization.",
@@ -254,7 +271,7 @@ def build_paid_server() -> MCPServer:
         context: dict[str, Any] | None = None,
         resolve_address: bool = False,
     ) -> CallToolResult:
-        """Paid evidence-linked permit preflight with workflow guidance and action bundle. Requires x402 USDC payment."""
+        """Paid evidence-linked permit preflight with workflow/action bundle, deterministic identity, idempotency key and change classification. Requires x402 USDC payment."""
         request_meta = dict(ctx.request_context.meta or {})
         tool_context = {**(context or {}), "_transport": "paid_mcp"}
         result = paid_tool(

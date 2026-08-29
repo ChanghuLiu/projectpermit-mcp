@@ -50,8 +50,10 @@ def main() -> None:
     for city in ("Gatineau", "Ottawa", "Toronto", "Mississauga", "Laval", "Longueuil", "Vancouver"):
         if city not in description:
             raise SystemExit(f"Jurisdiction missing from x402 resource description: {city}: {description}")
-    if "action" not in description.lower() or "evidence" not in description.lower():
-        raise SystemExit(f"x402 resource description missing action/evidence bundle positioning: {description}")
+    lower_description = description.lower()
+    for required_term in ("action", "evidence", "idempotency", "change"):
+        if required_term not in lower_description:
+            raise SystemExit(f"x402 resource description missing {required_term} positioning: {description}")
 
     accepts = challenge.get("accepts") or []
     if not any(item.get("network") == EXPECTED_NETWORK for item in accepts):
@@ -63,20 +65,14 @@ def main() -> None:
 
     info = bazaar.get("info") or {}
     input_info = info.get("input") or {}
-    if input_info.get("type") != "http":
-        raise SystemExit(f"Unexpected Bazaar resource type: {input_info}")
-    if input_info.get("method") != "POST":
-        raise SystemExit(f"Bazaar HTTP method was not enriched: {input_info}")
+    if input_info.get("type") != "http" or input_info.get("method") != "POST":
+        raise SystemExit(f"Unexpected Bazaar input contract: {input_info}")
     if input_info.get("bodyType") != "json":
         raise SystemExit(f"Unexpected Bazaar body type: {input_info}")
-
     body = input_info.get("body") or {}
     if body.get("jurisdiction") != "ottawa_on":
         raise SystemExit(f"Unexpected Bazaar input example: {body}")
 
-    # x402 v2 puts the JSON Schema for `info` at extensions.bazaar.schema.
-    # The request-body schema lives under schema.properties.input.properties.body;
-    # it is not serialized as info.input.schema.
     extension_schema = bazaar.get("schema") or {}
     schema_properties = extension_schema.get("properties") or {}
     input_schema = (((schema_properties.get("input") or {}).get("properties") or {}).get("body") or {})
@@ -84,6 +80,9 @@ def main() -> None:
     enum = set(jurisdiction_schema.get("enum") or [])
     if not EXPECTED_JURISDICTIONS.issubset(enum):
         raise SystemExit(f"Jurisdiction enum missing from Bazaar extension schema: {enum}")
+    context_description = str(((input_schema.get("properties") or {}).get("context") or {}).get("description") or "")
+    if "prior_decision_identity" not in context_description:
+        raise SystemExit(f"Bazaar input schema missing repeat identity contract: {context_description}")
 
     output = info.get("output") or {}
     example = output.get("example") or {}
@@ -93,24 +92,33 @@ def main() -> None:
     if workflow.get("recommended_route") != "CONTINUE_WITH_EVIDENCE":
         raise SystemExit(f"Bazaar output example missing workflow routing: {workflow}")
     bundle = example.get("action_bundle") or {}
-    if not bundle:
-        raise SystemExit(f"Bazaar output example missing action_bundle: {example}")
+    if bundle.get("bundle_version") != "2026-08-29.2":
+        raise SystemExit(f"Bazaar output example missing Layer 4 bundle version: {bundle}")
+    identity = bundle.get("identity") or {}
+    if not identity.get("bundle_id") or not identity.get("idempotency_key"):
+        raise SystemExit(f"Bazaar output example missing decision identity: {bundle}")
+    if (bundle.get("change") or {}).get("classification") != "FIRST_OBSERVATION":
+        raise SystemExit(f"Bazaar output example missing change classification: {bundle}")
     if (bundle.get("routing") or {}).get("recommended_route") != "CONTINUE_WITH_EVIDENCE":
         raise SystemExit(f"Bazaar action bundle missing routing: {bundle}")
     tasks = bundle.get("tasks") or []
     if not tasks or tasks[0].get("task_type") != "ATTACH_EVIDENCE":
         raise SystemExit(f"Bazaar action bundle missing proposed task: {bundle}")
 
-    # OutputConfig.schema is folded into the schema for info.output.example by the
-    # current x402 Python SDK. `info.output` itself only contains type/format/example.
     output_example_schema = (
         ((((schema_properties.get("output") or {}).get("properties") or {}).get("example") or {}))
     )
-    if "action_bundle" not in (output_example_schema.get("properties") or {}):
+    output_properties = output_example_schema.get("properties") or {}
+    if "action_bundle" not in output_properties:
         raise SystemExit(
             f"Bazaar extension schema missing action_bundle output contract: {output_example_schema}"
         )
+    bundle_schema = output_properties.get("action_bundle") or {}
+    bundle_properties = bundle_schema.get("properties") or {}
+    if not {"identity", "change"}.issubset(bundle_properties):
+        raise SystemExit(f"Bazaar output schema missing identity/change: {bundle_schema}")
 
+    print("http_bazaar_identity=PASS")
     print("http_bazaar_action_bundle=PASS")
     print("http_bazaar_seven_jurisdictions=PASS")
     print("http_bazaar_unpaid_smoke=PASS")

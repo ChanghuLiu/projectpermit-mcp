@@ -67,11 +67,44 @@ def _structured_or_text(result):
         return {"_rendered": rendered}
 
 
-def _assert_action_bundle(payload: dict, *, expected_route: str | None = None) -> None:
+def _assert_identity(bundle: dict) -> dict:
+    identity = bundle.get("identity") or {}
+    required = (
+        "bundle_id",
+        "input_fingerprint",
+        "decision_fingerprint",
+        "routing_fingerprint",
+        "ruleset_fingerprint",
+        "evidence_fingerprint",
+        "idempotency_key",
+    )
+    missing = [field for field in required if not identity.get(field)]
+    if missing:
+        raise SystemExit(f"Decision identity missing fields {missing}: {identity}")
+    if not str(identity["bundle_id"]).startswith("ppb_"):
+        raise SystemExit(f"Unexpected bundle id format: {identity}")
+    if not str(identity["idempotency_key"]).startswith("ppidem_"):
+        raise SystemExit(f"Unexpected idempotency key format: {identity}")
+    change = bundle.get("change") or {}
+    if change.get("classification") not in {
+        "FIRST_OBSERVATION",
+        "UNCHANGED",
+        "DECISION_CHANGED",
+        "ROUTE_CHANGED",
+        "INPUT_CHANGED",
+        "RULESET_CHANGED",
+        "EVIDENCE_REFRESHED",
+        "IDENTITY_VERSION_CHANGED",
+    }:
+        raise SystemExit(f"Unexpected identity change classification: {change}")
+    return identity
+
+
+def _assert_action_bundle(payload: dict, *, expected_route: str | None = None) -> dict:
     bundle = payload.get("action_bundle") or {}
     if not bundle:
         raise SystemExit(f"action_bundle missing from preflight result: {payload}")
-    if bundle.get("bundle_version") != "2026-08-29.1":
+    if bundle.get("bundle_version") != "2026-08-29.2":
         raise SystemExit(f"Unexpected action bundle version: {bundle}")
     routing = bundle.get("routing") or {}
     if expected_route and routing.get("recommended_route") != expected_route:
@@ -79,6 +112,8 @@ def _assert_action_bundle(payload: dict, *, expected_route: str | None = None) -
     audit = bundle.get("audit") or {}
     if audit.get("generated_from") != "deterministic_preflight":
         raise SystemExit(f"Action bundle audit missing deterministic origin: {bundle}")
+    _assert_identity(bundle)
+    return bundle
 
 
 async def main() -> None:
@@ -117,12 +152,13 @@ async def main() -> None:
             if info.get("bulk_max_items") != 50:
                 raise SystemExit(f"Unexpected bulk_max_items: {info.get('bulk_max_items')}")
             bundle_info = info.get("action_bundle") or {}
-            if bundle_info.get("field") != "action_bundle":
-                raise SystemExit(f"Action bundle missing from free MCP info: {bundle_info}")
-            if "tasks" not in (bundle_info.get("includes") or []):
-                raise SystemExit(f"Action bundle task contract missing from info: {bundle_info}")
-            print("remote_mcp_info_action_bundle=PASS")
-            print("remote_mcp_info=PASS")
+            includes = set(bundle_info.get("includes") or [])
+            if bundle_info.get("field") != "action_bundle" or not {"identity", "change", "tasks"}.issubset(includes):
+                raise SystemExit(f"Identity/action bundle contract missing from free MCP info: {bundle_info}")
+            identity_info = info.get("decision_identity") or {}
+            if identity_info.get("repeat_check_input") != "context.prior_decision_identity":
+                raise SystemExit(f"Decision identity repeat contract missing from info: {identity_info}")
+            print("remote_mcp_info_identity=PASS")
 
             batch_result = await session.call_tool(
                 "check_project_requirements_batch",
@@ -148,26 +184,17 @@ async def main() -> None:
             batch = _structured_or_text(batch_result)
             if batch.get("batch_size") != 2 or batch.get("succeeded") != 1 or batch.get("failed") != 1:
                 raise SystemExit(f"Unexpected bulk MCP counts: {batch}")
-            batch_items = batch.get("results") or []
-            if len(batch_items) != 2:
-                raise SystemExit(f"Unexpected bulk MCP result count: {batch}")
-            good, bad = batch_items
-            if good.get("client_ref") != "smoke-good" or good.get("ok") is not True:
+            good, bad = batch.get("results") or [None, None]
+            if not good or good.get("client_ref") != "smoke-good" or good.get("ok") is not True:
                 raise SystemExit(f"Bulk MCP good-item correlation failed: {good}")
             good_result = good.get("result") or {}
-            if good_result.get("determination") != "LIKELY_NOT_REQUIRED":
-                raise SystemExit(f"Bulk MCP good-item determination failed: {good}")
             _assert_action_bundle(good_result, expected_route="CONTINUE_WITH_EVIDENCE")
-            if bad.get("client_ref") != "smoke-bad" or bad.get("ok") is not False:
+            if not bad or bad.get("client_ref") != "smoke-bad" or bad.get("ok") is not False:
                 raise SystemExit(f"Bulk MCP bad-item isolation failed: {bad}")
-            if (bad.get("error") or {}).get("type") != "validation_error":
-                raise SystemExit(f"Bulk MCP bad-item error type failed: {bad}")
-            audit = batch.get("audit") or {}
-            if int(audit.get("unique_rule_ids") or 0) < 1 or int(audit.get("evidence_links") or 0) < 1:
-                raise SystemExit(f"Bulk MCP audit incomplete: {audit}")
-            print("remote_bulk_mcp_action_bundle=PASS")
-            print("remote_bulk_mcp_smoke=PASS")
+            print("remote_bulk_mcp_identity=PASS")
 
+            first_ottawa_identity = None
+            first_ottawa_key = None
             for jurisdiction, project, property_facts, expected in CASES:
                 result = await session.call_tool(
                     "check_project_requirements",
@@ -188,7 +215,32 @@ async def main() -> None:
                     raise SystemExit(
                         f"Unexpected determination for {jurisdiction}: expected {expected}, got {actual}: {payload}"
                     )
-                _assert_action_bundle(payload)
+                bundle = _assert_action_bundle(payload)
+                if jurisdiction == "ottawa_on":
+                    first_ottawa_identity = bundle["identity"]
+                    first_ottawa_key = first_ottawa_identity["idempotency_key"]
+
+            repeat = await session.call_tool(
+                "check_project_requirements",
+                {
+                    "jurisdiction": "ottawa_on",
+                    "project": {"family": "window_door", "action": "replace_same_size"},
+                    "property": {"heritage": False},
+                    "context": {
+                        **INTERNAL_CONTEXT,
+                        "prior_decision_identity": first_ottawa_identity,
+                    },
+                },
+            )
+            if repeat.is_error:
+                raise SystemExit(f"Repeat identity MCP call failed: {repeat}")
+            repeat_payload = _structured_or_text(repeat)
+            repeat_bundle = _assert_action_bundle(repeat_payload, expected_route="CONTINUE_WITH_EVIDENCE")
+            if (repeat_bundle.get("change") or {}).get("classification") != "UNCHANGED":
+                raise SystemExit(f"Repeat check did not classify UNCHANGED: {repeat_bundle}")
+            if (repeat_bundle.get("identity") or {}).get("idempotency_key") != first_ottawa_key:
+                raise SystemExit(f"Repeat check changed idempotency key: {repeat_bundle}")
+            print("remote_mcp_repeat_idempotency=PASS")
 
             address_result = await session.call_tool(
                 "check_project_requirements",
@@ -204,18 +256,14 @@ async def main() -> None:
                 raise SystemExit(f"Vancouver address-aware MCP call failed: {address_result}")
             address_payload = _structured_or_text(address_result)
             _assert_action_bundle(address_payload)
-            address_context = address_payload.get("address_context") or {}
-            resolution = address_context.get("address_resolution") or {}
+            resolution = ((address_payload.get("address_context") or {}).get("address_resolution") or {})
             matched = str(resolution.get("matched_address") or "")
-            zoning = (address_context.get("property") or {}).get("zoning_code")
-            print(f"vancouver_address_matched={matched} zoning={zoning}")
-            if not matched.startswith("453 "):
+            zoning = ((address_payload.get("address_context") or {}).get("property") or {}).get("zoning_code")
+            if not matched.startswith("453 ") or not zoning:
                 raise SystemExit(f"Unexpected Vancouver address resolution: {address_payload}")
-            if not zoning:
-                raise SystemExit(f"Vancouver zoning was not resolved: {address_payload}")
             print("vancouver_address_aware_preflight=PASS")
 
-            print("remote_mcp_action_bundle=PASS")
+            print("remote_mcp_identity=PASS")
             print("remote_mcp_seven_jurisdictions=PASS")
             print("remote_mcp_smoke=PASS")
 

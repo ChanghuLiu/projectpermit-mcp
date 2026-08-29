@@ -27,7 +27,6 @@ class PreviewRequest(BaseModel):
     """Free validation preview deliberately excludes raw civic address resolution."""
 
     model_config = ConfigDict(extra="forbid")
-
     jurisdiction: str
     project: Dict[str, Any]
     property: Dict[str, Any] = Field(default_factory=dict)
@@ -35,8 +34,6 @@ class PreviewRequest(BaseModel):
 
 
 class BatchRequest(BaseModel):
-    """Bulk request wrapper; item validation is intentionally isolated per project."""
-
     model_config = ConfigDict(extra="forbid")
     items: list[Any]
 
@@ -48,7 +45,6 @@ def health():
 
 @app.get("/v1/capabilities")
 def capabilities():
-    """Free machine-readable discovery; no permit determination is performed."""
     address_resolvers = set(SUPPORTED_ADDRESS_JURISDICTIONS)
     return {
         "service": "ProjectPermit",
@@ -76,6 +72,8 @@ def capabilities():
         "action_bundle": {
             "field": "action_bundle",
             "includes": [
+                "identity",
+                "change",
                 "decision",
                 "routing",
                 "required_inputs",
@@ -84,9 +82,25 @@ def capabilities():
                 "audit",
                 "writeback_hints",
             ],
+            "identity_capabilities": [
+                "decision_fingerprint",
+                "work_record_scoped_idempotency",
+                "change_classification",
+            ],
+            "change_classifications": [
+                "FIRST_OBSERVATION",
+                "UNCHANGED",
+                "DECISION_CHANGED",
+                "ROUTE_CHANGED",
+                "INPUT_CHANGED",
+                "RULESET_CHANGED",
+                "EVIDENCE_REFRESHED",
+                "IDENTITY_VERSION_CHANGED",
+            ],
             "purpose": (
-                "Provide one platform-neutral evidence/action package for contractor, "
-                "property and field-service integrations without mutating upstream systems."
+                "Provide one PII-minimal evidence/action package with deterministic "
+                "duplicate suppression and change detection for contractor, property "
+                "and field-service integrations without mutating upstream systems."
             ),
         },
         "integration_proposals": {
@@ -105,7 +119,6 @@ def capabilities():
 
 @app.post("/v1/preview-project-requirements")
 def preview_project_requirements(req: PreviewRequest):
-    """Free structured-facts preview; never performs civic-address/GIS resolution."""
     try:
         facts = req.model_dump()
         facts["address"] = None
@@ -120,13 +133,8 @@ def preview_project_requirements(req: PreviewRequest):
 
 @app.post("/v1/preview-project-requirements-batch")
 def preview_project_requirements_batch(req: BatchRequest):
-    """Free 1-50 item bulk preview with per-item error isolation and audit summary."""
     try:
-        return run_batch_preflight(
-            req.items,
-            allow_address=False,
-            transport="http_preview_batch",
-        )
+        return run_batch_preflight(req.items, allow_address=False, transport="http_preview_batch")
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=f"batch preview failed: {exc}") from exc
 
@@ -145,13 +153,8 @@ def check_project_requirements(req: PreflightRequest):
 
 @app.post("/v1/check-project-requirements-batch")
 def check_project_requirements_batch(req: BatchRequest):
-    """Paid-capable 1-50 item bulk preflight; x402 middleware protects this route when enabled."""
     try:
-        return run_batch_preflight(
-            req.items,
-            allow_address=True,
-            transport="http_api_batch",
-        )
+        return run_batch_preflight(req.items, allow_address=True, transport="http_api_batch")
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=f"batch preflight failed: {exc}") from exc
 
