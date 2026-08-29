@@ -14,6 +14,7 @@ from .jurisdiction_router import evaluate_project
 from .mississauga_address import MississaugaAddressAdapter
 from .telemetry import emit_preflight_event
 from .vancouver_address import VancouverAddressAdapter
+from .workflow_advice import build_workflow_guidance
 
 JsonFetcher = Callable[[str], Dict[str, Any]]
 
@@ -48,6 +49,10 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
     override caller-supplied values; unknown (`None`) overlays never overwrite a
     caller's explicit value.
 
+    A deterministic workflow-guidance layer is attached after rule evaluation. It
+    never changes the permit determination; it only tells calling agents how to
+    route the result and which missing facts are worth collecting next.
+
     A privacy-minimal usage event is emitted after successful evaluation. The event
     never contains the civic address, coordinates or raw property identifiers.
     """
@@ -74,5 +79,6 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
     result = evaluate_project(prepared)
     if address_context is not None:
         result["address_context"] = address_context
+    result["workflow"] = build_workflow_guidance(prepared, result)
     emit_preflight_event(prepared, result)
     return result
