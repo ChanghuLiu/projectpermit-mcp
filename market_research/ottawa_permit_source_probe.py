@@ -2,8 +2,9 @@
 """Probe Ottawa's official 2026 permit ArcGIS item without emitting permit rows.
 
 The purpose is source discovery for an address-premium prevalence audit. The
-script prints only item/service/resource metadata; it never downloads or emits
-permit records, civic addresses, applicant names, contractors or other row data.
+script prints only item/service/resource metadata or ArcGIS public error codes;
+it never downloads or emits permit records, civic addresses, applicant names,
+contractors or other row data.
 """
 from __future__ import annotations
 
@@ -21,14 +22,25 @@ def fetch_json(url: str) -> object:
         return json.loads(response.read().decode("utf-8"))
 
 
+def safe_error(payload: dict) -> dict | None:
+    error = payload.get("error")
+    if not isinstance(error, dict):
+        return None
+    return {
+        "code": error.get("code"),
+        "message": error.get("message"),
+        "details": error.get("details"),
+    }
+
+
 def main() -> None:
-    item = fetch_json(f"{BASE}?f=json")
+    item_json = fetch_json(f"{BASE}?f=json")
+    item_pjson = fetch_json(f"{BASE}?f=pjson")
     resources = fetch_json(f"{BASE}/resources?f=json&num=100")
 
-    if not isinstance(item, dict):
-        raise SystemExit("unexpected ArcGIS item metadata shape")
-    if not isinstance(resources, dict):
-        raise SystemExit("unexpected ArcGIS resource listing shape")
+    for label, payload in (("item_json", item_json), ("item_pjson", item_pjson), ("resources", resources)):
+        if not isinstance(payload, dict):
+            raise SystemExit(f"unexpected ArcGIS {label} shape")
 
     safe_item_keys = (
         "id",
@@ -41,7 +53,7 @@ def main() -> None:
         "modified",
         "ownerFolder",
     )
-    safe_item = {key: item.get(key) for key in safe_item_keys}
+    safe_item = {key: item_json.get(key) for key in safe_item_keys}
 
     safe_resources = []
     for resource in resources.get("resources") or []:
@@ -58,10 +70,14 @@ def main() -> None:
     output = {
         "source": "City of Ottawa / ArcGIS Online public item",
         "item": safe_item,
+        "item_json_error": safe_error(item_json),
+        "item_pjson_error": safe_error(item_pjson),
+        "resources_error": safe_error(resources),
         "resource_count": len(safe_resources),
         "resources": safe_resources,
         "notes": [
             "No permit rows were downloaded or emitted.",
+            "ArcGIS public error code/message is retained when metadata lookup fails; this is source-discovery evidence, not permit data.",
             "If item.url is a FeatureServer/MapServer, the next audit can query schema/counts only before selecting a deterministic sample.",
             "If the item is file/resource based, a later audit must avoid bulk downloading unless a bounded monthly resource can be selected safely.",
         ],
