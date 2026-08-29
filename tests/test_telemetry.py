@@ -49,9 +49,30 @@ class TelemetryTest(unittest.TestCase):
         self.assertTrue(payload["internal_traffic"])
         self.assertIsNotNone(payload["client_tag_hash"])
 
+        # Enforce a strict privacy allowlist instead of searching numeric substrings
+        # across the rendered line. A latitude fragment such as "49.26" can occur
+        # coincidentally inside the event timestamp (for example ...:49.263...),
+        # which made the former assertion flaky without detecting a real leak.
+        self.assertEqual(
+            {
+                "client_tag_hash",
+                "confidence",
+                "determination",
+                "event",
+                "event_version",
+                "internal_traffic",
+                "jurisdiction",
+                "project_family",
+                "request_id",
+                "requirements_count",
+                "resolve_address",
+                "timestamp",
+                "transport",
+            },
+            set(payload),
+        )
         self.assertNotIn("453 W 12TH", rendered)
         self.assertNotIn("-123.114", rendered)
-        self.assertNotIn("49.26", rendered)
         self.assertNotIn("projectpermit-ci", rendered)
 
     def test_municipal_http_request_urls_are_not_info_logged(self):
