@@ -48,6 +48,33 @@
       "minItems": 1,
       "description": "Property facts that must be resolved before relying on the otherwise applicable exemption."
     },
+    "workflow": {
+      "type": "object",
+      "description": "Deterministic agent-routing guidance. It does not alter or replace the permit determination.",
+      "required": ["mode", "recommended_route", "quote_handling", "automation_safe", "summary", "follow_up_questions"],
+      "properties": {
+        "mode": {"enum": ["PERMIT_PATH", "NO_PERMIT_SIGNAL", "NEEDS_MORE_CONTEXT", "NEEDS_REVIEW", "UNSUPPORTED_SCOPE"]},
+        "recommended_route": {"enum": ["ADD_PERMIT_TASK", "CONTINUE_WITH_EVIDENCE", "COLLECT_MISSING_FACTS", "ROUTE_SPECIAL_REVIEW", "MUNICIPAL_CONFIRMATION", "MANUAL_SCOPE_REVIEW"]},
+        "quote_handling": {"enum": ["INCLUDE_PERMIT_ALLOWANCE", "NO_PERMIT_ALLOWANCE_SIGNAL", "HOLD_AUTOMATED_FINALIZATION"]},
+        "automation_safe": {"type": "boolean"},
+        "summary": {"type": "string"},
+        "follow_up_questions": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["fact_path", "question", "why_it_matters"],
+            "properties": {
+              "fact_path": {"type": "string"},
+              "question": {"type": "string"},
+              "why_it_matters": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "disclaimer": {"type": "string"},
     "engine_version": {"type": "string"}
   }
