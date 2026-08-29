@@ -6,7 +6,6 @@ failure. Registration is opt-in via --execute; the default mode validates produc
 from __future__ import annotations
 
 import argparse
-import json
 import os
 from typing import Any
 
@@ -33,6 +32,11 @@ DIRECTORIES = (
         "true402",
         "https://true402.dev/api/v1/services",
         {"url": ORIGIN},
+    ),
+    (
+        "x402dash",
+        "https://api.x402dash.com/v1/register",
+        {"url": CANONICAL_PAID_ENDPOINT},
     ),
 )
 
@@ -69,7 +73,7 @@ def _safe_body(response: httpx.Response) -> str:
     return text[:1000]
 
 
-def _register(client: httpx.Client, name: str, url: str, body: dict[str, str]) -> None:
+def _register(client: httpx.Client, name: str, url: str, body: dict[str, Any]) -> None:
     response = client.post(url, json=body)
     print(f"directory[{name}] status={response.status_code} body={_safe_body(response)}")
     if response.status_code == 402:
@@ -88,7 +92,7 @@ def main() -> None:
     parser.add_argument(
         "--execute",
         action="store_true",
-        help="Submit the origin to free directories after production validation.",
+        help="Submit the origin/paid endpoint to free directories after production validation.",
     )
     args = parser.parse_args()
 
