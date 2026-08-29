@@ -13,7 +13,6 @@ from .address import GatineauAddressAdapter, OttawaAddressAdapter, TorontoAddres
 from .http_fetch import fetch_json
 from .jurisdiction_router import evaluate_project
 from .mississauga_address import MississaugaAddressAdapter
-from .mutation_gate import build_mutation_gate
 from .telemetry import emit_preflight_event
 from .vancouver_address import VancouverAddressAdapter
 from .workflow_advice import build_workflow_guidance
@@ -43,14 +42,6 @@ def _resolve_address(jurisdiction: str, address: str, fetcher: JsonFetcher) -> d
     raise ValueError(f"address resolver not available for jurisdiction: {jurisdiction}")
 
 
-def _prior_decision_identity(prepared: dict[str, Any]) -> dict[str, Any] | None:
-    context = prepared.get("context")
-    if not isinstance(context, dict):
-        return None
-    prior = context.get("prior_decision_identity")
-    return dict(prior) if isinstance(prior, dict) else None
-
-
 def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> dict[str, Any]:
     """Resolve optional municipal address context, then run deterministic rules.
 
@@ -65,11 +56,9 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
     missing facts are worth collecting next.
 
     A platform-neutral `action_bundle` is then generated from the completed result.
-    It packages the decision, route, official evidence, tasks, missing inputs and
-    audit metadata for Jobber/ServiceM8/other field-service adapters without
-    mutating those platforms. A deterministic mutation gate is attached to the
-    bundle so authorized integrations can safely choose explicit idempotent upsert,
-    duplicate suppression, or blocked writeback.
+    It packages the decision, route, official evidence, tasks, missing inputs, audit
+    metadata, deterministic identity and safe-writeback mutation gate for
+    Jobber/ServiceM8/other field-service adapters without mutating those platforms.
 
     A privacy-minimal usage event is emitted after successful evaluation. The event
     never contains the civic address, coordinates or raw property identifiers.
@@ -98,11 +87,6 @@ def run_preflight(facts: dict[str, Any], fetcher: JsonFetcher = fetch_json) -> d
     if address_context is not None:
         result["address_context"] = address_context
     result["workflow"] = build_workflow_guidance(prepared, result)
-    action_bundle = build_action_bundle(prepared, result)
-    action_bundle["mutation_gate"] = build_mutation_gate(
-        action_bundle,
-        prior_identity=_prior_decision_identity(prepared),
-    )
-    result["action_bundle"] = action_bundle
+    result["action_bundle"] = build_action_bundle(prepared, result)
     emit_preflight_event(prepared, result)
     return result
