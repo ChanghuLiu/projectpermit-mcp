@@ -20,7 +20,7 @@ ORIGIN = os.getenv(
 ).rstrip("/")
 MANIFEST_URL = f"{ORIGIN}/.well-known/x402-service.json"
 CANONICAL_PAID_ENDPOINT = f"{ORIGIN}/v1/check-project-requirements"
-EXPECTED_PRICE = os.getenv("PROJECTPERMIT_EXPECTED_SINGLE_PRICE", "0.05")
+EXPECTED_PRICE = os.getenv("PROJECTPERMIT_EXPECTED_SINGLE_PRICE", "0.20")
 EXPECTED_NETWORK = "eip155:8453"
 EXPECTED_FACILITATOR = "https://facilitator.payai.network"
 
