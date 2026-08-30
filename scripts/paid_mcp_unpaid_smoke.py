@@ -14,7 +14,7 @@ URL = os.getenv(
     "https://projectpermit-x402-mcp-production.up.railway.app/mcp",
 )
 EXPECTED_NETWORK = os.getenv("PROJECTPERMIT_SMOKE_X402_NETWORK", "eip155:8453")
-EXPECTED_PRICE_USD = os.getenv("PROJECTPERMIT_SMOKE_X402_SINGLE_AMOUNT", "0.05")
+EXPECTED_PRICE_USD = os.getenv("PROJECTPERMIT_SMOKE_X402_SINGLE_AMOUNT", "0.20")
 EXPECTED_WIRE_AMOUNT = str(int(Decimal(EXPECTED_PRICE_USD) * Decimal("1000000")))
 EXPECTED_JURISDICTIONS = {
     "gatineau_qc",
