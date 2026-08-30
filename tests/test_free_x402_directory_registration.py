@@ -66,48 +66,63 @@ class FreeX402DirectoryRegistrationTest(unittest.TestCase):
             registration._register(client, "directory", "https://example.invalid/register", {}),
         )
 
-    def test_agent402_public_find_detects_projectpermit_for_task_query(self):
+    def test_agent402_public_find_detects_indexed_seller_hint(self):
+        response = Mock()
+        response.status_code = 200
+        response.text = '{"relatedSellers":[{"origin":"https://projectpermit-api-v2-production.up.railway.app"}]}'
+        response.json.return_value = {"relatedSellers": [{"origin": registration.ORIGIN}]}
+        client = Mock()
+        client.get.return_value = response
+        self.assertTrue(registration._observe_agent402_public_find(client))
+        client.get.assert_called_once_with(
+            registration.AGENT402_FIND_BASE_URL,
+            params={"q": "ProjectPermit"},
+        )
+
+    def test_agent402_external_route_detects_projectpermit_for_task(self):
         response = Mock()
         response.status_code = 200
         response.text = '{"results":[{"seller":"https://projectpermit-api-v2-production.up.railway.app"}]}'
         response.json.return_value = {
-            "results": [
-                {
-                    "seller": registration.ORIGIN,
-                    "name": "ProjectPermit Building Permit Preflight",
-                }
-            ]
+            "query": "building permit",
+            "include": "external",
+            "results": [{"seller": registration.ORIGIN, "name": "ProjectPermit"}],
         }
         client = Mock()
-        client.get.return_value = response
-        self.assertTrue(registration._observe_agent402_public_find(client, "building permit"))
-        client.get.assert_called_once_with(
-            registration.AGENT402_FIND_BASE_URL,
-            params={"q": "building permit"},
+        client.post.return_value = response
+        self.assertTrue(registration._observe_agent402_external_route(client, "building permit"))
+        client.post.assert_called_once_with(
+            registration.AGENT402_ROUTE_URL,
+            json={"query": "building permit", "top": 10, "include": "external"},
         )
 
-    def test_agent402_public_find_allows_index_propagation_lag(self):
+    def test_agent402_external_route_allows_no_match(self):
         response = Mock()
         response.status_code = 200
         response.text = '{"results":[]}'
         response.json.return_value = {"results": []}
         client = Mock()
-        client.get.return_value = response
-        self.assertFalse(registration._observe_agent402_public_find(client, "renovation permit"))
+        client.post.return_value = response
+        self.assertFalse(registration._observe_agent402_external_route(client, "renovation permit"))
 
-    def test_agent402_public_find_refuses_unexpected_payment(self):
+    def test_agent402_discovery_refuses_unexpected_payment(self):
         response = Mock()
         response.status_code = 402
         response.text = "payment required"
         client = Mock()
         client.get.return_value = response
         with self.assertRaisesRegex(RuntimeError, "unexpectedly requested payment"):
-            registration._observe_agent402_public_find(client, "ProjectPermit")
+            registration._observe_agent402_public_find(client)
 
-    def test_agent402_queries_cover_brand_and_buyer_intent(self):
+        client = Mock()
+        client.post.return_value = response
+        with self.assertRaisesRegex(RuntimeError, "unexpectedly requested payment"):
+            registration._observe_agent402_external_route(client, "building permit")
+
+    def test_agent402_task_queries_are_buyer_intent_not_brand_search(self):
         self.assertEqual(
-            ("ProjectPermit", "building permit", "renovation permit"),
-            registration.AGENT402_FIND_QUERIES,
+            ("building permit", "renovation permit"),
+            registration.AGENT402_TASK_QUERIES,
         )
 
 
