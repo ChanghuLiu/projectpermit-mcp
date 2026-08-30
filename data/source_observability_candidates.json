@@ -1,0 +1,49 @@
+{
+  "manifest_version": "candidate-2026-08-30",
+  "verified_at": "2026-08-30",
+  "purpose": "One-shot machine-access probe for first-party alternate monitoring anchors. Candidates are not canonical ProjectPermit evidence until separately reviewed and promoted.",
+  "sources": [
+    {
+      "source_id": "VAN_ZONING_AMENDMENTS_CANDIDATE",
+      "authority": "Vancouver",
+      "kind": "official_change_index",
+      "criticality": "candidate",
+      "url": "https://vancouver.ca/home-property-development/zoning-land-use-document-library-amendments.aspx"
+    },
+    {
+      "source_id": "VAN_FORMS_BULLETINS_CANDIDATE",
+      "authority": "Vancouver",
+      "kind": "official_document_index",
+      "criticality": "candidate",
+      "url": "https://vancouver.ca/home-property-development/application-forms-and-checklists.aspx"
+    },
+    {
+      "source_id": "VAN_ZONING_LIBRARY_CANDIDATE",
+      "authority": "Vancouver",
+      "kind": "official_document_library",
+      "criticality": "candidate",
+      "url": "https://guidelines.vancouver.ca/"
+    },
+    {
+      "source_id": "LAV_CDU_CONSULTATIONS_CANDIDATE",
+      "authority": "Laval",
+      "kind": "official_change_index",
+      "criticality": "candidate",
+      "url": "https://www.laval.ca/vie-democratique/participation-citoyenne/contribuer/assemblees-publiques-consultation/"
+    },
+    {
+      "source_id": "LAV_CDU_INDEX_CANDIDATE",
+      "authority": "Laval",
+      "kind": "official_regulation_index",
+      "criticality": "candidate",
+      "url": "https://www.laval.ca/reglements-permis/index-reglements/code-urbanisme/"
+    },
+    {
+      "source_id": "LAV_CDU_CONSOLIDATED_PDF_CANDIDATE",
+      "authority": "Laval",
+      "kind": "official_consolidated_regulation_pdf",
+      "criticality": "candidate",
+      "url": "https://www.laval.ca/wp-content/uploads/2025/02/cdu-1-reglement.pdf"
+    }
+  ]
+}
