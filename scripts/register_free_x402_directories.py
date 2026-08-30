@@ -3,6 +3,8 @@
 This script never sends payment credentials and treats HTTP 402 from a directory as a hard
 failure. Registration is opt-in via --execute; the default mode validates production only.
 Transient directory outages and rate limits are recorded but do not block later directories.
+After Agent402 registration, a free read-only find query records whether the seller is already
+publicly discoverable; index propagation lag is observational and never fails registration.
 """
 from __future__ import annotations
 
@@ -23,6 +25,7 @@ CANONICAL_PAID_ENDPOINT = f"{ORIGIN}/v1/check-project-requirements"
 EXPECTED_PRICE = os.getenv("PROJECTPERMIT_EXPECTED_SINGLE_PRICE", "0.20")
 EXPECTED_NETWORK = "eip155:8453"
 EXPECTED_FACILITATOR = "https://facilitator.payai.network"
+AGENT402_FIND_URL = "https://agent402.tools/api/find?q=ProjectPermit"
 
 PROBE_BODY = json.dumps(
     {
@@ -124,6 +127,39 @@ def _register(client: httpx.Client, name: str, url: str, body: dict[str, Any]) -
     raise RuntimeError(f"{name} registration failed with HTTP {response.status_code}")
 
 
+def _observe_agent402_public_find(client: httpx.Client) -> bool | None:
+    """Observe free public Agent402 discovery after registration without treating lag as failure."""
+    try:
+        response = client.get(AGENT402_FIND_URL)
+    except httpx.RequestError as exc:
+        print(f"directory[agent402_tools]_public_find=TRANSIENT_NETWORK_FAILURE error={type(exc).__name__}")
+        return None
+
+    print(
+        "directory[agent402_tools]_public_find "
+        f"status={response.status_code} body={_safe_body(response)}"
+    )
+    if response.status_code == 402:
+        raise RuntimeError("Agent402 public find unexpectedly requested payment; refusing to continue")
+    if response.status_code != 200:
+        print("directory[agent402_tools]_public_find=UNAVAILABLE")
+        return None
+
+    try:
+        payload = response.json()
+    except ValueError:
+        print("directory[agent402_tools]_public_find=INVALID_JSON")
+        return None
+
+    serialized = json.dumps(payload, sort_keys=True, ensure_ascii=False).lower()
+    visible = ORIGIN.lower() in serialized or "projectpermit" in serialized
+    print(
+        "directory[agent402_tools]_public_find="
+        + ("VISIBLE" if visible else "NOT_VISIBLE_YET")
+    )
+    return visible
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -147,9 +183,16 @@ def main() -> None:
             return
 
         transient_failures: list[str] = []
+        agent402_accepted = False
         for name, url, body in DIRECTORIES:
-            if _register(client, name, url, body) == "transient_failure":
+            outcome = _register(client, name, url, body)
+            if name == "agent402_tools" and outcome == "accepted":
+                agent402_accepted = True
+            if outcome == "transient_failure":
                 transient_failures.append(name)
+
+        if agent402_accepted:
+            _observe_agent402_public_find(client)
 
     if transient_failures:
         print("directory_transient_failures=" + ",".join(transient_failures))
