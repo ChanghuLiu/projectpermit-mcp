@@ -20,6 +20,7 @@ FREE_MCP = "https://projectpermit-mcp-production.up.railway.app/mcp"
 OFFICIAL_MCP_NAME = "io.github.ChanghuLiu/projectpermit"
 EXPECTED_MCP_VERSION = "0.4.1"
 INDEX_402_SERVICE_ID = "df86c16c-4c30-48d7-9c9d-6de53d782de3"
+TRUE402_SERVICE_ID = "1f2f751a-bc3c-4f09-8099-20a976650d7c"
 USER_AGENT = "ProjectPermit-External-Directory-Audit/1.0"
 
 
@@ -113,6 +114,38 @@ def _audit_402index() -> dict[str, Any]:
     return result
 
 
+def _audit_true402() -> dict[str, Any]:
+    """Read True402's documented free registry endpoints; never call a paid stall."""
+    search_url = "https://true402.dev/api/v1/services?" + urlencode(
+        {"q": "ProjectPermit", "limit": 100}
+    )
+    detail_url = f"https://true402.dev/api/v1/services/{TRUE402_SERVICE_ID}"
+    reputation_url = f"{detail_url}/reputation"
+    search = _safe_get_json(search_url)
+    detail = _safe_get_json(detail_url)
+    reputation = _safe_get_json(reputation_url)
+    detail_payload = detail.get("payload", {})
+    result: dict[str, Any] = {
+        "service_id": TRUE402_SERVICE_ID,
+        "search_http_status": search.get("http_status"),
+        "detail_http_status": detail.get("http_status"),
+        "reputation_http_status": reputation.get("http_status"),
+        "public_search_visible": _contains_projectpermit(search.get("payload", {})),
+        "detail_matches_projectpermit": _contains_projectpermit(detail_payload),
+    }
+    if isinstance(detail_payload, dict):
+        for field in ("id", "url", "name", "description", "reputation", "manifest"):
+            if field in detail_payload:
+                result[field] = detail_payload[field]
+    reputation_payload = reputation.get("payload")
+    if isinstance(reputation_payload, dict):
+        result["reputation"] = reputation_payload
+    for label, response in (("search", search), ("detail", detail), ("reputation", reputation)):
+        if "error" in response:
+            result[f"{label}_error"] = response
+    return result
+
+
 def _audit_open402() -> dict[str, Any]:
     url = "https://raw.githubusercontent.com/ArcedeDev/open-402/main/registry/domains.txt"
     try:
@@ -157,6 +190,7 @@ def main() -> None:
         "projectpermit_origin": ORIGIN,
         "official_mcp_registry": _audit_official_mcp_registry(),
         "402index": _audit_402index(),
+        "true402": _audit_true402(),
         "open402": _audit_open402(),
         "agent_tools_x402": _agent_tools_search("/api/v1/search"),
         "agent_tools_mcp": _agent_tools_search("/api/v1/mcp/search"),
