@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
     paths:
+      - src/projectpermit/openapi_discovery.py
+      - src/projectpermit/public_x402_manifest.py
       - scripts/register_free_x402_directories.py
       - .github/workflows/register-free-x402-directories.yml
   workflow_dispatch:
