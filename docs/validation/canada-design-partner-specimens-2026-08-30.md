@@ -287,17 +287,67 @@ A strong buyer package requires:
 
 `recent denominator + material consequence + repeated research time + preference to externalize + plausible payment unit`
 
+## Current-jurisdiction fit gate
+
+The specimen research exposed an important deployment constraint: a good buyer archetype is not automatically a good **current pilot**.
+
+Current ProjectPermit municipalities are:
+- Toronto;
+- Ottawa;
+- Mississauga;
+- Vancouver;
+- Laval;
+- Gatineau;
+- Longueuil.
+
+The public specimens above are not uniformly inside that footprint:
+
+- Summit is Richmond Hill / York Region based but explicitly serves Toronto and therefore has at least some current-coverage overlap;
+- Guest Plumbing explicitly operates in Toronto and therefore also has current-coverage overlap;
+- Akins Carpentry is based in Stirling-Rawdon, currently unsupported;
+- Renovation Revolution is Kingston-based, currently unsupported.
+
+### Pilot rule
+
+Do **not** add a municipality merely to make an attractive archetype fit the product.
+
+A buyer can enter a current E3 pilot only through one of two paths:
+
+1. the buyer can provide representative recent work records from an already-supported municipality; or
+2. the buyer first produces strong E2 evidence (`recent denominator + material consequence + externalization`) for an unsupported municipality, making one tightly scoped new jurisdiction a buyer-driven expansion rather than speculative city accumulation.
+
+### Consequence for the current specimens
+
+- Summit-like buyer: potentially eligible **only on Toronto work records** without expansion;
+- Guest Plumbing: potentially eligible **only on Toronto renovation/plumbing-relevant records**;
+- Akins / Renovation Revolution: archetype/falsification evidence only until a buyer-driven expansion gate is crossed.
+
+This prevents distribution research from quietly reopening the old `add more cities` loop.
+
+## Build-vs-buy warning from Buildxact preconstruction research
+
+Buildxact/Farnsworth public research reports that **53% of builders/remodelers say they are open to doing their own preconstruction tasks such as takeoffs and estimates**.
+
+Source:
+- https://www.buildxact.com/ca/wp-content/uploads/sites/14/2023/06/How-Dealers-Use-Saas-to-Modernize-the_Pro-Builder-Relationship_US_2022.pdf
+
+This is not specific to regulatory research, but it is a useful warning against assuming that high workflow volume implies a desire to outsource.
+
+Layer C must prove a different burden:
+
+> not `I don't want to estimate`, but `I don't want to continuously maintain current multi-jurisdiction regulatory knowledge and evidence inside my estimating workflow`.
+
 ## Decision consequence
 
 The public specimen research changes **who to validate**, not the evidence score.
 
 Priority order for buyer validation now:
 
-1. **Summit-like multi-municipality residential remodel/design-build company**;
-2. **Akins-like small builder/remodeler already using estimate software**;
-3. **Renovation-Revolution-like solo contractor as low-frequency falsification boundary**;
-4. multi-city plumbing/HVAC businesses only after current family coverage is broadened or a specific renovation/plumbing wedge is validated.
+1. **Summit-like multi-municipality residential remodel/design-build company with supported-city records**;
+2. **Akins-like small builder/remodeler already using estimate software** as an archetype, but do not expand geography before E2;
+3. **Renovation-Revolution-like solo contractor** as low-frequency falsification boundary;
+4. multi-city plumbing/HVAC businesses only through current family/municipality overlap or after a separately validated wedge.
 
 No E2/E3/E4/E5 change.
 
-Do not build marketplace integrations or buy protected code content until at least one real buyer produces a recent bounded denominator plus material consequence and externalization evidence.
+Do not build marketplace integrations, add municipalities, or buy protected code content until at least one real buyer produces a recent bounded denominator plus material consequence and externalization evidence.
