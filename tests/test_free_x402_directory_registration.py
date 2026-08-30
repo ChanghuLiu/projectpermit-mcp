@@ -66,6 +66,36 @@ class FreeX402DirectoryRegistrationTest(unittest.TestCase):
             registration._register(client, "directory", "https://example.invalid/register", {}),
         )
 
+    def test_agent402_public_find_detects_projectpermit(self):
+        response = Mock()
+        response.status_code = 200
+        response.text = '{"tools":[{"seller":"https://projectpermit-api-v2-production.up.railway.app"}]}'
+        response.json.return_value = {
+            "tools": [{"seller": registration.ORIGIN, "name": "ProjectPermit Building Permit Preflight"}]
+        }
+        client = Mock()
+        client.get.return_value = response
+        self.assertTrue(registration._observe_agent402_public_find(client))
+        client.get.assert_called_once_with(registration.AGENT402_FIND_URL)
+
+    def test_agent402_public_find_allows_index_propagation_lag(self):
+        response = Mock()
+        response.status_code = 200
+        response.text = '{"tools":[]}'
+        response.json.return_value = {"tools": []}
+        client = Mock()
+        client.get.return_value = response
+        self.assertFalse(registration._observe_agent402_public_find(client))
+
+    def test_agent402_public_find_refuses_unexpected_payment(self):
+        response = Mock()
+        response.status_code = 402
+        response.text = "payment required"
+        client = Mock()
+        client.get.return_value = response
+        with self.assertRaisesRegex(RuntimeError, "unexpectedly requested payment"):
+            registration._observe_agent402_public_find(client)
+
 
 if __name__ == "__main__":
     unittest.main()
