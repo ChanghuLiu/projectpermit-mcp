@@ -19,6 +19,34 @@ DEFAULT_SINGLE_PRICE = "$0.20"
 DEFAULT_BATCH_PRICE = "$5.00"
 DEFAULT_NETWORK = "eip155:8453"
 
+# These are standard OpenAPI operation fields, not directory-specific keywords.
+# They make the paid capability explicit to any machine client that discovers the
+# service from OpenAPI instead of having to infer the domain from a generic route
+# name such as `check_project_requirements`.
+DISCOVERY_OPERATIONS: dict[str, dict[str, Any]] = {
+    SINGLE_PATH: {
+        "operationId": "building-permit-renovation-preflight",
+        "summary": "Building permit and renovation permit requirements preflight",
+        "description": (
+            "Determine current municipal building permit and renovation permit requirements "
+            "for one Canadian construction or renovation project. Returns deterministic "
+            "permit preflight results, official-source evidence, required follow-up inputs, "
+            "workflow routing and an agent-ready action bundle."
+        ),
+        "tags": ["building-permit", "renovation-permit", "construction-permit"],
+    },
+    BATCH_PATH: {
+        "operationId": "building-permit-renovation-preflight-batch",
+        "summary": "Batch building permit and renovation permit requirements preflight",
+        "description": (
+            "Evaluate multiple Canadian construction or renovation projects for municipal "
+            "building permit and renovation permit requirements in one batch. Returns "
+            "deterministic results with official-source evidence and workflow metadata."
+        ),
+        "tags": ["building-permit", "renovation-permit", "construction-permit"],
+    },
+}
+
 
 def _amount(value: str | None, fallback: str) -> str:
     rendered = str(value or fallback).strip()
@@ -92,6 +120,11 @@ def decorate_openapi_schema(
         operation = path_item.get("post")
         if not isinstance(operation, dict):
             raise ValueError(f"OpenAPI POST operation missing: {path}")
+
+        # Make the business capability explicit in standard OpenAPI fields. This
+        # helps generic agents and registries discover the operation by intent and
+        # avoids relying on framework-generated function names.
+        operation.update(deepcopy(DISCOVERY_OPERATIONS[path]))
         operation["x-payment-info"] = _payment_info(amount)
         operation["x-projectpermit-payment"] = {
             "network": network,
