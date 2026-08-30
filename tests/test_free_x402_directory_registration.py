@@ -66,26 +66,34 @@ class FreeX402DirectoryRegistrationTest(unittest.TestCase):
             registration._register(client, "directory", "https://example.invalid/register", {}),
         )
 
-    def test_agent402_public_find_detects_projectpermit(self):
+    def test_agent402_public_find_detects_projectpermit_for_task_query(self):
         response = Mock()
         response.status_code = 200
-        response.text = '{"tools":[{"seller":"https://projectpermit-api-v2-production.up.railway.app"}]}'
+        response.text = '{"results":[{"seller":"https://projectpermit-api-v2-production.up.railway.app"}]}'
         response.json.return_value = {
-            "tools": [{"seller": registration.ORIGIN, "name": "ProjectPermit Building Permit Preflight"}]
+            "results": [
+                {
+                    "seller": registration.ORIGIN,
+                    "name": "ProjectPermit Building Permit Preflight",
+                }
+            ]
         }
         client = Mock()
         client.get.return_value = response
-        self.assertTrue(registration._observe_agent402_public_find(client))
-        client.get.assert_called_once_with(registration.AGENT402_FIND_URL)
+        self.assertTrue(registration._observe_agent402_public_find(client, "building permit"))
+        client.get.assert_called_once_with(
+            registration.AGENT402_FIND_BASE_URL,
+            params={"q": "building permit"},
+        )
 
     def test_agent402_public_find_allows_index_propagation_lag(self):
         response = Mock()
         response.status_code = 200
-        response.text = '{"tools":[]}'
-        response.json.return_value = {"tools": []}
+        response.text = '{"results":[]}'
+        response.json.return_value = {"results": []}
         client = Mock()
         client.get.return_value = response
-        self.assertFalse(registration._observe_agent402_public_find(client))
+        self.assertFalse(registration._observe_agent402_public_find(client, "renovation permit"))
 
     def test_agent402_public_find_refuses_unexpected_payment(self):
         response = Mock()
@@ -94,7 +102,13 @@ class FreeX402DirectoryRegistrationTest(unittest.TestCase):
         client = Mock()
         client.get.return_value = response
         with self.assertRaisesRegex(RuntimeError, "unexpectedly requested payment"):
-            registration._observe_agent402_public_find(client)
+            registration._observe_agent402_public_find(client, "ProjectPermit")
+
+    def test_agent402_queries_cover_brand_and_buyer_intent(self):
+        self.assertEqual(
+            ("ProjectPermit", "building permit", "renovation permit"),
+            registration.AGENT402_FIND_QUERIES,
+        )
 
 
 if __name__ == "__main__":
