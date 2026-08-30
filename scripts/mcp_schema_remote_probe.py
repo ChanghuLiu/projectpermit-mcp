@@ -42,6 +42,35 @@ def _schema(data: dict[str, Any]) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def _resolve_schema_node(root: dict[str, Any], node: dict[str, Any]) -> dict[str, Any]:
+    """Resolve local $defs refs/nullable wrappers enough for quality inspection."""
+    current = node
+    seen: set[str] = set()
+    for _ in range(12):
+        ref = current.get("$ref") if isinstance(current, dict) else None
+        if isinstance(ref, str) and ref.startswith("#/$defs/") and ref not in seen:
+            seen.add(ref)
+            name = ref.rsplit("/", 1)[-1]
+            target = (root.get("$defs") or {}).get(name)
+            if isinstance(target, dict):
+                current = target
+                continue
+
+        union = None
+        for key in ("anyOf", "oneOf"):
+            candidates = current.get(key) if isinstance(current, dict) else None
+            if isinstance(candidates, list):
+                union = candidates
+                break
+        if union:
+            non_null = [item for item in union if isinstance(item, dict) and item.get("type") != "null"]
+            if non_null:
+                current = non_null[0]
+                continue
+        break
+    return current if isinstance(current, dict) else {}
+
+
 def _schema_quality(name: str, schema: dict[str, Any]) -> dict[str, Any]:
     properties = schema.get("properties") if isinstance(schema.get("properties"), dict) else {}
     result: dict[str, Any] = {
@@ -49,7 +78,8 @@ def _schema_quality(name: str, schema: dict[str, Any]) -> dict[str, Any]:
         "top_level_required": schema.get("required") or [],
     }
     if name == "check_project_requirements":
-        project = properties.get("project") if isinstance(properties.get("project"), dict) else {}
+        raw_project = properties.get("project") if isinstance(properties.get("project"), dict) else {}
+        project = _resolve_schema_node(schema, raw_project)
         project_properties = (
             project.get("properties") if isinstance(project.get("properties"), dict) else {}
         )
@@ -59,22 +89,33 @@ def _schema_quality(name: str, schema: dict[str, Any]) -> dict[str, Any]:
                 "project_has_nested_properties": bool(project_properties),
                 "project_nested_property_names": sorted(project_properties),
                 "project_allows_additional_properties": project.get("additionalProperties"),
+                "project_exposes_family": "family" in project_properties,
+                "project_exposes_action": "action" in project_properties,
             }
         )
     elif name == "check_project_requirements_batch":
-        items = properties.get("items") if isinstance(properties.get("items"), dict) else {}
-        item_schema = items.get("items") if isinstance(items.get("items"), dict) else {}
+        raw_items = properties.get("items") if isinstance(properties.get("items"), dict) else {}
+        items = _resolve_schema_node(schema, raw_items)
+        raw_item_schema = items.get("items") if isinstance(items.get("items"), dict) else {}
+        item_schema = _resolve_schema_node(schema, raw_item_schema)
         item_properties = (
             item_schema.get("properties")
             if isinstance(item_schema.get("properties"), dict)
             else {}
         )
+        project = _resolve_schema_node(
+            schema,
+            item_properties.get("project") if isinstance(item_properties.get("project"), dict) else {},
+        )
+        project_properties = project.get("properties") if isinstance(project.get("properties"), dict) else {}
         result.update(
             {
                 "batch_items_type": items.get("type"),
                 "batch_item_has_nested_properties": bool(item_properties),
                 "batch_item_nested_property_names": sorted(item_properties),
                 "batch_item_allows_additional_properties": item_schema.get("additionalProperties"),
+                "batch_project_exposes_family": "family" in project_properties,
+                "batch_project_exposes_action": "action" in project_properties,
             }
         )
     return result
@@ -109,13 +150,19 @@ async def main() -> None:
 
     single_quality = report["tools"]["check_project_requirements"]["quality"]
     batch_quality = report["tools"]["check_project_requirements_batch"]["quality"]
+    single_structured = bool(
+        single_quality.get("project_has_nested_properties")
+        and single_quality.get("project_exposes_family")
+        and single_quality.get("project_exposes_action")
+    )
+    batch_structured = bool(
+        batch_quality.get("batch_item_has_nested_properties")
+        and batch_quality.get("batch_project_exposes_family")
+        and batch_quality.get("batch_project_exposes_action")
+    )
     report["summary"] = {
-        "single_project_schema": (
-            "STRUCTURED" if single_quality.get("project_has_nested_properties") else "GENERIC_OBJECT"
-        ),
-        "batch_item_schema": (
-            "STRUCTURED" if batch_quality.get("batch_item_has_nested_properties") else "GENERIC_OBJECT"
-        ),
+        "single_project_schema": "STRUCTURED" if single_structured else "GENERIC_OBJECT",
+        "batch_item_schema": "STRUCTURED" if batch_structured else "GENERIC_OBJECT",
     }
     print(json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False))
 

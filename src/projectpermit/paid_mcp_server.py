@@ -30,49 +30,21 @@ from x402.server import x402ResourceServerSync
 
 from .capabilities import PROJECT_FAMILIES
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
+from .mcp_input_models import (
+    CivicAddress,
+    JurisdictionId,
+    ProjectFacts,
+    PropertyFactsInput,
+    ResolveAddress,
+    WorkflowContextInput,
+    model_or_mapping,
+    paid_mcp_input_schema,
+)
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 
 
 TOOL_NAME = "check_project_requirements"
-
-INPUT_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "jurisdiction": {
-            "type": "string",
-            "enum": list(SUPPORTED_JURISDICTIONS),
-            "description": "Supported municipality identifier.",
-        },
-        "project": {
-            "type": "object",
-            "description": "Normalized project facts such as family, action, structural_change and estimated_cost_cad.",
-        },
-        "address": {
-            "type": ["string", "null"],
-            "description": "Optional civic address for address-aware preflight where a resolver is available.",
-        },
-        "property": {
-            "type": "object",
-            "description": "Known property overlays/facts such as heritage or PIIA status.",
-        },
-        "context": {
-            "type": "object",
-            "description": (
-                "Optional workflow/integration context. For repeated work-record checks, "
-                "pass prior action_bundle.identity as prior_decision_identity. Source platform/object "
-                "ids may be supplied for scoped idempotency and safe-writeback gating; raw ids are "
-                "not returned in identity."
-            ),
-        },
-        "resolve_address": {
-            "type": "boolean",
-            "description": "When true, enrich the request from first-party municipal address/GIS data before rule evaluation where supported.",
-            "default": False,
-        },
-    },
-    "required": ["jurisdiction", "project"],
-    "additionalProperties": False,
-}
+INPUT_SCHEMA: dict[str, Any] = paid_mcp_input_schema()
 
 EXAMPLE = {
     "jurisdiction": "ottawa_on",
@@ -126,10 +98,11 @@ def build_paid_server() -> MCPServer:
             "permit determination, workflow guidance, evidence freshness and a platform-neutral "
             "action bundle with proposed tasks, official evidence, audit metadata, deterministic "
             "identity, idempotency key, change classification and a safe-writeback mutation gate. "
-            "Pass a prior identity in context.prior_decision_identity for repeated checks. The gate "
-            "can classify READY_FOR_EXPLICIT_WRITE, NOOP_UNCHANGED or BLOCKED, but ProjectPermit "
-            "does not itself execute external mutations. Results are preflight information, not "
-            "municipal authorization."
+            "Start project facts with family + action and supply only known facts; unknown "
+            "municipal-specific facts remain accepted for forward compatibility. Pass a prior "
+            "identity in context.prior_decision_identity for repeated checks. The gate can classify "
+            "READY_FOR_EXPLICIT_WRITE, NOOP_UNCHANGED or BLOCKED, but ProjectPermit does not itself "
+            "execute external mutations. Results are preflight information, not municipal authorization."
         ),
     )
 
@@ -287,23 +260,26 @@ def build_paid_server() -> MCPServer:
 
     @server.tool()
     def check_project_requirements(
-        jurisdiction: str,
-        project: dict[str, Any],
+        jurisdiction: JurisdictionId,
+        project: ProjectFacts,
         ctx: Context,
-        address: str | None = None,
-        property: dict[str, Any] | None = None,
-        context: dict[str, Any] | None = None,
-        resolve_address: bool = False,
+        address: CivicAddress = None,
+        property: PropertyFactsInput = None,
+        context: WorkflowContextInput = None,
+        resolve_address: ResolveAddress = False,
     ) -> CallToolResult:
-        """Paid evidence-linked permit preflight with workflow/action bundle, identity, idempotency, change classification and safe-writeback mutation gate. Requires x402 USDC payment."""
+        """Paid evidence-linked permit preflight. Start project with family + action and add only known facts. Returns workflow/action bundle, identity, idempotency, change classification and safe-writeback mutation gate. Requires x402 USDC payment."""
         request_meta = dict(ctx.request_context.meta or {})
-        tool_context = {**(context or {}), "_transport": "paid_mcp"}
+        project_facts = model_or_mapping(project)
+        property_facts = model_or_mapping(property)
+        context_facts = model_or_mapping(context)
+        tool_context = {**context_facts, "_transport": "paid_mcp"}
         result = paid_tool(
             {
                 "jurisdiction": jurisdiction,
-                "project": project,
+                "project": project_facts,
                 "address": address,
-                "property": property or {},
+                "property": property_facts,
                 "context": tool_context,
                 "resolve_address": resolve_address,
             },
