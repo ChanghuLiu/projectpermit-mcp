@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
@@ -19,6 +20,7 @@ HOST = "projectpermit-api-v2-production.up.railway.app"
 FREE_MCP = "https://projectpermit-mcp-production.up.railway.app/mcp"
 OFFICIAL_MCP_NAME = "io.github.ChanghuLiu/projectpermit"
 EXPECTED_MCP_VERSION = "0.4.1"
+EXPECTED_SINGLE_PRICE_USD = Decimal("0.20")
 INDEX_402_SERVICE_ID = "df86c16c-4c30-48d7-9c9d-6de53d782de3"
 TRUE402_SERVICE_ID = "1f2f751a-bc3c-4f09-8099-20a976650d7c"
 USER_AGENT = "ProjectPermit-External-Directory-Audit/1.0"
@@ -55,6 +57,67 @@ def _safe_get_json(url: str) -> dict[str, Any]:
         return {"error": type(exc).__name__, "detail": str(exc)[:500]}
 
 
+def _normalized_price(value: Any) -> Decimal | None:
+    if value is None or isinstance(value, bool):
+        return None
+    rendered = str(value).strip()
+    if rendered.startswith("$"):
+        rendered = rendered[1:]
+    try:
+        return Decimal(rendered)
+    except (InvalidOperation, ValueError):
+        return None
+
+
+def _price_contract_match(value: Any) -> bool | None:
+    normalized = _normalized_price(value)
+    if normalized is None:
+        return None
+    return normalized == EXPECTED_SINGLE_PRICE_USD
+
+
+def _manifest_price(payload: Any) -> Any:
+    manifest = payload
+    if isinstance(manifest, str):
+        try:
+            manifest = json.loads(manifest)
+        except json.JSONDecodeError:
+            return None
+    if not isinstance(manifest, dict):
+        return None
+    for key in ("request_price_usd", "price_usd"):
+        if manifest.get(key) is not None:
+            return manifest[key]
+    pricing = manifest.get("pricing")
+    if isinstance(pricing, dict):
+        for key in ("base", "amount", "price_usd"):
+            if pricing.get(key) is not None:
+                return pricing[key]
+    return None
+
+
+def _audit_production_x402_manifest() -> dict[str, Any]:
+    url = f"{ORIGIN}/.well-known/x402-service.json"
+    response = _safe_get_json(url)
+    payload = response.get("payload", {})
+    result: dict[str, Any] = {
+        "http_status": response.get("http_status"),
+        "expected_single_price_usd": str(EXPECTED_SINGLE_PRICE_USD),
+    }
+    if isinstance(payload, dict):
+        pricing = payload.get("pricing")
+        observed = pricing.get("base") if isinstance(pricing, dict) else None
+        result["observed_single_price_usd"] = observed
+        result["price_contract_match"] = _price_contract_match(observed)
+        result["endpoint"] = payload.get("endpoint")
+        payment = payload.get("payment")
+        if isinstance(payment, dict):
+            result["network"] = payment.get("network")
+    if "error" in response:
+        result["error"] = response
+    return result
+
+
 def _audit_official_mcp_registry() -> dict[str, Any]:
     encoded_name = quote(OFFICIAL_MCP_NAME, safe="")
     url = (
@@ -89,6 +152,7 @@ def _audit_402index() -> dict[str, Any]:
         "detail_http_status": detail.get("http_status"),
         "search_http_status": search.get("http_status"),
         "public_search_visible": _contains_projectpermit(search.get("payload", {})),
+        "expected_single_price_usd": str(EXPECTED_SINGLE_PRICE_USD),
     }
     detail_payload = detail.get("payload")
     if isinstance(detail_payload, dict):
@@ -107,6 +171,8 @@ def _audit_402index() -> dict[str, Any]:
         ):
             if field in service:
                 result[field] = service[field]
+        if "price_usd" in service:
+            result["price_contract_match"] = _price_contract_match(service.get("price_usd"))
     if "error" in detail:
         result["detail_error"] = detail
     if "error" in search:
@@ -132,11 +198,15 @@ def _audit_true402() -> dict[str, Any]:
         "reputation_http_status": reputation.get("http_status"),
         "public_search_visible": _contains_projectpermit(search.get("payload", {})),
         "detail_matches_projectpermit": _contains_projectpermit(detail_payload),
+        "expected_single_price_usd": str(EXPECTED_SINGLE_PRICE_USD),
     }
     if isinstance(detail_payload, dict):
         for field in ("id", "url", "name", "description", "reputation", "manifest"):
             if field in detail_payload:
                 result[field] = detail_payload[field]
+        observed_price = _manifest_price(detail_payload.get("manifest"))
+        result["observed_single_price_usd"] = observed_price
+        result["price_contract_match"] = _price_contract_match(observed_price)
     reputation_payload = reputation.get("payload")
     if isinstance(reputation_payload, dict):
         result["reputation"] = reputation_payload
@@ -188,6 +258,7 @@ def main() -> None:
     report = {
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "projectpermit_origin": ORIGIN,
+        "production_x402_manifest": _audit_production_x402_manifest(),
         "official_mcp_registry": _audit_official_mcp_registry(),
         "402index": _audit_402index(),
         "true402": _audit_true402(),
