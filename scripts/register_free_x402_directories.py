@@ -3,9 +3,9 @@
 This script never sends payment credentials and treats HTTP 402 from a directory as a hard
 failure. Registration is opt-in via --execute; the default mode validates production only.
 Transient directory outages and rate limits are recorded but do not block later directories.
-After Agent402 registration, free read-only find queries record whether the seller is already
-publicly discoverable by brand and by representative buyer task intent; index propagation lag is
-observational and never fails registration.
+After Agent402 registration, read-only discovery checks verify both seller indexing and
+representative cross-seller task routing; propagation lag is observational and never fails
+registration.
 """
 from __future__ import annotations
 
@@ -27,8 +27,8 @@ EXPECTED_PRICE = os.getenv("PROJECTPERMIT_EXPECTED_SINGLE_PRICE", "0.20")
 EXPECTED_NETWORK = "eip155:8453"
 EXPECTED_FACILITATOR = "https://facilitator.payai.network"
 AGENT402_FIND_BASE_URL = "https://agent402.tools/api/find"
-AGENT402_FIND_QUERIES = (
-    "ProjectPermit",
+AGENT402_ROUTE_URL = "https://agent402.tools/api/route"
+AGENT402_TASK_QUERIES = (
     "building permit",
     "renovation permit",
 )
@@ -133,8 +133,13 @@ def _register(client: httpx.Client, name: str, url: str, body: dict[str, Any]) -
     raise RuntimeError(f"{name} registration failed with HTTP {response.status_code}")
 
 
+def _payload_mentions_projectpermit(payload: Any) -> bool:
+    serialized = json.dumps(payload, sort_keys=True, ensure_ascii=False).lower()
+    return ORIGIN.lower() in serialized or "projectpermit" in serialized
+
+
 def _observe_agent402_public_find(client: httpx.Client, query: str = "ProjectPermit") -> bool | None:
-    """Observe free Agent402 discovery for one query without treating index lag as failure."""
+    """Observe Agent402's local find surface for seller-index recognition hints."""
     try:
         response = client.get(AGENT402_FIND_BASE_URL, params={"q": query})
     except httpx.RequestError as exc:
@@ -160,11 +165,47 @@ def _observe_agent402_public_find(client: httpx.Client, query: str = "ProjectPer
         print(f"directory[agent402_tools]_public_find=INVALID_JSON query={query!r}")
         return None
 
-    serialized = json.dumps(payload, sort_keys=True, ensure_ascii=False).lower()
-    visible = ORIGIN.lower() in serialized or "projectpermit" in serialized
+    visible = _payload_mentions_projectpermit(payload)
     print(
         "directory[agent402_tools]_public_find="
         + ("VISIBLE" if visible else "NOT_VISIBLE_YET")
+        + f" query={query!r}"
+    )
+    return visible
+
+
+def _observe_agent402_external_route(client: httpx.Client, query: str) -> bool | None:
+    """Observe the free Smart Order Router across external sellers for a real task query."""
+    body = {"query": query, "top": 10, "include": "external"}
+    try:
+        response = client.post(AGENT402_ROUTE_URL, json=body)
+    except httpx.RequestError as exc:
+        print(
+            "directory[agent402_tools]_external_route="
+            f"TRANSIENT_NETWORK_FAILURE query={query!r} error={type(exc).__name__}"
+        )
+        return None
+
+    print(
+        "directory[agent402_tools]_external_route "
+        f"query={query!r} status={response.status_code} body={_safe_body(response)}"
+    )
+    if response.status_code == 402:
+        raise RuntimeError("Agent402 external route unexpectedly requested payment; refusing to continue")
+    if response.status_code != 200:
+        print(f"directory[agent402_tools]_external_route=UNAVAILABLE query={query!r}")
+        return None
+
+    try:
+        payload = response.json()
+    except ValueError:
+        print(f"directory[agent402_tools]_external_route=INVALID_JSON query={query!r}")
+        return None
+
+    visible = _payload_mentions_projectpermit(payload)
+    print(
+        "directory[agent402_tools]_external_route="
+        + ("ROUTED" if visible else "NOT_ROUTED")
         + f" query={query!r}"
     )
     return visible
@@ -202,8 +243,9 @@ def main() -> None:
                 transient_failures.append(name)
 
         if agent402_accepted:
-            for query in AGENT402_FIND_QUERIES:
-                _observe_agent402_public_find(client, query)
+            _observe_agent402_public_find(client)
+            for query in AGENT402_TASK_QUERIES:
+                _observe_agent402_external_route(client, query)
 
     if transient_failures:
         print("directory_transient_failures=" + ",".join(transient_failures))
