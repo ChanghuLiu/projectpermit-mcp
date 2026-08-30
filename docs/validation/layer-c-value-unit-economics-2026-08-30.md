@@ -176,7 +176,57 @@ A high-volume denominator with `we would build internally once this matters` is 
 
 A modest-volume buyer that says a high-consequence obligation bundle avoids expensive repeated research/risk may be commercially more attractive than a high-volume commodity checker.
 
-## 7. Current decision
+## 7. Market pricing-architecture precedent: Kestrel
+
+Kestrel Labs is a current building-code compliance product built on officially licensed ICC content and integrated into BIM/design workflows.
+
+Its public 2026 pricing page is strategically useful because it explicitly rejects high-friction metering:
+
+- one **annual firm-wide licence**;
+- no per-seat pricing;
+- no per-project fees;
+- no usage caps;
+- unlimited users, projects and compliance checks;
+- price depends on **firm size, project complexity and jurisdictional scope**;
+- the company says the goal is to let teams run compliance continuously rather than ration checks.
+
+Sources:
+
+- https://kestrellabs.co/pricing/
+- https://kestrellabs.co/resources/news/kestrel-labs-launches-bim-native-compliance-platform/
+- https://marketplace.autodesk.com/apps/af46f235-e2a7-400a-8477-49b990e2ad66
+
+Kestrel's product is not directly comparable to ProjectPermit and its actual contract prices are not public. This is not E5 evidence for ProjectPermit.
+
+However, it is a strong **commercial-architecture precedent** for maintained compliance products:
+
+> frequent deterministic checks become more usable when marginal invocation cost is near zero to the buyer, while vendor revenue is captured through a licence sized to organization/value/coverage rather than every check.
+
+This directly addresses ProjectPermit's metered-price paradox:
+
+- low per-call pricing produces weak MRR;
+- high per-call pricing creates usage anxiety and stronger internal-build incentives;
+- a platform/firm licence can decouple buyer usage frequency from the seller's revenue unit.
+
+### Implication for x402
+
+If Layer C is eventually validated, x402 can remain useful for:
+
+- zero-account trial;
+- one-off/long-tail agent usage;
+- pay-per-result discovery;
+- sampling before an enterprise relationship;
+- small customers that cannot justify a licence.
+
+But x402 metering does **not** need to be the primary high-volume B2B monetization model.
+
+A plausible dual model to validate later is:
+
+`x402 long-tail / trial` + `platform licence or minimum commitment for repeated integrated use`
+
+Do not implement this billing split until E4/E5 exists.
+
+## 8. Current decision
 
 ### Keep production price unchanged
 
@@ -197,11 +247,13 @@ The new hypothesis is:
 
 > **If deeper regulatory obligations materially change a buyer's quote/scope/schedule workflow, monetize the maintained decision/workflow value rather than simply charging more for the same lookup.**
 
+For high-frequency B2B integrations, the commercial structure should explicitly test fixed/minimum/licence economics rather than assuming pure metering.
+
 ### Evidence score
 
 No E1/E2/E3/E4/E5 change.
 
-This note is arithmetic derived from existing market-size assumptions and build-vs-buy sensitivity. It does not demonstrate buyer demand, willingness to pay, usage or payment.
+The arithmetic is derived from existing market-size assumptions/build-vs-buy sensitivity, while the Kestrel pricing structure is only an adjacent-market commercial precedent. Neither demonstrates ProjectPermit buyer demand, price acceptance, usage or payment.
 
 ## Bottom line
 
@@ -209,6 +261,8 @@ The current numbers expose a structural pricing problem early enough to fix the 
 
 > **Low per-call pricing needs unrealistically large paid volume; high per-call pricing encourages capable high-volume platforms to internalize narrow rule logic.**
 
+A current licensed-code compliance product independently resolves the same tension with a firm-wide annual licence and unlimited checks.
+
 Therefore the strongest future ProjectPermit business is unlikely to be a commodity `permit yes/no @ $0.20` API.
 
-The Layer-C thesis only becomes commercially stronger if buyers prove that the maintained obligation result changes a high-value workflow and that they prefer buying the maintained cross-jurisdiction/risk layer rather than owning it internally.
+The Layer-C thesis only becomes commercially stronger if buyers prove that the maintained obligation result changes a high-value workflow and that they prefer buying the maintained cross-jurisdiction/risk layer rather than owning it internally. If that is proven, a dual `x402 long-tail + licence/minimum for integrated high-frequency buyers` model is now a concrete pricing architecture to test — not to build yet.
