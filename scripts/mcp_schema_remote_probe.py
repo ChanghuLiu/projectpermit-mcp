@@ -1,7 +1,7 @@
 """Read-only probe for the public ProjectPermit MCP tools/list schema.
 
 This script performs only MCP initialize + tools/list. It never calls a ProjectPermit
-business tool, sends payment, or submits data. The purpose is to observe whether external
+business tool, sends payment, or submits data. The purpose is to verify that external
 agents receive sufficiently structured input schemas for first-call success.
 """
 from __future__ import annotations
@@ -165,6 +165,8 @@ async def main() -> None:
         "batch_item_schema": "STRUCTURED" if batch_structured else "GENERIC_OBJECT",
     }
     print(json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False))
+    if not single_structured or not batch_structured:
+        raise SystemExit("production MCP tools/list still exposes generic business input schema")
 
 
 if __name__ == "__main__":
