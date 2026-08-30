@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - data/source_manifest.json
+      - data/source_observability_candidates.json
       - src/projectpermit/source_watch.py
       - scripts/source_observability_audit.py
       - tests/test_source_observability_audit.py
@@ -13,6 +14,7 @@ on:
   pull_request:
     paths:
       - data/source_manifest.json
+      - data/source_observability_candidates.json
       - src/projectpermit/source_watch.py
       - scripts/source_observability_audit.py
       - tests/test_source_observability_audit.py
@@ -35,5 +37,7 @@ jobs:
         run: pip install -e .
       - name: Test observability summary
         run: python -m unittest tests.test_source_observability_audit -v
-      - name: Fetch each public official source once
+      - name: Fetch each canonical public official source once
         run: python scripts/source_observability_audit.py
+      - name: Probe alternate first-party monitoring candidates once
+        run: python scripts/source_observability_audit.py --manifest data/source_observability_candidates.json
