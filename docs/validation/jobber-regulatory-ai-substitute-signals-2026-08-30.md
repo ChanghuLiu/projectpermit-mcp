@@ -42,31 +42,71 @@ Public source:
 
 No E-level increase.
 
-## Signal 2 — electrical contractor built city permit-price calculator + code-book GPT
+## Signal 2 — Vancity Electric owner built city permit-price calculator + code-book GPT
 
-A separate Jobber Community discussion about AI use by electrical contractors includes a contractor describing a custom tool stack containing:
+This signal is now identity-verified rather than an anonymous community anecdote.
+
+A Jobber Community user posting under `WiringByron` describes a custom tool stack containing:
 
 - a **permit price calculator for different cities in the Lower Mainland**;
 - a **code-book GPT** for finding rules;
 - an electrical-estimator GPT;
-- additional business-specific GPT tooling.
+- additional business-specific GPT / automation tooling.
 
-Public source:
+Public discussion:
 - https://community.getjobber.com/discussions/service-based-skilled-trades/how-are-electrical-contractors-using-ai-and-what-tools-actually-add-value/4479
 
-### Why this is especially important
+Separate public Jobber Community posts identify the same user as **Cory Byron, owner of Vancity Electric** in Vancouver, including a post carrying a Vancity Electric business signature and a contractor roll-call where he identifies himself and the company.
 
-This is close to a direct DIY substitute for ProjectPermit's thesis.
+Identity-supporting sources:
+- https://community.getjobber.com/discussions/tech--tools/best-jobber-automations-ive-built---share-yours/12202
+- https://community.getjobber.com/discussions/service-based-skilled-trades/electricians--roll-call/2214
 
-It demonstrates that a technically motivated contractor can already assemble:
+Vancity Electric's own site identifies Cory Byron as the owner, and Jobber's official customer story profiles Vancity Electric as a Vancouver-based electrical contractor using Jobber as its operational backbone and connecting the workflow with Zapier.
 
-`city -> permit fee/rule lookup -> custom GPT -> estimating workflow`
+Sources:
+- https://vancityelectric.ca/about/
+- https://www.getjobber.com/academy/electrical/vancity-electric/
 
-Therefore narrow deterministic municipal facts are not automatically defensible simply because municipalities are fragmented.
+### Estimating / automation sophistication benchmark
+
+A separate Jobber Community post from Cory Byron about virtual estimating says Vancity Electric has completed **600+ virtual estimates** and claims the workflow saves **200+ man-days per year**, with Jobber in the workflow.
+
+Source:
+- https://community.getjobber.com/discussions/quoting/virtually-estimating-with-video-and-ai/12148
+
+Treat these numbers carefully:
+
+- `600+ virtual estimates` is an estimating / digital-workflow scale signal, **not** a regulatory-check denominator;
+- the `200+ man-days/year` claim is attributed to the broader virtual-estimating workflow, **not** specifically permit/code research;
+- the public post does not establish how many permit-price/code-GPT lookups occur per month.
+
+Therefore none of these numbers qualify as ProjectPermit E2.
+
+### Why this verified identity matters
+
+This is a materially stronger build-vs-buy benchmark than an anonymous statement.
+
+It demonstrates a real contractor with all of the following:
+
+- Vancouver / Lower Mainland jurisdiction exposure;
+- Jobber as a production workflow system;
+- owner-level estimating involvement;
+- substantial automation capability;
+- repeated estimating activity;
+- willingness and ability to build a municipality-specific permit calculator and code GPT internally.
+
+That is almost the strongest possible falsification of a weak ProjectPermit thesis.
+
+A product whose value is only:
+
+`city -> permit price / code search -> AI answer`
+
+is directly vulnerable to a technically capable contractor building the workflow themselves.
 
 ### Strategic consequence
 
-A winning external product must provide value that is harder to maintain than a small custom GPT:
+A winning external product must provide value that is harder to maintain than a small custom GPT or calculator:
 
 - authoritative first-party evidence;
 - explicit source verification / freshness;
@@ -79,6 +119,18 @@ A winning external product must provide value that is harder to maintain than a 
 - source-rights / licensed-content handling where needed.
 
 This strengthens the importance of the existing evidence/freshness/source-observability moat.
+
+### Future electrical-adjacent interpretation
+
+Do **not** broaden ProjectPermit into electrical now.
+
+If electrical is later validated as a market, Vancity Electric suggests a more realistic product shape:
+
+`existing contractor DIY tool / Jobber / Zapier -> ProjectPermit maintained evidence/currentness API -> contractor keeps internal estimation/judgement UI`
+
+In other words, the best buyer may not want ProjectPermit to replace their estimator GPT. They may want a maintained authoritative layer underneath it.
+
+That is a much more defensible API/MCP role.
 
 ## Signal 3 — permits already belong inside the estimate cost model
 
@@ -149,7 +201,7 @@ Do **not** broaden the product into these trades now. Their evidence should infl
 
 ## Build-vs-buy consequence
 
-The electrical custom-GPT example is a direct warning:
+The verified Vancity Electric example is a direct warning:
 
 - sophisticated contractor + narrow local need -> can build internally;
 - external service must reduce maintenance/risk, not merely initial development effort.
@@ -157,6 +209,13 @@ The electrical custom-GPT example is a direct warning:
 A buyer who says `I can build a permit calculator/GPT once and maintain it myself` is weak commercial evidence.
 
 A buyer who says `I already built something, but keeping current across municipalities/codes is the painful part` would be high-value evidence for ProjectPermit's maintained layer.
+
+The Vancity example also suggests a third commercial possibility:
+
+- buyer keeps its own UI / estimator GPT;
+- ProjectPermit becomes the maintained source-of-truth API under that internal tool.
+
+This is structurally compatible with MCP/API distribution and may be more attractive to technically capable businesses than replacing their existing workflow.
 
 ## Updated E2 question
 
