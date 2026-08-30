@@ -13,7 +13,7 @@ from .jurisdiction_router import SUPPORTED_JURISDICTIONS
 from .openapi_discovery import install_openapi_discovery
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 from .public_agent_manifest import agent_manifest
-from .public_discovery import landing_html, llms_text
+from .public_discovery import city_intent_html, landing_html, llms_text
 from .public_x402_manifest import x402_service_manifest
 from .public_x402_well_known import x402_well_known
 from .x402_config import configure_x402
@@ -49,6 +49,15 @@ class BatchRequest(BaseModel):
 def public_landing():
     """Human-readable entry point for direct visits and search crawlers."""
     return landing_html()
+
+
+@app.get("/permit-requirements/{city_slug}", response_class=HTMLResponse, include_in_schema=False)
+def public_city_intent(city_slug: str):
+    """Search-intent landing page backed only by existing jurisdiction coverage."""
+    try:
+        return city_intent_html(city_slug)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="unsupported jurisdiction discovery page") from exc
 
 
 @app.get("/llms.txt", response_class=PlainTextResponse, include_in_schema=False)

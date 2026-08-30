@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from xml.sax.saxutils import escape
 
+from .public_discovery import CITY_INTENT_PATHS
+
 
 API_ORIGIN = "https://projectpermit-api-v2-production.up.railway.app"
 PUBLIC_CRAWL_PATHS = (
@@ -14,6 +16,7 @@ PUBLIC_CRAWL_PATHS = (
     "/.well-known/agent.json",
     "/.well-known/x402",
     "/.well-known/x402-service.json",
+    *CITY_INTENT_PATHS,
 )
 
 
