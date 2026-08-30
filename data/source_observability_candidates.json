@@ -1,5 +1,5 @@
 {
-  "manifest_version": "candidate-2026-08-30",
+  "manifest_version": "candidate-2026-08-30-r2",
   "verified_at": "2026-08-30",
   "purpose": "One-shot machine-access probe for first-party alternate monitoring anchors. Candidates are not canonical ProjectPermit evidence until separately reviewed and promoted.",
   "sources": [
@@ -23,6 +23,20 @@
       "kind": "official_document_library",
       "criticality": "candidate",
       "url": "https://guidelines.vancouver.ca/"
+    },
+    {
+      "source_id": "VAN_COUNCIL_ROOT_CANDIDATE",
+      "authority": "Vancouver",
+      "kind": "official_council_change_index",
+      "criticality": "candidate",
+      "url": "https://council.vancouver.ca/"
+    },
+    {
+      "source_id": "VAN_COUNCIL_MEETINGS_APP_CANDIDATE",
+      "authority": "Vancouver",
+      "kind": "official_council_meeting_index",
+      "criticality": "candidate",
+      "url": "https://app.vancouver.ca/CouncilMeetingPublic/"
     },
     {
       "source_id": "LAV_CDU_CONSULTATIONS_CANDIDATE",
