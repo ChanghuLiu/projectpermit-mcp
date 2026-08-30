@@ -10,13 +10,15 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
 
 ORIGIN = "https://projectpermit-api-v2-production.up.railway.app"
 HOST = "projectpermit-api-v2-production.up.railway.app"
 FREE_MCP = "https://projectpermit-mcp-production.up.railway.app/mcp"
+OFFICIAL_MCP_NAME = "io.github.ChanghuLiu/projectpermit"
+EXPECTED_MCP_VERSION = "0.4.1"
 INDEX_402_SERVICE_ID = "df86c16c-4c30-48d7-9c9d-6de53d782de3"
 USER_AGENT = "ProjectPermit-External-Directory-Audit/1.0"
 
@@ -50,6 +52,28 @@ def _safe_get_json(url: str) -> dict[str, Any]:
         return {"http_status": status, "payload": payload}
     except (URLError, TimeoutError, OSError) as exc:
         return {"error": type(exc).__name__, "detail": str(exc)[:500]}
+
+
+def _audit_official_mcp_registry() -> dict[str, Any]:
+    encoded_name = quote(OFFICIAL_MCP_NAME, safe="")
+    url = (
+        "https://registry.modelcontextprotocol.io/v0.1/servers/"
+        f"{encoded_name}/versions/latest"
+    )
+    response = _safe_get_json(url)
+    payload = response.get("payload", {})
+    serialized = json.dumps(payload, sort_keys=True, ensure_ascii=False).lower()
+    result: dict[str, Any] = {
+        "http_status": response.get("http_status"),
+        "name": OFFICIAL_MCP_NAME,
+        "publicly_visible": _contains_projectpermit(payload),
+        "expected_version": EXPECTED_MCP_VERSION,
+        "expected_version_present": EXPECTED_MCP_VERSION.lower() in serialized,
+        "expected_free_mcp_remote_present": FREE_MCP.lower() in serialized,
+    }
+    if "error" in response:
+        result["error"] = response
+    return result
 
 
 def _audit_402index() -> dict[str, Any]:
@@ -131,6 +155,7 @@ def main() -> None:
     report = {
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "projectpermit_origin": ORIGIN,
+        "official_mcp_registry": _audit_official_mcp_registry(),
         "402index": _audit_402index(),
         "open402": _audit_open402(),
         "agent_tools_x402": _agent_tools_search("/api/v1/search"),
