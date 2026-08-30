@@ -49,20 +49,33 @@ Practical Layer C implication:
 - Do not assume the permissive Ontario legal-material policy automatically clears the Compendium, because Ontario publishes a separate explicit commercial-licensing rule for it.
 - Written inquiry already sent to `buildingtransformation@ontario.ca` asking about a commercial API that exposes structured requirement facts/provision ids/links without republishing code text.
 
-### RED / WRITTEN CONSENT REQUIRED FOR COMMERCIAL REPRODUCTION — NRC National Model Codes
+### RED TODAY / COMMERCIAL MACHINE-READABLE PATHWAY UNDER DEVELOPMENT — NRC National Model Codes
 
-The National Building Code of Canada 2025 copyright notice states that copyright is owned by NRC and commercial reproduction by any means is prohibited without written NRC consent.
+The National Building Code of Canada 2025 remains NRC-protected content; free electronic access does **not** create commercial reuse rights. Commercial reproduction still requires appropriate NRC permission/licensing.
 
 Official sources:
 - https://nrc.canada.ca/en/certifications-evaluations-standards/codes-canada/codes-canada-publications/national-building-code-canada-2025
-- Government of Canada publication PDF: `National Building Code of Canada 2025`, copyright/commercial reproduction notice.
+- https://ised-isde.canada.ca/site/innovative-solutions-canada/en/deterministic-artificial-intelligence-assisted-compliance-checking-building-permit-applications
+
+New 2026 licensing/digitalization signal:
+
+- NRC is actively working with DITA/XML to manage Code changes;
+- NRC says it is creating machine-oriented outputs including HTML, JSON, RDF/TTL and JSON-LD;
+- funded compliance-checking projects may receive machine-readable National Code formats plus schema/API information;
+- NRC explicitly says the **licensing and distribution model for new digitalized Code formats is under development**;
+- NRC separately states it is updating the licensing/distribution approach for **commercial use of machine-readable codes**.
 
 Practical Layer C implication:
 
-- Free PDF access does **not** imply commercial API reuse rights.
-- Do not ingest/reproduce National Code text into a commercial corpus before written permission/licensing terms are known.
-- Keep NRC-derived code-content capabilities behind a licensing gate.
-- Written inquiry already sent to Codes Canada asking specifically about structured facts + provision identifiers + official links without code-text republication.
+- Do not ingest/reproduce National Code content commercially yet; current rights are still gated.
+- However, do not model NRC as a permanent PDF-only licensing dead end either.
+- A future authoritative machine-readable commercial distribution/licensing channel is now an official, credible possibility.
+- If buyer evidence later justifies Layer C, request the then-current machine-readable commercial terms rather than building a scraped-PDF corpus.
+- Pricing, eligibility, redistribution scope, API availability and timing remain unknown, so this is **not clearance**.
+- Existing written inquiry to Codes Canada remains useful, but the question should now explicitly ask about the developing machine-readable commercial pathway.
+
+Detailed note:
+- `docs/validation/nrc-machine-readable-code-licensing-signal-2026-08-30.md`
 
 ### RED / PRIOR AUTHORIZATION, POSSIBLE ROYALTIES — Québec LégisQuébec
 
@@ -115,7 +128,9 @@ If Layer C crosses E2, keep sources in separate entitlement classes rather than 
    - official source may be linked but content is not ingested/reproduced absent permission.
 3. `LICENSE_REQUIRED`
    - NRC / Building Code Compendium / Québec source classes where commercial reuse terms require or may require written licence/authorization.
-4. `WRITTEN_CLEARANCE_PENDING`
+4. `MACHINE_READABLE_LICENSE_PENDING`
+   - authoritative digital source has an official commercial licensing/distribution pathway under development, but current terms are not yet available/cleared.
+5. `WRITTEN_CLEARANCE_PENDING`
    - derived factual abstractions whose status has not been confirmed in writing.
 
 Every obligation/evidence record should be capable of carrying a source-rights classification, but **do not implement that schema before buyer validation crosses the gate**.
@@ -124,12 +139,17 @@ Every obligation/evidence record should be capable of carrying a source-rights c
 
 - Spend **$0** on code-content licences while Layer C remains E1-only.
 - Do not purchase a licence merely to create a demo.
+- Do not spend engineering time converting protected PDFs into a private commercial corpus while an authoritative machine-readable distribution path is actively being developed.
 - First prove a repeated buyer workflow and material consequence.
-- If E2/E3 emerges, obtain written licence terms and calculate licence cost per addressable workflow/call before committing to a protected source layer.
+- If E2/E3 emerges, obtain current licence terms and calculate licence cost per addressable workflow/call before committing to a protected source layer.
 - If rights costs destroy unit economics, constrain Layer C to legally reusable/public-link source classes instead of subsidizing expensive content.
 
 ## Current decision
 
-Licensing risk does **not** kill Layer C, but it changes the safest validation/build order:
+Licensing risk does **not** kill Layer C. The NRC 2026 signal modestly improves long-run feasibility, but it does not change the immediate build gate.
 
-> buyer denominator -> workflow consequence -> minimal E3 on low-risk/link-only sources -> written rights confirmation -> licence economics -> only then protected code-content expansion.
+Safest order now:
+
+> buyer denominator -> workflow consequence -> representative low-risk E3 only if justified -> obtain current NRC/Ontario/Québec commercial machine-readable or structured-data rights terms -> licence economics -> only then protected code-content expansion.
+
+No E-level increase results from this licensing update.
