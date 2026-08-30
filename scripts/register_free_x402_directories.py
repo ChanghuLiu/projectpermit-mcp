@@ -2,7 +2,7 @@
 
 This script never sends payment credentials and treats HTTP 402 from a directory as a hard
 failure. Registration is opt-in via --execute; the default mode validates production only.
-Transient directory outages are recorded but do not block registration with later directories.
+Transient directory outages and rate limits are recorded but do not block later directories.
 """
 from __future__ import annotations
 
@@ -115,6 +115,9 @@ def _register(client: httpx.Client, name: str, url: str, body: dict[str, Any]) -
     if response.status_code == 409:
         print(f"directory[{name}]=ALREADY_REGISTERED")
         return "accepted"
+    if response.status_code == 429:
+        print(f"directory[{name}]=TRANSIENT_RATE_LIMIT")
+        return "transient_failure"
     if 500 <= response.status_code < 600:
         print(f"directory[{name}]=TRANSIENT_PROVIDER_FAILURE")
         return "transient_failure"
