@@ -1,6 +1,15 @@
 name: Source Observability Audit
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - data/source_manifest.json
+      - src/projectpermit/source_watch.py
+      - scripts/source_observability_audit.py
+      - tests/test_source_observability_audit.py
+      - .github/workflows/source-observability-audit.yml
   pull_request:
     paths:
       - data/source_manifest.json
