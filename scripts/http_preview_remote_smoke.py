@@ -10,7 +10,7 @@ BASE = os.getenv(
     "https://projectpermit-api-v2-production.up.railway.app",
 ).rstrip("/")
 PREVIEW = f"{BASE}/v1/preview-project-requirements"
-EXPECTED_SINGLE_AMOUNT = os.getenv("PROJECTPERMIT_SMOKE_X402_SINGLE_AMOUNT", "0.05")
+EXPECTED_SINGLE_AMOUNT = os.getenv("PROJECTPERMIT_SMOKE_X402_SINGLE_AMOUNT", "0.20")
 WRITE_SCOPE_CONTEXT = {
     "source_platform": "projectpermit_ci",
     "source_object_type": "preview_record",
