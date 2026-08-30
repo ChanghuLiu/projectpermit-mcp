@@ -11,6 +11,17 @@ from typing import Any
 from .batch_service import MAX_BATCH_ITEMS, run_batch_preflight
 from .capabilities import PROJECT_FAMILIES
 from .jurisdiction_router import SUPPORTED_JURISDICTIONS
+from .mcp_input_models import (
+    BatchItemFacts,
+    CivicAddress,
+    JurisdictionId,
+    ProjectFacts,
+    PropertyFactsInput,
+    ResolveAddress,
+    WorkflowContextInput,
+    batch_items_to_mappings,
+    model_or_mapping,
+)
 from .preflight_service import SUPPORTED_ADDRESS_JURISDICTIONS, run_preflight
 
 
@@ -180,30 +191,33 @@ def build_server():
 
     @server.tool()
     def check_project_requirements(
-        jurisdiction: str,
-        project: dict[str, Any],
-        address: str | None = None,
-        property: dict[str, Any] | None = None,
-        context: dict[str, Any] | None = None,
-        resolve_address: bool = False,
+        jurisdiction: JurisdictionId,
+        project: ProjectFacts,
+        address: CivicAddress = None,
+        property: PropertyFactsInput = None,
+        context: WorkflowContextInput = None,
+        resolve_address: ResolveAddress = False,
     ) -> dict[str, Any]:
-        """Use for proposed work before quoting/scheduling. Returns evidence-linked determination, workflow/action bundle, deterministic identity, duplicate-suppression idempotency and mutation gate. Pass context.prior_decision_identity for repeat checks."""
+        """Use for proposed work before quoting/scheduling. Start project with family + action and add only known facts. Returns evidence-linked determination, workflow/action bundle, deterministic identity, duplicate-suppression idempotency and mutation gate. Pass context.prior_decision_identity for repeat checks."""
+        project_facts = model_or_mapping(project)
+        property_facts = model_or_mapping(property)
+        context_facts = model_or_mapping(context)
         return run_preflight(
             {
                 "jurisdiction": jurisdiction,
-                "project": project,
+                "project": project_facts,
                 "address": address,
-                "property": property or {},
-                "context": {**(context or {}), "_transport": "standard_mcp"},
+                "property": property_facts,
+                "context": {**context_facts, "_transport": "standard_mcp"},
                 "resolve_address": resolve_address,
             }
         )
 
     @server.tool()
-    def check_project_requirements_batch(items: list[dict[str, Any]]) -> dict[str, Any]:
-        """Evaluate 1-50 normalized projects in one call. Results include per-item identity/change and safe-writeback mutation gates plus batch-level audit."""
+    def check_project_requirements_batch(items: list[BatchItemFacts]) -> dict[str, Any]:
+        """Evaluate 1-50 normalized projects in one call. Each item exposes jurisdiction, project.family/action, optional property/address/context and client_ref. Malformed items remain isolated as per-item failures."""
         return run_batch_preflight(
-            items,
+            batch_items_to_mappings(items),
             allow_address=True,
             transport="standard_mcp_batch",
         )
