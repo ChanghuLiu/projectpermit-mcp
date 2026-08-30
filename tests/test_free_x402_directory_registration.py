@@ -50,7 +50,21 @@ class FreeX402DirectoryRegistrationTest(unittest.TestCase):
             response.text = "ok"
             client = Mock()
             client.post.return_value = response
-            registration._register(client, "directory", "https://example.invalid/register", {})
+            self.assertEqual(
+                "accepted",
+                registration._register(client, "directory", "https://example.invalid/register", {}),
+            )
+
+    def test_registration_treats_rate_limit_as_transient(self):
+        response = Mock()
+        response.status_code = 429
+        response.text = "too many registrations"
+        client = Mock()
+        client.post.return_value = response
+        self.assertEqual(
+            "transient_failure",
+            registration._register(client, "directory", "https://example.invalid/register", {}),
+        )
 
 
 if __name__ == "__main__":
