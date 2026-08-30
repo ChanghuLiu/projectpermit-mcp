@@ -1,0 +1,30 @@
+name: Source Observability Audit
+
+on:
+  pull_request:
+    paths:
+      - data/source_manifest.json
+      - src/projectpermit/source_watch.py
+      - scripts/source_observability_audit.py
+      - tests/test_source_observability_audit.py
+      - .github/workflows/source-observability-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install project
+        run: pip install -e .
+      - name: Test observability summary
+        run: python -m unittest tests.test_source_observability_audit -v
+      - name: Fetch each public official source once
+        run: python scripts/source_observability_audit.py
