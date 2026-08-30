@@ -16,7 +16,7 @@ class PublicDiscoveryTests(unittest.TestCase):
         self.assertIn("Toronto building permit", html)
         self.assertIn("Ottawa renovation permit", html)
         self.assertIn("Vancouver building permit", html)
-        self.assertIn("$0.05 USDC / call", html)
+        self.assertIn("$0.20 USDC / call", html)
         self.assertIn(FREE_MCP_URL, html)
         self.assertIn("/openapi.json", html)
         self.assertIn("/v1/preview-project-requirements", html)
