@@ -10,20 +10,22 @@ The first full read-only observability audit fetched each of the 42 current offi
 
 All 17 observed failures were HTTP 403. That pattern is treated as access-path friction from the audit environment, not proof that the official source is unavailable, stale or invalid.
 
+A second one-shot probe tested eight first-party alternate monitoring candidates for Laval and Vancouver: regulation/change indexes, a consolidated regulation PDF, Vancouver document-library surfaces and Vancouver City Clerk/council surfaces. All eight also returned HTTP 403 from the same commodity runner environment. This is sufficient evidence that, for the current product, repeatedly searching for a different first-party webpage URL is not a productive route to unattended monitoring for those two authorities.
+
 ## First audit by authority
 
-| Authority | Sources | Direct fetch OK | Failed | HTTP validators | Initial monitoring tier |
+| Authority | Sources | Direct fetch OK | Failed | HTTP validators | Monitoring tier |
 | --- | ---: | ---: | ---: | ---: | --- |
 | Gatineau | 7 | 7 | 0 | 0 | A — direct hash monitoring |
 | Ottawa | 12 | 4 | 8 | 1 | A/B — split by source |
 | Toronto | 5 | 5 | 0 | 3 | A — direct validator/hash monitoring |
 | Mississauga | 5 | 5 | 0 | 4 | A — direct validator/hash monitoring |
-| Laval | 5 | 0 | 5 | 0 | B — alternate official access path |
+| Laval | 5 | 0 | 5 | 0 | C — official push/manual verification |
 | Longueuil | 4 | 4 | 0 | 4 | A — direct validator monitoring |
-| Vancouver | 4 | 0 | 4 | 0 | B — alternate official access path/change index |
+| Vancouver | 4 | 0 | 4 | 0 | C — official push/manual verification |
 | **Total** | **42** | **25** | **17** | **12** | — |
 
-Critical source IDs that failed in the first runner audit were:
+Critical source IDs that failed in the canonical-source audit were:
 
 - Ottawa: `OTT_GENERAL`, `OTT_EXEMPT`, `OTT_ZONING_2026`, `OTT_ZONING_APPEALS`
 - Laval: `LAV_EXT`, `LAV_INT`
@@ -54,11 +56,11 @@ Initial Tier A authorities/surfaces:
 - Longueuil — validator plus hash;
 - Ottawa — only the individual official/PDF/ArcGIS surfaces that passed the audit; do not treat the authority as wholly Tier A.
 
-### Tier B — alternate official access path
+### Tier B — alternate first-party machine signal
 
-Use when the canonical guidance page blocks commodity runners or is otherwise unsuitable for unattended GETs.
+Use when a canonical guidance page blocks commodity runners but another first-party machine-readable or machine-stable surface represents the same regulatory change domain.
 
-Look first for another first-party surface that represents the same regulatory change domain, such as:
+Useful Tier B surfaces can include:
 
 - official change logs / "what changed" indexes;
 - official PDF or consolidated by-law publication endpoints;
@@ -67,17 +69,30 @@ Look first for another first-party surface that represents the same regulatory c
 
 The alternate source is a change detector, not automatically a substitute for the canonical legal/evidence citation. If an alert is raised, review the canonical official source before updating ProjectPermit rules/evidence.
 
-Initial Tier B areas:
+Initial Tier B scope:
 
-- Ottawa guidance pages that returned 403 from the GitHub runner;
-- Laval guidance pages;
-- Vancouver guidance/VBBL surfaces. Vancouver's official change-index/document surfaces should be preferred for unattended monitoring when they cover the same change domain.
+- Ottawa guidance pages that returned 403 may be covered by the already-accessible official PDF/ArcGIS surfaces when those surfaces represent the same regulatory change domain.
+- Do not promote Laval or Vancouver to Tier B merely because another official webpage exists. The follow-up candidate audit found 0/8 machine-readable successes across the tested first-party alternate surfaces.
 
-### Tier C — manual verification fallback
+### Tier C — official push plus bounded manual verification
 
-Use when no robust first-party automated signal exists. Review through an ordinary browser or another legitimate first-party access route on a bounded cadence or when another signal suggests change.
+Use when no robust first-party unattended signal is available from the standard monitoring environment.
+
+Initial Tier C authorities:
+
+- Laval;
+- Vancouver.
+
+For Tier C:
+
+1. prefer official email subscriptions, public notices, change notifications or similar first-party push channels when available;
+2. perform bounded manual review of the canonical official pages/documents on a reasonable cadence;
+3. trigger an extra review when a customer, partner, municipality or another trustworthy signal suggests a material change;
+4. keep the canonical official source as the evidence authority before changing rules.
 
 Search engines, web caches and third-party summaries may help detect that an official page moved or that a new regulation was published. They are discovery/freshness signals only and must not become ProjectPermit's canonical evidence.
+
+Tier C is an intentional operating choice, not an engineering defect. The product does not need 100% unattended crawling coverage to maintain trustworthy multi-jurisdiction evidence.
 
 ## Safety invariants
 
@@ -87,32 +102,34 @@ Search engines, web caches and third-party summaries may help detect that an off
 4. **Never downgrade a current rule only because a runner cannot fetch its source.**
 5. A suspected material change must be reviewed against first-party content before rules, evidence fingerprints or effective dates are changed.
 6. Preserve old evidence/rule identity so downstream action-bundle change detection can explain what changed.
-7. Monitoring remains read-only; no municipal submission, authentication bypass or anti-bot circumvention is part of the monitoring design.
+7. Monitoring remains read-only; no municipal submission, authentication bypass, anti-bot circumvention or browser-impersonation scraping is part of the monitoring design.
 
-## Cost decision from the first audit
+## Cost decision from the audits
 
-Selective automated regulatory monitoring is economically viable: 25/42 current sources are directly observable from commodity CI, and 12 of those expose cheap HTTP validators. The correct architecture is **not** a universal crawler. It is a small per-source observation layer with Tier A automation and Tier B/C fallbacks.
+Selective automated regulatory monitoring is economically viable: 25/42 current canonical sources are directly observable from commodity CI, and 12 of those expose cheap HTTP validators. The correct architecture is **not** a universal crawler. It is a small per-source observation layer with Tier A automation, narrowly justified Tier B alternate first-party signals and Tier C human verification where authorities block commodity runners.
 
-This supports the ProjectPermit moat thesis because maintaining multi-jurisdiction evidence requires source-specific work, but most of the recurring machine cost is negligible. The main cost is developer review when a source actually changes or when an authority changes its publication/access pattern.
+The Laval/Vancouver follow-up is also useful cost evidence: eight plausible first-party alternate surfaces were tested and all eight returned 403. Continuing to search for page-level workarounds would create brittle scraping work without increasing the regulatory moat proportionally.
+
+This supports the ProjectPermit moat thesis because maintaining multi-jurisdiction evidence requires source-specific work, but most recurring machine cost is negligible. The principal ongoing cost is developer review when a source actually changes or when an authority changes its publication/access pattern.
 
 ## Operating cadence
 
 Do not enable high-frequency continuous polling across all 42 sources.
 
-Recommended initial operational cadence after the one-shot audit phase:
+Recommended initial operational cadence:
 
-- Tier A: weekly unattended observation is sufficient for the current preflight product unless a source is known to change more frequently;
-- Tier B: weekly alternate-official-source observation where a trustworthy first-party anchor is identified;
-- Tier C: bounded manual review, plus event-driven review when customers, partners, municipalities or Tier A/B signals indicate change.
+- Tier A: weekly unattended observation unless a source is known to change more frequently;
+- Tier B: weekly observation of the justified alternate first-party signal;
+- Tier C: bounded manual verification plus official push/event-driven review.
 
-Before turning a recurring monitor on, the implementation should persist only minimal source-state metadata needed to compare observations and should alert on change without mutating rules.
+Before turning a recurring Tier A/B monitor on, the implementation should persist only minimal source-state metadata needed to compare observations and should alert on change without mutating rules.
 
 ## Promotion / demotion rules
 
-Promote a source to Tier A only after repeated unattended fetch success and a stable change signal. Demote or split a source when repeated 403/429/anti-bot behavior makes automation noisy.
+Promote a source to Tier A only after repeated unattended fetch success and a stable change signal. Promote a blocked source to Tier B only when a specific first-party alternate signal is demonstrated to be both materially relevant and machine-stable. Demote a source when repeated 403/429/anti-bot behavior makes automation noisy.
 
-A municipality is never assigned one permanent tier if its sources behave differently. Ottawa's first audit is the canonical example: 4/12 sources were directly observable while 8/12 were blocked.
+A municipality is never assigned one permanent tier if its sources behave differently. Ottawa is the canonical example: 4/12 canonical sources were directly observable while 8/12 were blocked.
 
 ## Evidence status
 
-The observability audit is maintenance-feasibility evidence. It is **not E3, E4 or E5 market evidence** and must not be counted as customer demand.
+The observability audits are maintenance-feasibility evidence. They are **not E3, E4 or E5 market evidence** and must not be counted as customer demand.
