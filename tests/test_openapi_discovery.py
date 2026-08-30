@@ -111,8 +111,8 @@ class OpenApiDiscoveryTest(unittest.TestCase):
         previous = {key: os.environ.pop(key, None) for key in keys}
         try:
             settings = discovery_settings()
-            self.assertEqual("0.05", settings["single_amount"])
-            self.assertEqual("2.00", settings["batch_amount"])
+            self.assertEqual("0.20", settings["single_amount"])
+            self.assertEqual("5.00", settings["batch_amount"])
             self.assertLess(float(settings["batch_amount"]), 50 * float(settings["single_amount"]))
         finally:
             for key, value in previous.items():
