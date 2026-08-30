@@ -9,7 +9,7 @@ class FreeX402DirectoryRegistrationTest(unittest.TestCase):
         return {
             "x402": "1.0",
             "description": "Building permit requirements API for contractors and AI agents.",
-            "pricing": {"currency": "USDC", "base": "0.05", "unit": "request"},
+            "pricing": {"currency": "USDC", "base": "0.20", "unit": "request"},
             "payment": {
                 "address": "0x1111111111111111111111111111111111111111",
                 "chain": "base",
@@ -25,7 +25,7 @@ class FreeX402DirectoryRegistrationTest(unittest.TestCase):
 
     def test_manifest_gate_rejects_price_or_network_drift(self):
         manifest = self._manifest()
-        manifest["pricing"] = {"currency": "USDC", "base": "0.20", "unit": "request"}
+        manifest["pricing"] = {"currency": "USDC", "base": "0.05", "unit": "request"}
         with self.assertRaisesRegex(RuntimeError, "launch pricing"):
             registration._validate_manifest(manifest)
 
