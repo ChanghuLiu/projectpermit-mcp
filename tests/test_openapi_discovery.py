@@ -3,6 +3,7 @@ import unittest
 
 from projectpermit.openapi_discovery import (
     BATCH_PATH,
+    DISCOVERY_OPERATIONS,
     SINGLE_PATH,
     decorate_openapi_schema,
     discovery_settings,
@@ -48,6 +49,27 @@ class OpenApiDiscoveryTest(unittest.TestCase):
         self.assertEqual("5.00", batch["x-payment-info"]["price"]["amount"])
         self.assertIn("402", batch["responses"])
 
+    def test_paid_operations_expose_explicit_permit_intent_metadata(self):
+        schema = decorate_openapi_schema(
+            self._base_schema(),
+            single_amount="0.20",
+            batch_amount="5.00",
+            network="eip155:8453",
+        )
+
+        for path in (SINGLE_PATH, BATCH_PATH):
+            operation = schema["paths"][path]["post"]
+            expected = DISCOVERY_OPERATIONS[path]
+            self.assertEqual(expected["operationId"], operation["operationId"])
+            self.assertEqual(expected["summary"], operation["summary"])
+            self.assertEqual(expected["description"], operation["description"])
+            self.assertEqual(expected["tags"], operation["tags"])
+            rendered = " ".join(
+                [operation["operationId"], operation["summary"], operation["description"]]
+            ).lower()
+            self.assertIn("building permit", rendered.replace("-", " "))
+            self.assertIn("renovation permit", rendered.replace("-", " "))
+
     def test_free_preview_is_not_mislabeled_as_paid(self):
         schema = decorate_openapi_schema(
             self._base_schema(),
@@ -68,6 +90,7 @@ class OpenApiDiscoveryTest(unittest.TestCase):
         )
         self.assertNotIn("x-guidance", base["info"])
         self.assertNotIn("x-payment-info", base["paths"][SINGLE_PATH]["post"])
+        self.assertNotIn("operationId", base["paths"][SINGLE_PATH]["post"])
 
     def test_missing_paid_route_fails_closed(self):
         base = self._base_schema()
@@ -129,6 +152,7 @@ class OpenApiDiscoveryTest(unittest.TestCase):
             operation = schema["paths"][path]["post"]
             self.assertIn("x-payment-info", operation)
             self.assertIn("402", operation["responses"])
+            self.assertEqual(DISCOVERY_OPERATIONS[path]["operationId"], operation["operationId"])
         preview = schema["paths"]["/v1/preview-project-requirements"]["post"]
         self.assertNotIn("x-payment-info", preview)
 
