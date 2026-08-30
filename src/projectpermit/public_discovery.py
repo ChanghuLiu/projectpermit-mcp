@@ -30,6 +30,50 @@ CITY_INTENT_PAGES = {
 }
 CITY_INTENT_PATHS = tuple(f"/permit-requirements/{slug}" for slug in CITY_INTENT_PAGES)
 
+CITY_DEMO_SCRIPT = """<script>
+(() => {
+  const button = document.getElementById("run-free-sample");
+  const result = document.getElementById("free-sample-result");
+  if (!button || !result) return;
+
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    result.hidden = false;
+    result.textContent = "Running a real free ProjectPermit preview...";
+    const payload = {
+      jurisdiction: button.dataset.jurisdiction,
+      project: {family: "window_door", action: "replace_same_size"},
+      property: {heritage: false},
+      context: {client_tag: button.dataset.clientTag}
+    };
+
+    try {
+      const response = await fetch("/v1/preview-project-requirements", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(typeof data.detail === "string" ? data.detail : `HTTP ${response.status}`);
+      }
+      const summary = {
+        determination: data.determination || null,
+        confidence: data.confidence || null,
+        requirements_count: Array.isArray(data.requirements) ? data.requirements.length : 0,
+        recommended_route: data.workflow && data.workflow.recommended_route || null,
+        engine_version: data.engine_version || null
+      };
+      result.textContent = JSON.stringify(summary, null, 2);
+    } catch (error) {
+      result.textContent = `Preview failed: ${error && error.message ? error.message : error}`;
+    } finally {
+      button.disabled = false;
+    }
+  });
+})();
+</script>"""
+
 
 def _single_price() -> str:
     return discovery_settings()["single_amount"]
@@ -92,6 +136,7 @@ def city_intent_html(city_slug: str) -> str:
     jurisdiction = escape(str(page["jurisdiction"]))
     canonical = f"{API_ORIGIN}/permit-requirements/{escape(city_slug)}"
     price = escape(_single_price())
+    demo_client_tag = escape(f"public-city-intent:{city_slug}")
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -110,6 +155,9 @@ def city_intent_html(city_slug: str) -> str:
     <p>Normalized project inputs cover common renovation and construction families such as window/door work, interior renovation, basements, dwelling changes, decks/porches, accessory structures, additions, and kitchen/bath plumbing.</p>
     <h2>Try the current {city} rules free</h2>
     <p>Use jurisdiction id <code>{jurisdiction}</code> with <code>POST /v1/preview-project-requirements</code>. The preview requires no account, API key, or wallet and does not perform civic-address/GIS resolution.</p>
+    <p><strong>One-click sample:</strong> same-size window/door replacement, assuming the property is not heritage-designated. This is a sample scenario, not an evaluation of your own project.</p>
+    <button id="run-free-sample" type="button" data-jurisdiction="{jurisdiction}" data-client-tag="{demo_client_tag}">Run a real free sample</button>
+    <pre id="free-sample-result" hidden aria-live="polite"></pre>
     <ul>
       <li><a href="/docs">Interactive API docs</a></li>
       <li><a href="/v1/capabilities">Machine-readable coverage and capabilities</a></li>
@@ -120,6 +168,7 @@ def city_intent_html(city_slug: str) -> str:
     <p>The full preflight is currently <strong>${price} USDC / call</strong> on Base mainnet via x402 and can return official-source evidence, freshness, workflow routing, decision identity/change metadata, and an automation-ready action bundle.</p>
     <p><small>This page describes ProjectPermit's current software coverage. It does not claim complete coverage of every bylaw, code, approval or site condition and is not municipal authorization, legal advice, engineering certification, or building-code design approval. Confirm project-critical requirements with the applicable authority and professionals.</small></p>
   </main>
+  {CITY_DEMO_SCRIPT}
 </body>
 </html>"""
 
@@ -154,7 +203,7 @@ Jurisdiction discovery pages:
 - Free HTTP preview: POST {API_ORIGIN}/v1/preview-project-requirements
 - Free MCP: {FREE_MCP_URL}
 
-The free HTTP preview requires no account, API key, or wallet and intentionally excludes civic-address/GIS resolution.
+The free HTTP preview requires no account, API key, or wallet and intentionally excludes civic-address/GIS resolution. Each jurisdiction discovery page also exposes a one-click sample that calls the same free preview endpoint only when a visitor clicks it.
 
 ## Commercial x402
 

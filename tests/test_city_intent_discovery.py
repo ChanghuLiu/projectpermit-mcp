@@ -23,6 +23,17 @@ class CityIntentDiscoveryTests(unittest.TestCase):
             self.assertIn("does not claim complete coverage", html)
             self.assertIn(f'<link rel="canonical" href="{API_ORIGIN}/permit-requirements/{slug}">', html)
 
+    def test_city_page_has_one_click_real_preview_with_bounded_sample(self) -> None:
+        html = city_intent_html("ottawa-on")
+        self.assertIn('id="run-free-sample"', html)
+        self.assertIn('data-jurisdiction="ottawa_on"', html)
+        self.assertIn('data-client-tag="public-city-intent:ottawa-on"', html)
+        self.assertIn('family: "window_door", action: "replace_same_size"', html)
+        self.assertIn('property: {heritage: false}', html)
+        self.assertIn('fetch("/v1/preview-project-requirements"', html)
+        self.assertIn("This is a sample scenario, not an evaluation of your own project.", html)
+        self.assertNotIn("address:", html)
+
     def test_unknown_city_slug_is_not_a_discovery_page(self) -> None:
         with self.assertRaises(KeyError):
             city_intent_html("not-a-supported-city")
@@ -32,6 +43,7 @@ class CityIntentDiscoveryTests(unittest.TestCase):
         response = client.get("/permit-requirements/ottawa-on")
         self.assertEqual(response.status_code, 200)
         self.assertIn("Ottawa building permit requirements API", response.text)
+        self.assertIn("Run a real free sample", response.text)
 
         missing = client.get("/permit-requirements/not-supported")
         self.assertEqual(missing.status_code, 404)
