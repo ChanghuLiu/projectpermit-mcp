@@ -1,0 +1,210 @@
+"""Run exactly one real x402 payment against England Works Watch.
+
+Security and scope:
+- EVM_PRIVATE_KEY must exist only in the caller's local environment.
+- Never commit, paste, upload, or send the private key to the server.
+- The payer must hold native Base USDC and enough Base ETH for gas.
+- This script performs exactly one paid tool call and has no retry loop.
+- It refuses to pay unless network, amount, asset, and pay-to all match the
+  expected production values.
+
+This is an owner validation smoke, not evidence of external customer demand.
+"""
+from __future__ import annotations
+
+import asyncio
+import json
+import os
+from pathlib import Path
+from typing import Any
+
+from eth_account import Account
+from mcp import ClientSession
+from mcp.client.streamable_http import streamable_http_client
+from x402 import x402ClientSync
+from x402.mechanisms.evm import EthAccountSigner
+from x402.mechanisms.evm.exact.register import register_exact_evm_client
+from x402.mcp import MCPToolResult, x402MCPClient
+
+URL = os.getenv(
+    "EWW_PAID_MCP_URL",
+    "https://england-works-watch-production.up.railway.app/mcp",
+)
+EXPECTED_PAY_TO = os.getenv(
+    "EWW_EXPECTED_PAY_TO",
+    "0xDAAef0FD525278aAD0bA11066A96c338642A3d1A",
+)
+EXPECTED_NETWORK = "eip155:8453"
+EXPECTED_AMOUNT = "20000"
+# Native USDC issued by Circle on Base mainnet.
+EXPECTED_ASSET = os.getenv(
+    "EWW_EXPECTED_ASSET",
+    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+)
+TOOL = "assess_change_impact"
+ARGS = {
+    "payload": {
+        "event_type": "unauthorised_absence",
+        "route": "skilled_worker",
+        "consecutive_working_days": 11,
+    }
+}
+
+
+class MCPClientAdapter:
+    def __init__(self, session: ClientSession):
+        self._session = session
+
+    async def connect(self, transport: Any) -> None:
+        pass
+
+    async def close(self) -> None:
+        pass
+
+    async def list_tools(self) -> Any:
+        return await self._session.list_tools()
+
+    async def call_tool(self, params: dict[str, Any], **kwargs: Any) -> MCPToolResult:
+        result = await self._session.call_tool(
+            name=params.get("name", ""),
+            arguments=params.get("arguments", {}) or {},
+            meta=params.get("_meta"),
+        )
+        content: list[dict[str, Any]] = []
+        for item in result.content:
+            if hasattr(item, "text"):
+                content.append({"type": "text", "text": item.text})
+            else:
+                content.append(
+                    {
+                        "type": getattr(item, "type", "text"),
+                        "text": str(item),
+                    }
+                )
+        meta = (
+            result.meta.model_dump(by_alias=True, exclude_none=True)
+            if hasattr(result.meta, "model_dump")
+            else dict(result.meta or {})
+        )
+        return MCPToolResult(
+            content=content,
+            is_error=result.is_error,
+            meta=meta,
+            structured_content=result.structured_content,
+        )
+
+
+def _same_address(left: Any, right: str) -> bool:
+    return str(left or "").lower() == right.lower()
+
+
+def _write_receipt(payload: dict[str, Any]) -> None:
+    target = os.getenv("EWW_PAID_SMOKE_RECEIPT_PATH", "").strip()
+    if not target:
+        return
+    path = Path(target).expanduser()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(f"receipt_path={path}")
+
+
+async def main() -> None:
+    key = os.getenv("EVM_PRIVATE_KEY")
+    if not key:
+        raise SystemExit(
+            "Set EVM_PRIVATE_KEY only in your local shell; never paste it into chat or commit it."
+        )
+
+    account = Account.from_key(key)
+    print(f"payer={account.address}")
+    print(f"paid_mcp_url={URL}")
+    print("max_expected_payment=$0.02 Base mainnet USDC")
+    print(f"expected_network={EXPECTED_NETWORK}")
+    print(f"expected_asset={EXPECTED_ASSET}")
+    print(f"expected_pay_to={EXPECTED_PAY_TO}")
+
+    payment_client = x402ClientSync()
+    register_exact_evm_client(payment_client, EthAccountSigner(account))
+
+    async with streamable_http_client(URL) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            init = await session.initialize()
+            print(f"server={init.server_info.name}")
+
+            def approve(payment_context: Any) -> bool:
+                accepts = payment_context.payment_required.accepts
+                if len(accepts) != 1:
+                    raise RuntimeError(f"Expected exactly one payment option, got {len(accepts)}")
+                option = accepts[0]
+                print(
+                    "payment_required="
+                    f"amount={option.amount} asset={option.asset} network={option.network} "
+                    f"pay_to={option.pay_to}"
+                )
+                if str(option.network) != EXPECTED_NETWORK:
+                    raise RuntimeError(f"Unexpected network: {option.network}")
+                if str(option.amount) != EXPECTED_AMOUNT:
+                    raise RuntimeError(f"Unexpected amount: {option.amount}")
+                if not _same_address(option.asset, EXPECTED_ASSET):
+                    raise RuntimeError(f"Unexpected asset: {option.asset}")
+                if not _same_address(option.pay_to, EXPECTED_PAY_TO):
+                    raise RuntimeError(f"Unexpected payee: {option.pay_to}")
+                print("payment_approved=true")
+                return True
+
+            paid_client = x402MCPClient(
+                MCPClientAdapter(session),
+                payment_client,
+                auto_payment=True,
+                on_payment_requested=approve,
+            )
+            result = await paid_client.call_tool(TOOL, ARGS)
+            print(f"payment_made={result.payment_made}")
+            print(f"is_error={result.is_error}")
+
+            text = "\n".join(
+                item.get("text", "") if isinstance(item, dict) else str(item)
+                for item in result.content
+            )
+            receipt = result.payment_response
+            if not receipt:
+                raise SystemExit("Settlement receipt missing")
+
+            print(f"settlement_success={receipt.success}")
+            print(f"settlement_network={receipt.network}")
+            print(f"settlement_transaction={receipt.transaction}")
+
+            if result.is_error or not result.payment_made:
+                raise SystemExit("Paid MCP call did not complete successfully")
+            if not receipt.success:
+                raise SystemExit("x402 settlement did not succeed")
+            if str(receipt.network) != EXPECTED_NETWORK:
+                raise SystemExit("Unexpected settlement network")
+            if not receipt.transaction:
+                raise SystemExit("Settlement transaction id missing")
+            if "AFFECTED" not in text:
+                raise SystemExit("Expected AFFECTED decision missing")
+            if "EW-ABS-REPORT" not in text:
+                raise SystemExit("Expected EW-ABS-REPORT decision code missing")
+
+            receipt_payload = {
+                "service": "England Works Watch",
+                "tool": TOOL,
+                "validation_class": "owned_mainnet_smoke",
+                "payer": account.address,
+                "network": str(receipt.network),
+                "asset": EXPECTED_ASSET,
+                "amount_atomic": EXPECTED_AMOUNT,
+                "amount_usdc": "0.02",
+                "pay_to": EXPECTED_PAY_TO,
+                "transaction": str(receipt.transaction),
+                "settlement_success": bool(receipt.success),
+                "decision_marker": "AFFECTED",
+                "decision_code": "EW-ABS-REPORT",
+            }
+            _write_receipt(receipt_payload)
+            print("ENGLAND_WORKS_WATCH_X402_REAL_PAID_BUYER_SMOKE=PASS")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
