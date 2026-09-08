@@ -6,6 +6,23 @@ import json, os
 @dataclass(frozen=True)
 class PaidToolSpec:
     name:str; price:str; description:str
+    input_schema:dict[str,Any]|None=None
+    example:dict[str,Any]|None=None
+
+
+def discovery_extensions(spec:PaidToolSpec)->dict[str,Any]:
+    """Build the official x402 v2 Bazaar declaration for one paid MCP tool."""
+    from x402.extensions.bazaar import DeclareMcpDiscoveryConfig, declare_mcp_discovery_extension
+    return declare_mcp_discovery_extension(
+        DeclareMcpDiscoveryConfig(
+            tool_name=spec.name,
+            description=spec.description,
+            transport='streamable-http',
+            input_schema=spec.input_schema or {'properties':{}},
+            example=spec.example,
+        )
+    )
+
 
 class MCP2X402Gate:
     def __init__(self):
@@ -19,7 +36,20 @@ class MCP2X402Gate:
         from x402.mcp import ResourceInfo, SyncPaymentWrapperConfig, create_payment_wrapper_sync, MCPToolResult
         from x402.schemas import ResourceConfig
         accepts=self.resource_server.build_payment_requirements(ResourceConfig(scheme='exact',network=self.network,pay_to=self.pay_to,price=spec.price,extra={'name':'USDC','version':'2'}))
-        wrapper=create_payment_wrapper_sync(self.resource_server,SyncPaymentWrapperConfig(accepts=accepts,resource=ResourceInfo(url=f'mcp://tool/{spec.name}',description=spec.description,mime_type='application/json',service_name='England Works Watch',tags=['uk','skilled-worker','sponsor','compliance','change-impact'])))
+        wrapper=create_payment_wrapper_sync(
+            self.resource_server,
+            SyncPaymentWrapperConfig(
+                accepts=accepts,
+                resource=ResourceInfo(
+                    url=f'mcp://tool/{spec.name}',
+                    description=spec.description,
+                    mime_type='application/json',
+                    service_name='England Works Watch',
+                    tags=['uk','skilled-worker','sponsor','compliance','change-impact'],
+                ),
+                extensions=discovery_extensions(spec),
+            ),
+        )
         def business(args,_ctx):
             payload=execute(args); return MCPToolResult(content=[{'type':'text','text':json.dumps(payload,ensure_ascii=False)}],structured_content=payload,is_error=False)
         return wrapper(business)
