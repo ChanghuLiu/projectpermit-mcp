@@ -1,7 +1,7 @@
 """Production entrypoint with machine-discovery catalog routes.
 
-The deterministic decision server remains in ``server.py``.  This module adds
-catalog surfaces used by agents and API/MCP discovery systems, then delegates
+The deterministic decision server remains in ``server.py``. This module adds
+catalog surfaces and benchmark-driven MCP selection metadata, then delegates
 to the canonical server entrypoint.
 """
 from __future__ import annotations
@@ -9,6 +9,12 @@ from __future__ import annotations
 from starlette.responses import JSONResponse
 
 from . import server
+from .selection_metadata import apply_selection_metadata
+
+# The server module has already registered every tool by import time. Override
+# only advertised discovery metadata/schemas; deterministic execution stays in
+# server.py and policy.py.
+apply_selection_metadata(server.mcp)
 
 
 @server.mcp.custom_route("/.well-known/ai-catalog.json", methods=["GET"])
