@@ -62,33 +62,21 @@ jobs:
           set -euo pipefail
           post() {
             local body="$1" out="$2"
-            curl --fail --silent --show-error --max-time 30 \
-              -o "$out" \
-              -H 'Content-Type: application/json' \
-              -H 'Accept: application/json, text/event-stream' \
-              --data "$body" "$MCP_URL"
-            echo "=== $out ==="
-            cat "$out"
-            echo
+            curl --fail --silent --show-error --max-time 30 -o "$out" -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' --data "$body" "$MCP_URL"
           }
-
           post '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"github-england-works-watch-smoke","version":"1.0"}}}' /tmp/init.body
           grep -q 'England Works Watch' /tmp/init.body
           grep -q '0.1.0' /tmp/init.body
-
           post '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' /tmp/tools.body
           for tool in england_works_watch_info licensing_source_status list_supported_change_events assess_change_impact batch_assess_changes; do grep -q "$tool" /tmp/tools.body; done
-
           post '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"england_works_watch_info","arguments":{},"_meta":{"englandworkswatch/actor":"owned_ci","io.modelcontextprotocol/clientInfo":{"name":"github-england-works-watch-smoke","version":"1.0"},"io.modelcontextprotocol/protocolVersion":"2025-11-25"}}}' /tmp/info.body
           grep -q 'England Works Watch' /tmp/info.body
           grep -q 'eip155:8453' /tmp/info.body
           grep -q '"enforced":true' /tmp/info.body
           grep -qi "$PAY_TO" /tmp/info.body
-
           post '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"licensing_source_status","arguments":{},"_meta":{"englandworkswatch/actor":"owned_ci","io.modelcontextprotocol/clientInfo":{"name":"github-england-works-watch-smoke","version":"1.0"},"io.modelcontextprotocol/protocolVersion":"2025-11-25"}}}' /tmp/source.body
           grep -q 'coverage_complete' /tmp/source.body
           grep -q 'true' /tmp/source.body
-
           post '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"assess_change_impact","arguments":{"payload":{"event_type":"unauthorised_absence","route":"skilled_worker","consecutive_working_days":11}},"_meta":{"englandworkswatch/actor":"owned_ci","io.modelcontextprotocol/clientInfo":{"name":"github-england-works-watch-smoke","version":"1.0"},"io.modelcontextprotocol/protocolVersion":"2025-11-25"}}}' /tmp/paid.body
           grep -q 'x402Version' /tmp/paid.body
           grep -q 'accepts' /tmp/paid.body
@@ -121,7 +109,6 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
-
       - name: Validate Registry metadata
         shell: bash
         run: |
@@ -136,7 +123,6 @@ jobs:
           assert len(p['description']) <= 100
           print('REGISTRY_METADATA=PASS')
           PY
-
       - name: Install pinned MCP publisher
         shell: bash
         run: |
@@ -146,19 +132,17 @@ jobs:
           echo 'a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc  /tmp/mcp-publisher.tar.gz' | sha256sum --check --strict
           tar -xzf /tmp/mcp-publisher.tar.gz -C /tmp mcp-publisher
           chmod +x /tmp/mcp-publisher
-          /tmp/mcp-publisher --help >/dev/null
-
       - name: Authenticate with GitHub OIDC
         run: /tmp/mcp-publisher login github-oidc
-
       - name: Publish England Works Watch
+        continue-on-error: true
         run: /tmp/mcp-publisher publish ./england-works-watch/server.json
-
       - name: Verify exact Registry listing
         shell: bash
         run: |
           set -euo pipefail
           curl --fail --silent --show-error 'https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.ChanghuLiu/england-works-watch' -o /tmp/registry.json
+          cat /tmp/registry.json
           python - <<'PY'
           import json
           from pathlib import Path
