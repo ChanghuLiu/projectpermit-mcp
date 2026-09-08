@@ -131,7 +131,24 @@ class MCP2X402Gate:
             ),
         )
         def business(args,_ctx):
-            payload=execute(args); return MCPToolResult(content=[{'type':'text','text':json.dumps(payload,ensure_ascii=False)}],structured_content=payload,is_error=False)
+            logger.info("x402_business_start tool=%s",spec.name)
+            try:
+                payload=execute(args)
+            except Exception as error:
+                logger.error(
+                    "x402_business_failure tool=%s error_type=%s error=%s",
+                    spec.name,
+                    type(error).__name__,
+                    str(error),
+                )
+                raise
+            logger.info(
+                "x402_business_success tool=%s status=%s decision_code=%s",
+                spec.name,
+                payload.get('status','') if isinstance(payload,dict) else '',
+                payload.get('decision_code','') if isinstance(payload,dict) else '',
+            )
+            return MCPToolResult(content=[{'type':'text','text':json.dumps(payload,ensure_ascii=False)}],structured_content=payload,is_error=False)
         return wrapper(business)
 
 def meta_to_dict(raw):
@@ -143,11 +160,25 @@ def meta_to_dict(raw):
     try:return dict(raw)
     except Exception:return {}
 
+def _payment_state(result:Any)->str:
+    """Classify x402 lifecycle state, giving settlement responses precedence over challenges."""
+    from x402.mcp import MCP_PAYMENT_RESPONSE_META_KEY
+    structured=getattr(result,'structured_content',None) or {}
+    result_meta=meta_to_dict(getattr(result,'meta',None))
+    payment_response=result_meta.get(MCP_PAYMENT_RESPONSE_META_KEY)
+    if payment_response is None and isinstance(structured,dict):
+        payment_response=structured.get(MCP_PAYMENT_RESPONSE_META_KEY)
+    if isinstance(payment_response,dict):
+        return 'paid_executed' if bool(payment_response.get('success')) and not bool(getattr(result,'is_error',False)) else 'payment_error'
+    if isinstance(structured,dict) and structured.get('x402Version') and structured.get('accepts'):
+        return 'challenge'
+    return 'payment_error' if bool(getattr(result,'is_error',False)) else 'paid_executed'
+
 def invoke(wrapped,*,tool_name:str,arguments:dict[str,Any],ctx:Any):
     from mcp.types import CallToolResult,TextContent
     from .analytics import record
     rc=getattr(ctx,'request_context',None); meta=meta_to_dict(getattr(rc,'meta',None)); result=wrapped(arguments,{'toolName':tool_name,'_meta':meta}); structured=getattr(result,'structured_content',None) or {}
-    payment_state='challenge' if isinstance(structured,dict) and structured.get('x402Version') and structured.get('accepts') else ('payment_error' if bool(getattr(result,'is_error',False)) else 'paid_executed')
+    payment_state=_payment_state(result)
     record(tool_name,'error' if getattr(result,'is_error',False) else 'ok',billable=True,payment_state=payment_state,meta=meta)
     content=[TextContent(type='text',text=str(b.get('text',''))) for b in (getattr(result,'content',[]) or []) if isinstance(b,dict) and b.get('type')=='text'] or [TextContent(type='text',text='')]
     return CallToolResult(content=content,structured_content=getattr(result,'structured_content',None),is_error=bool(getattr(result,'is_error',False)),_meta=getattr(result,'meta',None) or None)
