@@ -10,16 +10,59 @@ class PaidToolSpec:
     example:dict[str,Any]|None=None
 
 
+def _default_discovery_contract(spec:PaidToolSpec)->tuple[dict[str,Any],dict[str,Any]|None]:
+    if spec.name=='assess_change_impact':
+        schema={
+            'properties':{
+                'payload':{
+                    'type':'object',
+                    'properties':{
+                        'event_type':{'type':'string'},
+                        'route':{'type':'string'},
+                    },
+                    'required':['event_type'],
+                    'additionalProperties':True,
+                }
+            },
+            'required':['payload'],
+            'additionalProperties':False,
+        }
+        example={'payload':{'event_type':'unauthorised_absence','route':'skilled_worker','consecutive_working_days':11}}
+        return schema,example
+    if spec.name=='batch_assess_changes':
+        schema={
+            'properties':{
+                'payload':{
+                    'type':'object',
+                    'properties':{
+                        'changes':{
+                            'type':'array','minItems':1,'maxItems':25,
+                            'items':{'type':'object','properties':{'event_type':{'type':'string'},'route':{'type':'string'}},'required':['event_type'],'additionalProperties':True},
+                        }
+                    },
+                    'required':['changes'],
+                    'additionalProperties':False,
+                }
+            },
+            'required':['payload'],
+            'additionalProperties':False,
+        }
+        example={'payload':{'changes':[{'event_type':'unauthorised_absence','route':'skilled_worker','consecutive_working_days':11}]}}
+        return schema,example
+    return {'properties':{}},None
+
+
 def discovery_extensions(spec:PaidToolSpec)->dict[str,Any]:
     """Build the official x402 v2 Bazaar declaration for one paid MCP tool."""
     from x402.extensions.bazaar import DeclareMcpDiscoveryConfig, declare_mcp_discovery_extension
+    default_schema,default_example=_default_discovery_contract(spec)
     return declare_mcp_discovery_extension(
         DeclareMcpDiscoveryConfig(
             tool_name=spec.name,
             description=spec.description,
             transport='streamable-http',
-            input_schema=spec.input_schema or {'properties':{}},
-            example=spec.example,
+            input_schema=spec.input_schema or default_schema,
+            example=spec.example or default_example,
         )
     )
 
