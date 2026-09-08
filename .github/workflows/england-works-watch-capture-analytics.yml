@@ -1,6 +1,5 @@
 name: England Works Watch Capture Analytics
 
-# Conversion snapshot trigger: 2026-09-08
 on:
   push:
     paths:
@@ -17,6 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
       - name: Capture public aggregate analytics
         shell: bash
@@ -53,5 +53,5 @@ jobs:
             echo 'No analytics snapshot change.'
             exit 0
           fi
-          git commit -m 'ops: capture England pre-payment analytics baseline'
+          git commit -m 'ops: capture England conversion analytics snapshot'
           git push origin HEAD:main
