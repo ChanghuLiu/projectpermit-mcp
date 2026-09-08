@@ -9,7 +9,7 @@ Security and scope:
 - This script performs exactly one paid tool call and has no retry loop.
 - It refuses to pay unless server identity, network, amount, asset, and pay-to
   all match the expected production values.
-- A previously successful local receipt blocks another accidental payment.
+- A previously successful local or repository receipt blocks another payment.
 
 This is an owner validation smoke, not evidence of external customer demand.
 """
@@ -41,7 +41,6 @@ EXPECTED_PAY_TO = os.getenv(
 )
 EXPECTED_NETWORK = "eip155:8453"
 EXPECTED_AMOUNT = "20000"
-# Native USDC issued by Circle on Base mainnet.
 EXPECTED_ASSET = os.getenv(
     "EWW_EXPECTED_ASSET",
     "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
@@ -70,10 +69,18 @@ class MCPClientAdapter:
         return await self._session.list_tools()
 
     async def call_tool(self, params: dict[str, Any], **kwargs: Any) -> MCPToolResult:
+        # Preserve x402 payment metadata while also declaring this as owner CI so
+        # commercial analytics can never mistake an owner smoke for external demand.
+        request_meta = dict(params.get("_meta") or {})
+        request_meta.setdefault("englandworkswatch/actor", "owned_ci")
+        request_meta.setdefault(
+            "io.modelcontextprotocol/clientInfo",
+            {"name": "local-owner-paid-smoke"},
+        )
         result = await self._session.call_tool(
             name=params.get("name", ""),
             arguments=params.get("arguments", {}) or {},
-            meta=params.get("_meta"),
+            meta=request_meta,
         )
         content: list[dict[str, Any]] = []
         for item in result.content:
@@ -86,16 +93,27 @@ class MCPClientAdapter:
                         "text": str(item),
                     }
                 )
+
+        # MCP CallToolResult carries wire metadata under _meta. Some SDK models
+        # expose an alias/property named meta, so support both. The old adapter
+        # read only result.meta and dropped x402/payment-response after a valid
+        # settlement, causing the local smoke to falsely report a missing receipt.
+        raw_meta = getattr(result, "_meta", None)
+        if raw_meta is None:
+            raw_meta = getattr(result, "meta", None)
         meta = (
-            result.meta.model_dump(by_alias=True, exclude_none=True)
-            if hasattr(result.meta, "model_dump")
-            else dict(result.meta or {})
+            raw_meta.model_dump(by_alias=True, exclude_none=True)
+            if hasattr(raw_meta, "model_dump")
+            else dict(raw_meta or {})
         )
+        structured = getattr(result, "structured_content", None)
+        if structured is None:
+            structured = getattr(result, "structuredContent", None)
         return MCPToolResult(
             content=content,
-            is_error=result.is_error,
+            is_error=getattr(result, "is_error", getattr(result, "isError", False)),
             meta=meta,
-            structured_content=result.structured_content,
+            structured_content=structured,
         )
 
 
@@ -110,18 +128,26 @@ def _receipt_path() -> Path:
     return Path.cwd() / "paid-smoke-receipt.json"
 
 
-def _block_if_successful_receipt_exists() -> None:
-    path = _receipt_path()
+def _repo_receipt_path() -> Path:
+    return Path(__file__).resolve().parents[2] / ".github" / "ops" / "england-works-watch-paid-smoke.json"
+
+
+def _successful_receipt(path: Path) -> bool:
     if not path.exists():
-        return
+        return False
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except Exception:
-        return
-    if bool(payload.get("settlement_success")) and payload.get("transaction"):
-        raise SystemExit(
-            f"Existing successful paid-smoke receipt found at {path}; refusing a second payment."
-        )
+        return False
+    return bool(payload.get("settlement_success")) and bool(payload.get("transaction"))
+
+
+def _block_if_successful_receipt_exists() -> None:
+    for path in (_receipt_path(), _repo_receipt_path()):
+        if _successful_receipt(path):
+            raise SystemExit(
+                f"Existing successful paid-smoke receipt found at {path}; refusing a second payment."
+            )
 
 
 def _write_receipt(payload: dict[str, Any]) -> None:
@@ -135,10 +161,10 @@ def _safe_failure_diagnostics(result: Any) -> None:
     """Print server response diagnostics without echoing payment payload/signature."""
     raw = getattr(result, "raw_result", None)
     structured = getattr(raw, "structured_content", None)
+    if structured is None:
+        structured = getattr(raw, "structuredContent", None)
     if isinstance(structured, dict):
         safe = dict(structured)
-        # Payment payloads/signatures are client->server metadata and should never
-        # be returned, but strip defensively if a server ever echoes them.
         safe.pop("x402/payment", None)
         print("server_structured_error=" + json.dumps(safe, sort_keys=True))
     content = getattr(result, "content", None) or []
