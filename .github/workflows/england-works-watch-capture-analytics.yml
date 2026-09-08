@@ -1,5 +1,6 @@
 name: England Works Watch Capture Analytics
 
+# Conversion snapshot trigger: 2026-09-08
 on:
   push:
     paths:
