@@ -18,7 +18,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Read-only production aggregate probe.
+          # Read-only production aggregate probe. Triggered after the 2026-09-08 owner paid-smoke attempt.
           URL='https://england-works-watch-production.up.railway.app/analytics/summary'
           curl --fail --silent --show-error --location --max-time 30 "$URL" -o /tmp/analytics.json
           python - <<'PY'
