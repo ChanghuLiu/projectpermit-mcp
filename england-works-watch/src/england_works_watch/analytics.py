@@ -82,8 +82,13 @@ def summary():
             rows = c.execute(
                 "SELECT tool,outcome,billable,payment_state,actor_class,declared_client FROM events"
             ).fetchall()
+            unattributed_paid = c.execute(
+                "SELECT occurred_at,tool,payment_state,declared_client FROM events "
+                "WHERE billable=1 AND actor_class='unattributed' ORDER BY id ASC"
+            ).fetchall()
     except sqlite3.Error:
         rows = []
+        unattributed_paid = []
 
     paid_rows = [row for row in rows if row[2]]
     business_tools = {"assess_change_impact", "batch_assess_changes"}
@@ -95,14 +100,18 @@ def summary():
     paid_funnel_by_client: dict[str, dict[str, int]] = {}
 
     for tool, outcome, _billable, _payment_state, actor, _client in rows:
-        by_actor_tool.setdefault(actor, {})[tool] = by_actor_tool.setdefault(actor, {}).get(tool, 0) + 1
-        by_actor_outcome.setdefault(actor, {})[outcome] = by_actor_outcome.setdefault(actor, {}).get(outcome, 0) + 1
+        tool_bucket = by_actor_tool.setdefault(actor, {})
+        tool_bucket[tool] = tool_bucket.get(tool, 0) + 1
+        outcome_bucket = by_actor_outcome.setdefault(actor, {})
+        outcome_bucket[outcome] = outcome_bucket.get(outcome, 0) + 1
 
     for _tool, _outcome, _billable, payment_state, actor, client in paid_rows:
         state = payment_state or "none"
-        paid_funnel_by_actor.setdefault(actor, {})[state] = paid_funnel_by_actor.setdefault(actor, {}).get(state, 0) + 1
+        actor_bucket = paid_funnel_by_actor.setdefault(actor, {})
+        actor_bucket[state] = actor_bucket.get(state, 0) + 1
         client_key = client or "undeclared"
-        paid_funnel_by_client.setdefault(client_key, {})[state] = paid_funnel_by_client.setdefault(client_key, {}).get(state, 0) + 1
+        client_bucket = paid_funnel_by_client.setdefault(client_key, {})
+        client_bucket[state] = client_bucket.get(state, 0) + 1
 
     return {
         "total_events": len(rows),
@@ -117,6 +126,15 @@ def summary():
         "paid_funnel": dict(Counter((row[3] or "none") for row in paid_rows)),
         "paid_funnel_by_actor": paid_funnel_by_actor,
         "paid_funnel_by_client": paid_funnel_by_client,
+        "unattributed_paid_events": [
+            {
+                "occurred_at": occurred_at,
+                "tool": tool,
+                "payment_state": payment_state or "none",
+                "declared_client": client or "undeclared",
+            }
+            for occurred_at, tool, payment_state, client in unattributed_paid
+        ],
         "privacy": (
             "No employer/worker facts, raw MCP metadata, payment signatures, private keys or seed phrases are stored. "
             "Declared client names are sanitized software identifiers supplied through MCP metadata."
