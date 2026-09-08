@@ -110,6 +110,22 @@ def _write_receipt(payload: dict[str, Any]) -> None:
     print(f"receipt_path={path}")
 
 
+def _safe_failure_diagnostics(result: Any) -> None:
+    """Print server response diagnostics without echoing payment payload/signature."""
+    raw = getattr(result, "raw_result", None)
+    structured = getattr(raw, "structured_content", None)
+    if isinstance(structured, dict):
+        safe = dict(structured)
+        # Payment payloads/signatures are client->server metadata and should never
+        # be returned, but strip defensively if a server ever echoes them.
+        safe.pop("x402/payment", None)
+        print("server_structured_error=" + json.dumps(safe, sort_keys=True))
+    content = getattr(result, "content", None) or []
+    texts = [str(item.get("text", "")) for item in content if isinstance(item, dict)]
+    if texts:
+        print("server_error_text=" + " | ".join(texts))
+
+
 async def main() -> None:
     key = os.getenv("EVM_PRIVATE_KEY")
     if not key:
@@ -172,6 +188,7 @@ async def main() -> None:
             )
             receipt = result.payment_response
             if not receipt:
+                _safe_failure_diagnostics(result)
                 raise SystemExit("Settlement receipt missing")
 
             print(f"settlement_success={receipt.success}")
@@ -179,8 +196,10 @@ async def main() -> None:
             print(f"settlement_transaction={receipt.transaction}")
 
             if result.is_error or not result.payment_made:
+                _safe_failure_diagnostics(result)
                 raise SystemExit("Paid MCP call did not complete successfully")
             if not receipt.success:
+                _safe_failure_diagnostics(result)
                 raise SystemExit("x402 settlement did not succeed")
             if str(receipt.network) != EXPECTED_NETWORK:
                 raise SystemExit("Unexpected settlement network")
