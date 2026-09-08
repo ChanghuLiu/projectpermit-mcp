@@ -8,6 +8,7 @@ COPY scripts ./scripts
 RUN pip install --no-cache-dir '.[x402,test]' \
  && pytest -q \
  && PYTHONPATH=src python scripts/acceptance_report.py \
+ && PYTHONPATH=src python scripts/selection_benchmark.py \
  && PYTHONPATH=src python scripts/audit_sources.py
 # Runtime-import and real MCP release gates. The first smoke proves the ordinary
 # decision path over Streamable HTTP; the second starts a separate paid-mode
