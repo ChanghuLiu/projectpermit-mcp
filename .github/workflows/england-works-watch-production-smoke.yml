@@ -1,0 +1,100 @@
+name: England Works Watch Production Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'england-works-watch/**'
+      - '.github/workflows/england-works-watch-production-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: england-works-watch-production-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ORIGIN: https://england-works-watch-production.up.railway.app
+      MCP_URL: https://england-works-watch-production.up.railway.app/mcp
+      PAY_TO: 0xDAAef0FD525278aAD0bA11066A96c338642A3d1A
+    steps:
+      - name: Public HTTP discovery and runtime gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          get() { curl --fail --silent --show-error --max-time 30 "$1" -o "$2"; echo "=== $2 ==="; cat "$2"; echo; }
+          get "$ORIGIN/health" /tmp/health.json
+          grep -q '"status":"ok"' /tmp/health.json
+          grep -q '"production_ready":true' /tmp/health.json
+          grep -q '"payment_enforced":true' /tmp/health.json
+          grep -q '"source_gate":true' /tmp/health.json
+          grep -q '"source_baselines":"4/4"' /tmp/health.json
+
+          get "$ORIGIN/status" /tmp/status.json
+          grep -q '"enforced":true' /tmp/status.json
+          grep -q '"network":"eip155:8453"' /tmp/status.json
+          grep -qi "$PAY_TO" /tmp/status.json
+          grep -q '"coverage_complete":true' /tmp/status.json
+
+          get "$ORIGIN/.well-known/x402" /tmp/x402.json
+          grep -q '"x402Version":2' /tmp/x402.json
+          grep -q '"network":"eip155:8453"' /tmp/x402.json
+          grep -q '"payment_enforced":true' /tmp/x402.json
+          grep -qi "$PAY_TO" /tmp/x402.json
+          grep -q '\$0.02' /tmp/x402.json
+          grep -q '\$0.05' /tmp/x402.json
+
+          for path in /llms.txt /robots.txt /sitemap.xml /.well-known/mcp.json /.well-known/mcp/server-card.json /.well-known/agent-card.json /.well-known/agent.json /.well-known/glama.json /openapi.json /metrics /version; do
+            curl --fail --silent --show-error --max-time 30 "$ORIGIN$path" >/dev/null
+          done
+          echo 'PUBLIC_DISCOVERY_RUNTIME=PASS'
+
+      - name: Public MCP free tools and unpaid paid-tool boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          post() {
+            local body="$1" out="$2"
+            curl --fail --silent --show-error --max-time 30 \
+              -o "$out" \
+              -H 'Content-Type: application/json' \
+              -H 'Accept: application/json, text/event-stream' \
+              --data "$body" "$MCP_URL"
+            echo "=== $out ==="
+            cat "$out"
+            echo
+          }
+
+          post '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"github-england-works-watch-smoke","version":"1.0"}}}' /tmp/init.body
+          grep -q 'England Works Watch' /tmp/init.body
+          grep -q '0.1.0' /tmp/init.body
+
+          post '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' /tmp/tools.body
+          for tool in england_works_watch_info licensing_source_status list_supported_change_events assess_change_impact batch_assess_changes; do grep -q "$tool" /tmp/tools.body; done
+
+          post '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"england_works_watch_info","arguments":{},"_meta":{"io.modelcontextprotocol/clientInfo":{"name":"github-england-works-watch-smoke","version":"1.0"},"io.modelcontextprotocol/protocolVersion":"2025-11-25"}}}' /tmp/info.body
+          grep -q 'England Works Watch' /tmp/info.body
+          grep -q 'eip155:8453' /tmp/info.body
+          grep -q '"enforced":true' /tmp/info.body
+          grep -qi "$PAY_TO" /tmp/info.body
+
+          post '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"licensing_source_status","arguments":{},"_meta":{"io.modelcontextprotocol/clientInfo":{"name":"github-england-works-watch-smoke","version":"1.0"},"io.modelcontextprotocol/protocolVersion":"2025-11-25"}}}' /tmp/source.body
+          grep -q 'coverage_complete' /tmp/source.body
+          grep -q 'true' /tmp/source.body
+
+          post '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"assess_change_impact","arguments":{"payload":{"event_type":"unauthorised_absence","route":"skilled_worker","consecutive_working_days":11}},"_meta":{"io.modelcontextprotocol/clientInfo":{"name":"github-england-works-watch-smoke","version":"1.0"},"io.modelcontextprotocol/protocolVersion":"2025-11-25"}}}' /tmp/paid.body
+          grep -q 'x402Version' /tmp/paid.body
+          grep -q 'accepts' /tmp/paid.body
+          grep -q 'eip155:8453' /tmp/paid.body
+          grep -q '20000' /tmp/paid.body
+          grep -qi "$PAY_TO" /tmp/paid.body
+          ! grep -q 'EW-ABS-REPORT' /tmp/paid.body
+          ! grep -q '"status":"AFFECTED"' /tmp/paid.body
+          ! grep -q 'SPONSOR-ABSENCE-10' /tmp/paid.body
+          echo 'PRODUCTION_MCP_UNPAID_X402=PASS'
