@@ -1,0 +1,75 @@
+name: Publish England Works Watch MCP Registry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'england-works-watch/server.json'
+      - '.github/workflows/publish-england-works-watch-registry.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Validate metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('england-works-watch/server.json').read_text())
+          assert p['name']=='io.github.ChanghuLiu/england-works-watch'
+          assert p['version']=='0.1.0'
+          assert p['remotes']==[{'type':'streamable-http','url':'https://england-works-watch-production.up.railway.app/mcp'}]
+          print('REGISTRY_METADATA=PASS')
+          PY
+
+      - name: Install pinned MCP publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/mcp-publisher_linux_amd64.tar.gz'
+          curl --fail --location --silent --show-error "$url" -o /tmp/mcp-publisher.tar.gz
+          echo 'a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc  /tmp/mcp-publisher.tar.gz' | sha256sum --check --strict
+          tar -xzf /tmp/mcp-publisher.tar.gz -C /tmp mcp-publisher
+          chmod +x /tmp/mcp-publisher
+          /tmp/mcp-publisher --help >/dev/null
+
+      - name: Authenticate with GitHub OIDC
+        run: /tmp/mcp-publisher login github-oidc
+
+      - name: Publish England Works Watch
+        run: /tmp/mcp-publisher publish ./england-works-watch/server.json
+
+      - name: Verify exact listing
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error 'https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.ChanghuLiu/england-works-watch' -o /tmp/registry.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          payload=json.loads(Path('/tmp/registry.json').read_text())
+          expected_name='io.github.ChanghuLiu/england-works-watch'
+          expected_version='0.1.0'
+          expected_url='https://england-works-watch-production.up.railway.app/mcp'
+          matches=[]
+          for item in payload.get('servers',[]):
+              server=item.get('server',item)
+              if server.get('name')==expected_name and server.get('version')==expected_version:
+                  matches.append(server)
+          if not matches:
+              raise SystemExit(f'listing missing: {expected_name} {expected_version}')
+          if not any(any(r.get('url')==expected_url for r in s.get('remotes',[])) for s in matches):
+              raise SystemExit('listing found but exact production remote missing')
+          print(f'MCP_REGISTRY=PASS name={expected_name} version={expected_version}')
+          PY
