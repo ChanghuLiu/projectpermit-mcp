@@ -5,6 +5,30 @@ import json, logging, os
 
 logger = logging.getLogger("england_works_watch.x402")
 
+_BASE_EIP712_TOKEN_NAMES = {
+    "eip155:8453": "USD Coin",   # Base mainnet native USDC name()
+    "eip155:84532": "USDC",      # Base Sepolia test USDC name()
+}
+
+
+def eip712_token_identity(network: str) -> tuple[str, str]:
+    """Return the exact EIP-712 token domain advertised in x402 requirements.
+
+    Base mainnet Circle USDC reports ``USD Coin`` from the token contract. Base
+    Sepolia reports ``USDC``. Mixing the Sepolia name into a mainnet payment
+    requirement makes the facilitator reject every authorization with
+    ``invalid_exact_evm_token_name_mismatch``.
+    """
+    override_name = os.getenv("EWW_X402_TOKEN_NAME", "").strip()
+    name = override_name or _BASE_EIP712_TOKEN_NAMES.get(network)
+    if not name:
+        raise RuntimeError(
+            f"No EIP-712 token name configured for {network}; set EWW_X402_TOKEN_NAME explicitly"
+        )
+    version = os.getenv("EWW_X402_TOKEN_VERSION", "2").strip() or "2"
+    return name, version
+
+
 @dataclass(frozen=True)
 class PaidToolSpec:
     name:str; price:str; description:str
@@ -75,6 +99,7 @@ class MCP2X402Gate:
         from x402.http import FacilitatorConfig, HTTPFacilitatorClientSync
         from x402.mechanisms.evm.exact import ExactEvmServerScheme
         self.network=os.getenv('EWW_X402_NETWORK','eip155:8453').strip(); self.pay_to=os.getenv('EWW_X402_PAY_TO','').strip(); self.facilitator_url=os.getenv('EWW_X402_FACILITATOR_URL','https://facilitator.payai.network').strip()
+        self.token_name,self.token_version=eip712_token_identity(self.network)
         if not self.pay_to: raise RuntimeError('EWW_X402_PAY_TO is required when payment enforcement is enabled')
         facilitator=HTTPFacilitatorClientSync(FacilitatorConfig(url=self.facilitator_url)); self.resource_server=x402ResourceServerSync(facilitator); self.resource_server.register(self.network,ExactEvmServerScheme()); self.resource_server.initialize()
 
@@ -115,7 +140,7 @@ class MCP2X402Gate:
     def build(self,spec:PaidToolSpec,execute:Callable[[dict[str,Any]],dict[str,Any]]):
         from x402.mcp import ResourceInfo, SyncPaymentWrapperConfig, create_payment_wrapper_sync, MCPToolResult
         from x402.schemas import ResourceConfig
-        accepts=self.resource_server.build_payment_requirements(ResourceConfig(scheme='exact',network=self.network,pay_to=self.pay_to,price=spec.price,extra={'name':'USDC','version':'2'}))
+        accepts=self.resource_server.build_payment_requirements(ResourceConfig(scheme='exact',network=self.network,pay_to=self.pay_to,price=spec.price,extra={'name':self.token_name,'version':self.token_version}))
         wrapper=create_payment_wrapper_sync(
             self.resource_server,
             SyncPaymentWrapperConfig(
