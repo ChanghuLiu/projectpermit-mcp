@@ -34,6 +34,8 @@ jobs:
           grep -q 'eip155:8453' /tmp/challenge.body
           grep -q '20000' /tmp/challenge.body
           grep -qi "$PAY_TO" /tmp/challenge.body
+          grep -q '"name"[[:space:]]*:[[:space:]]*"USD Coin"' /tmp/challenge.body
+          grep -q '"version"[[:space:]]*:[[:space:]]*"2"' /tmp/challenge.body
           grep -q 'extensions' /tmp/challenge.body
           grep -q 'bazaar' /tmp/challenge.body
           grep -q 'assess_change_impact' /tmp/challenge.body
