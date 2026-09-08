@@ -1,17 +1,21 @@
 {
   "analytics": {
     "business_tool_events_by_actor": {
-      "owned_ci": 40,
+      "owned_ci": 42,
       "unattributed": 5
     },
+    "business_tool_events_by_client": {
+      "github-england-works-watch-smoke": 24,
+      "undeclared": 23
+    },
     "by_actor_class": {
-      "owned_ci": 84,
+      "owned_ci": 88,
       "unattributed": 30
     },
     "by_actor_outcome": {
       "owned_ci": {
-        "error": 40,
-        "ok": 44
+        "error": 42,
+        "ok": 46
       },
       "unattributed": {
         "error": 5,
@@ -20,9 +24,9 @@
     },
     "by_actor_tool": {
       "owned_ci": {
-        "assess_change_impact": 40,
-        "england_works_watch_info": 22,
-        "licensing_source_status": 22
+        "assess_change_impact": 42,
+        "england_works_watch_info": 23,
+        "licensing_source_status": 23
       },
       "unattributed": {
         "assess_change_impact": 4,
@@ -31,30 +35,42 @@
         "licensing_source_status": 23
       }
     },
+    "by_declared_client": {
+      "github-england-works-watch-smoke": 72,
+      "undeclared": 46
+    },
     "by_outcome": {
-      "error": 45,
-      "ok": 69
+      "error": 47,
+      "ok": 71
     },
     "by_tool": {
-      "assess_change_impact": 44,
+      "assess_change_impact": 46,
       "batch_assess_changes": 1,
-      "england_works_watch_info": 24,
-      "licensing_source_status": 45
+      "england_works_watch_info": 25,
+      "licensing_source_status": 46
     },
     "paid_funnel": {
-      "challenge": 45
+      "challenge": 47
     },
     "paid_funnel_by_actor": {
       "owned_ci": {
-        "challenge": 40
+        "challenge": 42
       },
       "unattributed": {
         "challenge": 5
       }
     },
-    "privacy": "No employer/worker facts, raw MCP metadata, payment signatures, private keys or seed phrases are stored.",
-    "total_events": 114
+    "paid_funnel_by_client": {
+      "github-england-works-watch-smoke": {
+        "challenge": 24
+      },
+      "undeclared": {
+        "challenge": 23
+      }
+    },
+    "privacy": "No employer/worker facts, raw MCP metadata, payment signatures, private keys or seed phrases are stored. Declared client names are sanitized software identifiers supplied through MCP metadata.",
+    "total_events": 118
   },
-  "captured_at_utc": "2026-09-08T22:49:25.341405+00:00",
+  "captured_at_utc": "2026-09-08T22:51:41.363131+00:00",
   "source": "https://england-works-watch-production.up.railway.app/analytics/summary"
 }
