@@ -1,19 +1,22 @@
 """Run exactly one real x402 payment against England Works Watch.
 
 Security and scope:
-- EVM_PRIVATE_KEY must exist only in the caller's local environment.
-- Never commit, paste, upload, or send the private key to the server.
+- The buyer private key may be supplied in EVM_PRIVATE_KEY or entered at the
+  local hidden terminal prompt. It is never sent to the MCP server.
+- Never commit, paste, upload, or send the private key to the server/chat.
 - The payer must hold native Base mainnet USDC. PayAI submits the EIP-3009
   authorization on-chain and sponsors the settlement network gas.
 - This script performs exactly one paid tool call and has no retry loop.
 - It refuses to pay unless server identity, network, amount, asset, and pay-to
   all match the expected production values.
+- A previously successful local receipt blocks another accidental payment.
 
 This is an owner validation smoke, not evidence of external customer demand.
 """
 from __future__ import annotations
 
 import asyncio
+import getpass
 import json
 import os
 from pathlib import Path
@@ -100,11 +103,29 @@ def _same_address(left: Any, right: str) -> bool:
     return str(left or "").lower() == right.lower()
 
 
-def _write_receipt(payload: dict[str, Any]) -> None:
-    target = os.getenv("EWW_PAID_SMOKE_RECEIPT_PATH", "").strip()
-    if not target:
+def _receipt_path() -> Path:
+    configured = os.getenv("EWW_PAID_SMOKE_RECEIPT_PATH", "").strip()
+    if configured:
+        return Path(configured).expanduser()
+    return Path.cwd() / "paid-smoke-receipt.json"
+
+
+def _block_if_successful_receipt_exists() -> None:
+    path = _receipt_path()
+    if not path.exists():
         return
-    path = Path(target).expanduser()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return
+    if bool(payload.get("settlement_success")) and payload.get("transaction"):
+        raise SystemExit(
+            f"Existing successful paid-smoke receipt found at {path}; refusing a second payment."
+        )
+
+
+def _write_receipt(payload: dict[str, Any]) -> None:
+    path = _receipt_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"receipt_path={path}")
@@ -126,12 +147,19 @@ def _safe_failure_diagnostics(result: Any) -> None:
         print("server_error_text=" + " | ".join(texts))
 
 
-async def main() -> None:
-    key = os.getenv("EVM_PRIVATE_KEY")
+def _load_buyer_key() -> str:
+    key = os.getenv("EVM_PRIVATE_KEY", "").strip()
+    if key:
+        return key
+    key = getpass.getpass("Base mainnet buyer private key (hidden): ").strip()
     if not key:
-        raise SystemExit(
-            "Set EVM_PRIVATE_KEY only in your local shell; never paste it into chat or commit it."
-        )
+        raise SystemExit("No buyer private key supplied")
+    return key
+
+
+async def main() -> None:
+    _block_if_successful_receipt_exists()
+    key = _load_buyer_key()
 
     account = Account.from_key(key)
     print(f"payer={account.address}")
