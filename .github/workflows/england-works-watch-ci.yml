@@ -29,6 +29,8 @@ jobs:
       - run: pytest -q
       - run: python scripts/acceptance_report.py
       - run: python scripts/validate_pack.py
+      - name: Gate agent tool-selection metadata
+        run: python scripts/selection_benchmark.py
       - name: Compile operational smoke scripts
         run: python -m py_compile scripts/paid_mcp_buyer_smoke.py scripts/post_settlement_verify.py
 
