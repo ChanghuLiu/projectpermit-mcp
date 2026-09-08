@@ -1,0 +1,43 @@
+from __future__ import annotations
+from dataclasses import dataclass
+from typing import Any, Callable
+import json, os
+
+@dataclass(frozen=True)
+class PaidToolSpec:
+    name:str; price:str; description:str
+
+class MCP2X402Gate:
+    def __init__(self):
+        from x402 import x402ResourceServerSync
+        from x402.http import FacilitatorConfig, HTTPFacilitatorClientSync
+        from x402.mechanisms.evm.exact import ExactEvmServerScheme
+        self.network=os.getenv('EWW_X402_NETWORK','eip155:8453').strip(); self.pay_to=os.getenv('EWW_X402_PAY_TO','').strip(); self.facilitator_url=os.getenv('EWW_X402_FACILITATOR_URL','https://facilitator.payai.network').strip()
+        if not self.pay_to: raise RuntimeError('EWW_X402_PAY_TO is required when payment enforcement is enabled')
+        facilitator=HTTPFacilitatorClientSync(FacilitatorConfig(url=self.facilitator_url)); self.resource_server=x402ResourceServerSync(facilitator); self.resource_server.register(self.network,ExactEvmServerScheme()); self.resource_server.initialize()
+    def build(self,spec:PaidToolSpec,execute:Callable[[dict[str,Any]],dict[str,Any]]):
+        from x402.mcp import ResourceInfo, SyncPaymentWrapperConfig, create_payment_wrapper_sync, MCPToolResult
+        from x402.schemas import ResourceConfig
+        accepts=self.resource_server.build_payment_requirements(ResourceConfig(scheme='exact',network=self.network,pay_to=self.pay_to,price=spec.price,extra={'name':'USDC','version':'2'}))
+        wrapper=create_payment_wrapper_sync(self.resource_server,SyncPaymentWrapperConfig(accepts=accepts,resource=ResourceInfo(url=f'mcp://tool/{spec.name}',description=spec.description,mime_type='application/json',service_name='England Works Watch',tags=['uk','skilled-worker','sponsor','compliance','change-impact'])))
+        def business(args,_ctx):
+            payload=execute(args); return MCPToolResult(content=[{'type':'text','text':json.dumps(payload,ensure_ascii=False)}],structured_content=payload,is_error=False)
+        return wrapper(business)
+
+def meta_to_dict(raw):
+    if raw is None:return {}
+    if isinstance(raw,dict):return dict(raw)
+    dump=getattr(raw,'model_dump',None)
+    if callable(dump):
+        out=dump(by_alias=True,exclude_none=True); return out if isinstance(out,dict) else {}
+    try:return dict(raw)
+    except Exception:return {}
+
+def invoke(wrapped,*,tool_name:str,arguments:dict[str,Any],ctx:Any):
+    from mcp.types import CallToolResult,TextContent
+    from .analytics import record
+    rc=getattr(ctx,'request_context',None); meta=meta_to_dict(getattr(rc,'meta',None)); result=wrapped(arguments,{'toolName':tool_name,'_meta':meta}); structured=getattr(result,'structured_content',None) or {}
+    payment_state='challenge' if isinstance(structured,dict) and structured.get('x402Version') and structured.get('accepts') else ('payment_error' if bool(getattr(result,'is_error',False)) else 'paid_executed')
+    record(tool_name,'error' if getattr(result,'is_error',False) else 'ok',billable=True,payment_state=payment_state,meta=meta)
+    content=[TextContent(type='text',text=str(b.get('text',''))) for b in (getattr(result,'content',[]) or []) if isinstance(b,dict) and b.get('type')=='text'] or [TextContent(type='text',text='')]
+    return CallToolResult(content=content,structured_content=getattr(result,'structured_content',None),is_error=bool(getattr(result,'is_error',False)),_meta=getattr(result,'meta',None) or None)
