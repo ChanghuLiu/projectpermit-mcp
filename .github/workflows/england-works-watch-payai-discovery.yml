@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Scan PayAI Bazaar and stats
+      - name: Scan full PayAI Bazaar and stats
         shell: bash
         run: |
           set -euo pipefail
@@ -32,8 +32,8 @@ jobs:
               'mcp://tool/assess_change_impact',
               'mcp://tool/batch_assess_changes',
           ]
-          page_size=100
-          max_pages=100
+          page_size=200
+          max_pages=200
           scanned=0
           matches=[]
           total=None
@@ -44,7 +44,6 @@ jobs:
                   try:
                       req=urllib.request.Request(url,headers={'User-Agent':'england-works-watch-discovery-audit/1.0'})
                       with urllib.request.urlopen(req,timeout=30) as r:
-                          print(f'GET {url} -> {r.status}')
                           return json.loads(r.read().decode())
                   except Exception as e:
                       last=e
@@ -74,15 +73,21 @@ jobs:
                   hay=json.dumps(item,sort_keys=True).lower()
                   if any(n in hay for n in NEEDLES):
                       matches.append(item)
+              if page % 25 == 0:
+                  print(f'progress scanned={scanned} total={total if total is not None else "unknown"}')
               if not items:
                   break
               if total is not None and offset+len(items) >= total:
                   break
 
+          complete = total is not None and scanned >= total
           print(f'PAYAI_CATALOG_TOTAL={total if total is not None else "unknown"}')
           print(f'PAYAI_CATALOG_SCANNED={scanned}')
+          print(f'PAYAI_SCAN_COMPLETE={str(complete).upper()}')
           print(f'ENGLAND_WORKS_WATCH_MATCHES={len(matches)}')
           for item in matches[:20]:
               print('MATCH='+json.dumps(item,sort_keys=True))
+          if not complete:
+              raise SystemExit('PayAI catalog scan incomplete')
           print('PAYAI_BAZAAR=' + ('FOUND' if matches else 'ABSENT'))
           PY
