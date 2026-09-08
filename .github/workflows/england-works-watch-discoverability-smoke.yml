@@ -1,0 +1,116 @@
+name: England Works Watch Discoverability Smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/england-works-watch-discoverability-smoke.yml'
+      - 'england-works-watch/src/england_works_watch/server.py'
+      - 'england-works-watch/src/england_works_watch/entrypoint.py'
+      - 'england-works-watch/pyproject.toml'
+      - 'england-works-watch/Dockerfile'
+      - 'england-works-watch/railway.toml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: england-works-watch-production-discoverability
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Verify public discovery surfaces and MCP identity
+        shell: bash
+        env:
+          ORIGIN: https://england-works-watch-production.up.railway.app
+          MCP_URL: https://england-works-watch-production.up.railway.app/mcp
+        run: |
+          set -euo pipefail
+
+          ready=0
+          for attempt in $(seq 1 36); do
+            if curl -fsS --max-time 15 "$ORIGIN/health" -o /tmp/health.json 2>/dev/null \
+              && curl -fsS --max-time 15 "$ORIGIN/.well-known/ai-catalog.json" -o /tmp/ai-catalog.json 2>/dev/null \
+              && curl -fsS --max-time 15 "$ORIGIN/.well-known/api-catalog" -o /tmp/api-catalog.json 2>/dev/null; then
+              if python - <<'PY'
+          import json
+          h=json.load(open('/tmp/health.json'))
+          assert h.get('status') == 'ok', h
+          assert h.get('version') == '0.1.0', h
+          PY
+              then
+                ready=1
+                break
+              fi
+            fi
+            echo "waiting_for_discovery_surfaces attempt=$attempt"
+            sleep 10
+          done
+          test "$ready" = 1
+
+          python - <<'PY'
+          import json, os, urllib.request
+          origin=os.environ['ORIGIN']
+
+          health=json.load(open('/tmp/health.json'))
+          assert health['status']=='ok', health
+          assert health['version']=='0.1.0', health
+          assert health['production_ready'] is True, health
+          assert health['payment_enforced'] is True, health
+          print('PUBLIC_HEALTH_SMOKE=PASS')
+
+          for path in ('status', 'version', 'metrics', 'robots.txt', 'sitemap.xml', 'llms.txt', 'openapi.json', '.well-known/x402', '.well-known/mcp.json', '.well-known/mcp/server-card.json', '.well-known/agent-card.json', '.well-known/agent.json', '.well-known/glama.json'):
+              with urllib.request.urlopen(f"{origin}/{path}", timeout=20) as response:
+                  assert response.status == 200, (path, response.status)
+              print(f"PUBLIC_SURFACE=PASS /{path}")
+
+          ai=json.load(open('/tmp/ai-catalog.json'))
+          types={row['type'] for row in ai['interfaces']}
+          assert {'mcp','openapi'} <= types, ai
+          mcp_row=next(row for row in ai['interfaces'] if row['type']=='mcp')
+          assert mcp_row['url']==f"{origin}/mcp", ai
+          assert ai['payment']['network']=='eip155:8453', ai
+          print('AI_CATALOG_SMOKE=PASS')
+
+          with urllib.request.urlopen(f"{origin}/.well-known/api-catalog", timeout=20) as response:
+              linkset=json.load(response)
+              content_type=response.headers.get('Content-Type','')
+          assert 'application/linkset+json' in content_type, content_type
+          assert linkset.get('linkset'), linkset
+          print('API_CATALOG_SMOKE=PASS')
+
+          with urllib.request.urlopen(f"{origin}/.well-known/mcp.json", timeout=20) as response:
+              manifest=json.load(response)
+          assert manifest['name']=='io.github.ChanghuLiu/england-works-watch', manifest
+          assert manifest['version']=='0.1.0', manifest
+          assert manifest['remotes']==[{'type':'streamable-http','url':f'{origin}/mcp'}], manifest
+          print('WELL_KNOWN_MCP_SMOKE=PASS')
+          PY
+
+          post() {
+            curl -fsS --max-time 30 \
+              -H 'Content-Type: application/json' \
+              -H 'Accept: application/json, text/event-stream' \
+              --data "$1" "$MCP_URL"
+          }
+          post '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"england-discoverability-smoke","version":"1.0"}}}' > /tmp/init.json
+          post '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' > /tmp/tools.json
+          python - <<'PY'
+          import json
+          init=json.load(open('/tmp/init.json'))
+          tools=json.load(open('/tmp/tools.json'))
+          info=init['result']['serverInfo']
+          assert info['name']=='England Works Watch', info
+          assert info['version']=='0.1.0', info
+          rows={t['name']:t for t in tools['result']['tools']}
+          expected={'england_works_watch_info','licensing_source_status','list_supported_change_events','assess_change_impact','batch_assess_changes'}
+          assert expected <= set(rows), rows.keys()
+          for name in ('assess_change_impact','batch_assess_changes'):
+              assert 'paid' in str(rows[name].get('description') or '').lower(), (name, rows[name])
+          print('MCP_DISCOVERABILITY_SMOKE=PASS')
+          PY
