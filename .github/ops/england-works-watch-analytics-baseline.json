@@ -1,25 +1,25 @@
 {
   "analytics": {
     "by_actor_class": {
-      "owned_ci": 24,
-      "unattributed": 27
+      "owned_ci": 80,
+      "unattributed": 30
     },
     "by_outcome": {
-      "error": 13,
-      "ok": 38
+      "error": 43,
+      "ok": 67
     },
     "by_tool": {
-      "assess_change_impact": 12,
+      "assess_change_impact": 42,
       "batch_assess_changes": 1,
-      "england_works_watch_info": 8,
-      "licensing_source_status": 30
+      "england_works_watch_info": 23,
+      "licensing_source_status": 44
     },
     "paid_funnel": {
-      "challenge": 13
+      "challenge": 43
     },
     "privacy": "No employer/worker facts, raw MCP metadata, payment signatures, private keys or seed phrases are stored.",
-    "total_events": 51
+    "total_events": 110
   },
-  "captured_at_utc": "2026-09-08T16:17:15.562561+00:00",
+  "captured_at_utc": "2026-09-08T22:46:44.893201+00:00",
   "source": "https://england-works-watch-production.up.railway.app/analytics/summary"
 }
