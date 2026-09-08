@@ -8,6 +8,7 @@ on:
       - '.github/workflows/england-works-watch-discoverability-smoke.yml'
       - 'england-works-watch/src/england_works_watch/server.py'
       - 'england-works-watch/src/england_works_watch/entrypoint.py'
+      - 'england-works-watch/src/england_works_watch/selection_metadata.py'
       - 'england-works-watch/pyproject.toml'
       - 'england-works-watch/Dockerfile'
       - 'england-works-watch/railway.toml'
@@ -98,7 +99,7 @@ jobs:
               -H 'Accept: application/json, text/event-stream' \
               --data "$1" "$MCP_URL"
           }
-          post '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"england-discoverability-smoke","version":"1.0"}}}' > /tmp/init.json
+          post '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"england-discoverability-smoke","version":"1.1"}}}' > /tmp/init.json
           post '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' > /tmp/tools.json
           python - <<'PY'
           import json
@@ -107,10 +108,16 @@ jobs:
           info=init['result']['serverInfo']
           assert info['name']=='England Works Watch', info
           assert info['version']=='0.1.0', info
+          description=str(info.get('description') or '')
+          assert 'Skilled Worker' in description and 'HRIS' in description and 'fail closed' in description, description
           rows={t['name']:t for t in tools['result']['tools']}
           expected={'england_works_watch_info','licensing_source_status','list_supported_change_events','assess_change_impact','batch_assess_changes'}
           assert expected <= set(rows), rows.keys()
-          for name in ('assess_change_impact','batch_assess_changes'):
-              assert 'paid' in str(rows[name].get('description') or '').lower(), (name, rows[name])
-          print('MCP_DISCOVERABILITY_SMOKE=PASS')
+          assert 'single-event' in str(rows['assess_change_impact'].get('description') or ''), rows['assess_change_impact']
+          assert 'multiple-event' in str(rows['batch_assess_changes'].get('description') or ''), rows['batch_assess_changes']
+          assert 'source freshness' in str(rows['licensing_source_status'].get('description') or '').lower(), rows['licensing_source_status']
+          assert 'supported-event list' in str(rows['list_supported_change_events'].get('description') or '').lower(), rows['list_supported_change_events']
+          assess_schema=rows['assess_change_impact']['inputSchema']['properties']['payload']['properties']
+          assert 'event_type' in assess_schema and 'route' in assess_schema, assess_schema
+          print('MCP_DISCOVERABILITY_SMOKE=PASS benchmark_driven_metadata=verified')
           PY
