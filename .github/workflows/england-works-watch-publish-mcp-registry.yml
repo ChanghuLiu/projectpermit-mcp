@@ -29,8 +29,24 @@ jobs:
           /tmp/mcp-publisher --help >/dev/null
       - name: Authenticate with GitHub OIDC
         run: /tmp/mcp-publisher login github-oidc
-      - name: Publish remote server metadata
-        run: /tmp/mcp-publisher publish ./england-works-watch/server.json
+      - name: Publish remote server metadata idempotently
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          output=$(/tmp/mcp-publisher publish ./england-works-watch/server.json 2>&1)
+          rc=$?
+          set -e
+          printf '%s\n' "$output"
+          if [ "$rc" -ne 0 ]; then
+            if printf '%s\n' "$output" | grep -Fq 'cannot publish duplicate version'; then
+              echo 'MCP_REGISTRY_PUBLISH=ALREADY_EXISTS'
+            else
+              exit "$rc"
+            fi
+          else
+            echo 'MCP_REGISTRY_PUBLISH=CREATED'
+          fi
       - name: Verify registry listing
         shell: bash
         run: |
