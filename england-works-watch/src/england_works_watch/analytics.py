@@ -76,57 +76,49 @@ def record(
         )
 
 
-def _nested_counts(rows, outer_index: int, inner_index: int) -> dict[str, dict[str, int]]:
-    result: dict[str, dict[str, int]] = {}
-    for row in rows:
-        outer = str(row[outer_index])
-        inner = str(row[inner_index])
-        bucket = result.setdefault(outer, {})
-        bucket[inner] = bucket.get(inner, 0) + 1
-    return result
-
-
 def summary():
     try:
         with _db() as c:
             rows = c.execute(
-                "SELECT tool,outcome,billable,payment_state,actor_class FROM events"
+                "SELECT tool,outcome,billable,payment_state,actor_class,declared_client FROM events"
             ).fetchall()
     except sqlite3.Error:
         rows = []
 
     paid_rows = [row for row in rows if row[2]]
-    paid_actor_rows = [
-        (row[4], row[3] or "none")
-        for row in paid_rows
-    ]
     business_tools = {"assess_change_impact", "batch_assess_changes"}
     business_rows = [row for row in rows if row[0] in business_tools]
 
     by_actor_tool: dict[str, dict[str, int]] = {}
     by_actor_outcome: dict[str, dict[str, int]] = {}
-    for tool, outcome, _billable, _payment_state, actor in rows:
-        tool_bucket = by_actor_tool.setdefault(actor, {})
-        tool_bucket[tool] = tool_bucket.get(tool, 0) + 1
-        outcome_bucket = by_actor_outcome.setdefault(actor, {})
-        outcome_bucket[outcome] = outcome_bucket.get(outcome, 0) + 1
-
     paid_funnel_by_actor: dict[str, dict[str, int]] = {}
-    for actor, payment_state in paid_actor_rows:
-        bucket = paid_funnel_by_actor.setdefault(actor, {})
-        bucket[payment_state] = bucket.get(payment_state, 0) + 1
+    paid_funnel_by_client: dict[str, dict[str, int]] = {}
+
+    for tool, outcome, _billable, _payment_state, actor, _client in rows:
+        by_actor_tool.setdefault(actor, {})[tool] = by_actor_tool.setdefault(actor, {}).get(tool, 0) + 1
+        by_actor_outcome.setdefault(actor, {})[outcome] = by_actor_outcome.setdefault(actor, {}).get(outcome, 0) + 1
+
+    for _tool, _outcome, _billable, payment_state, actor, client in paid_rows:
+        state = payment_state or "none"
+        paid_funnel_by_actor.setdefault(actor, {})[state] = paid_funnel_by_actor.setdefault(actor, {}).get(state, 0) + 1
+        client_key = client or "undeclared"
+        paid_funnel_by_client.setdefault(client_key, {})[state] = paid_funnel_by_client.setdefault(client_key, {}).get(state, 0) + 1
 
     return {
         "total_events": len(rows),
         "by_tool": dict(Counter(row[0] for row in rows)),
         "by_outcome": dict(Counter(row[1] for row in rows)),
         "by_actor_class": dict(Counter(row[4] for row in rows)),
+        "by_declared_client": dict(Counter((row[5] or "undeclared") for row in rows)),
         "by_actor_tool": by_actor_tool,
         "by_actor_outcome": by_actor_outcome,
         "business_tool_events_by_actor": dict(Counter(row[4] for row in business_rows)),
+        "business_tool_events_by_client": dict(Counter((row[5] or "undeclared") for row in business_rows)),
         "paid_funnel": dict(Counter((row[3] or "none") for row in paid_rows)),
         "paid_funnel_by_actor": paid_funnel_by_actor,
+        "paid_funnel_by_client": paid_funnel_by_client,
         "privacy": (
-            "No employer/worker facts, raw MCP metadata, payment signatures, private keys or seed phrases are stored."
+            "No employer/worker facts, raw MCP metadata, payment signatures, private keys or seed phrases are stored. "
+            "Declared client names are sanitized software identifiers supplied through MCP metadata."
         ),
     }
