@@ -1,7 +1,7 @@
 {
   "$schema":"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name":"io.github.ChanghuLiu/england-works-watch",
-  "description":"UK sponsor compliance/change intelligence for Skilled Worker sponsor duties, with deterministic evidence-linked change-impact decisions.",
+  "description":"Evidence-backed Skilled Worker sponsor change-impact decisions for England.",
   "version":"0.1.0",
   "packages":[],
   "remotes":[{"type":"streamable-http","url":"https://england-works-watch-production.up.railway.app/mcp"}],
