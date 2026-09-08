@@ -14,7 +14,7 @@ test = ["pytest>=8,<9"]
 x402 = ["x402[fastapi,evm]>=2.21,<2.22"]
 
 [project.scripts]
-england-works-watch = "england_works_watch.server:main"
+england-works-watch = "england_works_watch.entrypoint:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
