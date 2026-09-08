@@ -3,10 +3,11 @@
 Security and scope:
 - EVM_PRIVATE_KEY must exist only in the caller's local environment.
 - Never commit, paste, upload, or send the private key to the server.
-- The payer must hold native Base USDC and enough Base ETH for gas.
+- The payer must hold native Base mainnet USDC. PayAI submits the EIP-3009
+  authorization on-chain and sponsors the settlement network gas.
 - This script performs exactly one paid tool call and has no retry loop.
-- It refuses to pay unless network, amount, asset, and pay-to all match the
-  expected production values.
+- It refuses to pay unless server identity, network, amount, asset, and pay-to
+  all match the expected production values.
 
 This is an owner validation smoke, not evidence of external customer demand.
 """
@@ -30,6 +31,7 @@ URL = os.getenv(
     "EWW_PAID_MCP_URL",
     "https://england-works-watch-production.up.railway.app/mcp",
 )
+EXPECTED_SERVER = "England Works Watch"
 EXPECTED_PAY_TO = os.getenv(
     "EWW_EXPECTED_PAY_TO",
     "0xDAAef0FD525278aAD0bA11066A96c338642A3d1A",
@@ -129,6 +131,8 @@ async def main() -> None:
     async with streamable_http_client(URL) as (read_stream, write_stream):
         async with ClientSession(read_stream, write_stream) as session:
             init = await session.initialize()
+            if init.server_info.name != EXPECTED_SERVER:
+                raise SystemExit(f"Unexpected server: {init.server_info.name}")
             print(f"server={init.server_info.name}")
 
             def approve(payment_context: Any) -> bool:
