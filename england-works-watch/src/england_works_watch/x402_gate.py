@@ -1,7 +1,9 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
-import json, os
+import json, logging, os
+
+logger = logging.getLogger("england_works_watch.x402")
 
 @dataclass(frozen=True)
 class PaidToolSpec:
@@ -75,6 +77,41 @@ class MCP2X402Gate:
         self.network=os.getenv('EWW_X402_NETWORK','eip155:8453').strip(); self.pay_to=os.getenv('EWW_X402_PAY_TO','').strip(); self.facilitator_url=os.getenv('EWW_X402_FACILITATOR_URL','https://facilitator.payai.network').strip()
         if not self.pay_to: raise RuntimeError('EWW_X402_PAY_TO is required when payment enforcement is enabled')
         facilitator=HTTPFacilitatorClientSync(FacilitatorConfig(url=self.facilitator_url)); self.resource_server=x402ResourceServerSync(facilitator); self.resource_server.register(self.network,ExactEvmServerScheme()); self.resource_server.initialize()
+
+        # Non-sensitive payment lifecycle diagnostics. Never log payment payloads,
+        # signatures, private keys, seed phrases, or raw MCP arguments.
+        def _before_settle(ctx):
+            logger.info(
+                "x402_settle_start network=%s phase=%s",
+                self.network,
+                getattr(ctx,'phase','unknown'),
+            )
+
+        def _after_settle(ctx):
+            result=getattr(ctx,'result',None)
+            logger.info(
+                "x402_settle_success network=%s phase=%s success=%s transaction=%s",
+                self.network,
+                getattr(ctx,'phase','unknown'),
+                getattr(result,'success',None),
+                getattr(result,'transaction','') or '',
+            )
+
+        def _settle_failure(ctx):
+            error=getattr(ctx,'error',None)
+            logger.error(
+                "x402_settle_failure network=%s phase=%s error_type=%s error=%s",
+                self.network,
+                getattr(ctx,'phase','unknown'),
+                type(error).__name__ if error is not None else 'unknown',
+                str(error) if error is not None else 'unknown',
+            )
+            return None
+
+        self.resource_server.on_before_settle(_before_settle)
+        self.resource_server.on_after_settle(_after_settle)
+        self.resource_server.on_settle_failure(_settle_failure)
+
     def build(self,spec:PaidToolSpec,execute:Callable[[dict[str,Any]],dict[str,Any]]):
         from x402.mcp import ResourceInfo, SyncPaymentWrapperConfig, create_payment_wrapper_sync, MCPToolResult
         from x402.schemas import ResourceConfig
