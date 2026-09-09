@@ -10,7 +10,6 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 import os
 import sys
-from typing import Any
 
 import uvicorn
 from starlette.applications import Starlette
@@ -18,72 +17,13 @@ from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
 from . import server
-from .analytics import record_discovery
+from .discovery_ecosystem import DiscoveryEcosystemASGI
 from .selection_metadata import apply_selection_metadata
 
 # The server module has already registered every tool by import time. Override
 # only advertised discovery metadata/schemas; deterministic execution stays in
 # server.py and policy.py.
 apply_selection_metadata(server.mcp)
-
-OWNER_DISCOVERY_HEADER = b"x-mcp-commercial-actor"
-_OWNER_MARKERS = {"owned", "owned_ci", "owner", "test", "smoke"}
-_DISCOVERY_PATHS = {
-    "/",
-    "/robots.txt",
-    "/sitemap.xml",
-    "/llms.txt",
-    "/openapi.json",
-    "/.well-known/x402",
-    "/.well-known/mcp.json",
-    "/.well-known/mcp/server-card.json",
-    "/.well-known/agent-card.json",
-    "/.well-known/agent.json",
-    "/.well-known/glama.json",
-    "/.well-known/ai-catalog.json",
-    "/.well-known/api-catalog",
-    "/mcp",
-}
-
-
-def _owned_probe(scope: dict[str, Any]) -> bool:
-    """Check the one allow-listed owner marker without persisting headers."""
-    for item in scope.get("headers") or []:
-        try:
-            key, value = item
-        except Exception:
-            continue
-        if key.lower() != OWNER_DISCOVERY_HEADER:
-            continue
-        marker = value.decode("latin1", errors="ignore").strip().lower()
-        return marker in _OWNER_MARKERS
-    return False
-
-
-class DiscoveryObservabilityASGI:
-    """Record privacy-minimal hits to public machine discovery surfaces.
-
-    Only the normalized route and timestamp are ultimately persisted by
-    analytics.record_discovery(). No IP, user-agent, query, arbitrary headers,
-    cookies, MCP payload, or payment material is retained. POST /mcp is not
-    counted here because it may be a real business tool call rather than
-    discovery; MCP tool telemetry remains the source for that layer.
-    """
-
-    def __init__(self, app: Any) -> None:
-        self.app = app
-
-    async def __call__(self, scope, receive, send) -> None:
-        if scope.get("type") == "http":
-            path = str(scope.get("path") or "")
-            method = str(scope.get("method") or "GET").upper()
-            if (
-                path in _DISCOVERY_PATHS
-                and not _owned_probe(scope)
-                and (path != "/mcp" or method in {"GET", "HEAD"})
-            ):
-                record_discovery(path)
-        await self.app(scope, receive, send)
 
 
 @server.mcp.custom_route("/.well-known/ai-catalog.json", methods=["GET"])
@@ -95,15 +35,8 @@ async def ai_catalog(_request):
             "version": server.SERVICE_VERSION,
             "description": "UK sponsor compliance/change intelligence for Skilled Worker sponsor duties.",
             "interfaces": [
-                {
-                    "type": "mcp",
-                    "transport": "streamable-http",
-                    "url": server.PUBLIC_MCP_URL,
-                },
-                {
-                    "type": "openapi",
-                    "url": f"{server.PUBLIC_ORIGIN}/openapi.json",
-                },
+                {"type": "mcp", "transport": "streamable-http", "url": server.PUBLIC_MCP_URL},
+                {"type": "openapi", "url": f"{server.PUBLIC_ORIGIN}/openapi.json"},
             ],
             "discovery": {
                 "mcp_manifest": f"{server.PUBLIC_ORIGIN}/.well-known/mcp.json",
@@ -127,28 +60,13 @@ async def api_catalog(_request):
             {
                 "anchor": server.PUBLIC_ORIGIN,
                 "service-desc": [
-                    {
-                        "href": f"{server.PUBLIC_ORIGIN}/openapi.json",
-                        "type": "application/openapi+json",
-                    },
-                    {
-                        "href": f"{server.PUBLIC_ORIGIN}/.well-known/mcp.json",
-                        "type": "application/json",
-                    },
-                    {
-                        "href": server.PUBLIC_MCP_URL,
-                        "type": "application/json",
-                    },
+                    {"href": f"{server.PUBLIC_ORIGIN}/openapi.json", "type": "application/openapi+json"},
+                    {"href": f"{server.PUBLIC_ORIGIN}/.well-known/mcp.json", "type": "application/json"},
+                    {"href": server.PUBLIC_MCP_URL, "type": "application/json"},
                 ],
                 "describedby": [
-                    {
-                        "href": f"{server.PUBLIC_ORIGIN}/llms.txt",
-                        "type": "text/plain",
-                    },
-                    {
-                        "href": f"{server.PUBLIC_ORIGIN}/.well-known/x402",
-                        "type": "application/json",
-                    },
+                    {"href": f"{server.PUBLIC_ORIGIN}/llms.txt", "type": "text/plain"},
+                    {"href": f"{server.PUBLIC_ORIGIN}/.well-known/x402", "type": "application/json"},
                 ],
             }
         ]
@@ -162,11 +80,7 @@ def _run_http() -> None:
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "8000"))
 
-    mcp_app = server.mcp.streamable_http_app(
-        host=host,
-        json_response=True,
-        stateless_http=True,
-    )
+    mcp_app = server.mcp.streamable_http_app(host=host, json_response=True, stateless_http=True)
 
     @asynccontextmanager
     async def lifespan(_app):
@@ -174,7 +88,7 @@ def _run_http() -> None:
             yield
 
     app = Starlette(routes=[Mount("/", app=mcp_app)], lifespan=lifespan)
-    app = DiscoveryObservabilityASGI(app)
+    app = DiscoveryEcosystemASGI(app)
     uvicorn.run(app, host=host, port=port)
 
 
