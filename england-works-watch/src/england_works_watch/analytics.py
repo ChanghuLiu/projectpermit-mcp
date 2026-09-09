@@ -11,6 +11,7 @@ import sqlite3
 UTC = timezone.utc
 BUSINESS_TOOLS = {"assess_change_impact", "batch_assess_changes"}
 FREE_TOOLS = {"england_works_watch_info", "licensing_source_status", "list_supported_change_events"}
+DISCOVERY_TOOL = "__machine_discovery__"
 DEFAULT_OWNED_CLIENT_NAMES = {
     "github-public-runner",
     "github-smoke",
@@ -111,6 +112,21 @@ def record(
         )
 
 
+def record_discovery(route: str) -> None:
+    """Persist one public machine-discovery surface hit without request identity.
+
+    Deliberately stores only the normalized route name. No IP, user-agent,
+    query string, headers, or cookies are retained, so these events measure raw
+    discovery activity but never claim a confirmed external customer.
+    """
+    normalized = _safe(route, 120) or "unknown"
+    try:
+        record(DISCOVERY_TOOL, normalized, billable=False)
+    except sqlite3.Error:
+        # Observability must never break a discovery response.
+        pass
+
+
 def _parse_time(value: str) -> datetime | None:
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -154,6 +170,7 @@ def _window_summary(hours: int | None) -> dict[str, Any]:
         }
         for row in rows
     ]
+    discovery_rows = [row for row in normalized if row["tool"] == DISCOVERY_TOOL]
     free_rows = [row for row in normalized if row["tool"] in FREE_TOOLS and not row["billable"]]
     paid_rows = [row for row in normalized if row["billable"] and row["tool"] in BUSINESS_TOOLS]
     challenge_rows = [row for row in paid_rows if row["payment_state"] == "challenge"]
@@ -173,6 +190,7 @@ def _window_summary(hours: int | None) -> dict[str, Any]:
 
     by_actor = Counter(row["actor"] for row in normalized)
     by_tool = Counter(row["tool"] for row in normalized)
+    discovery_by_route = Counter(row["outcome"] for row in discovery_rows)
     paid_funnel = Counter(row["payment_state"] for row in paid_rows)
     paid_funnel_by_actor: dict[str, dict[str, int]] = {}
     for row in paid_rows:
@@ -185,14 +203,15 @@ def _window_summary(hours: int | None) -> dict[str, Any]:
         "total_events": len(normalized),
         "by_tool": dict(by_tool),
         "by_actor_class": dict(by_actor),
+        "discovery_by_route": dict(discovery_by_route),
         "paid_funnel": dict(paid_funnel),
         "paid_funnel_by_actor": paid_funnel_by_actor,
         "commercial_funnel": {
             "discovery": {
-                "raw": None,
+                "raw": len(discovery_rows),
                 "confirmed_external": None,
-                "measured": False,
-                "note": "Machine-discovery HTTP routes are not persistently counted yet.",
+                "measured": True,
+                "note": "Privacy-minimal hits to machine capability/discovery routes. No IP/UA/query data is stored, so raw discovery is not a customer count.",
             },
             "free_business_call": {
                 "raw": len(free_rows),
@@ -222,8 +241,8 @@ def _window_summary(hours: int | None) -> dict[str, Any]:
         },
         "payment_errors": len(payment_error_rows),
         "privacy": (
-            "No employer/worker facts, raw MCP metadata, payment signatures, wallet addresses, private keys or seed phrases are stored. "
-            "Only sanitized self-declared software identifiers are retained for attribution and repeat-use aggregation."
+            "No employer/worker facts, raw MCP metadata, payment signatures, wallet addresses, private keys, seed phrases, discovery IPs, user-agents or query strings are stored. "
+            "Only sanitized self-declared software identifiers are retained for paid/free attribution and repeat-use aggregation."
         ),
     }
 
@@ -240,6 +259,6 @@ def summary():
         },
         "classification_note": (
             "Exact owner client names are excluded. A sanitized declared client name that is not on the owner allow-list is classified as declared_external. "
-            "Requests without a usable client identity remain unattributed and are never counted as confirmed customers."
+            "Requests without a usable client identity remain unattributed and are never counted as confirmed customers. Discovery HTTP hits are raw-only by design."
         ),
     }
