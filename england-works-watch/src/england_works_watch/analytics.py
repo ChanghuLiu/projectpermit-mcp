@@ -1,12 +1,23 @@
 from __future__ import annotations
 
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 import os
 import re
 import sqlite3
+
+UTC = timezone.utc
+BUSINESS_TOOLS = {"assess_change_impact", "batch_assess_changes"}
+FREE_TOOLS = {"england_works_watch_info", "licensing_source_status", "list_supported_change_events"}
+DEFAULT_OWNED_CLIENT_NAMES = {
+    "github-public-runner",
+    "github-smoke",
+    "local-owner-paid-smoke",
+    "github-production-smoke",
+    "england-works-watch-owned-smoke",
+}
 
 
 def runtime_dir() -> Path:
@@ -40,13 +51,37 @@ def _safe(v: Any, max_len: int = 80):
     return re.sub(r"[^A-Za-z0-9._:/+@-]", "_", v.strip())[:max_len]
 
 
+def _owned_client_names() -> set[str]:
+    extra = {
+        item.strip()
+        for item in os.getenv("EWW_OWNED_CLIENT_NAMES", "").split(",")
+        if item.strip()
+    }
+    return DEFAULT_OWNED_CLIENT_NAMES | extra
+
+
+def _effective_actor(actor: str | None, client: str | None) -> str:
+    actor = str(actor or "").strip().lower()
+    client = _safe(client)
+    if actor == "owned_ci":
+        return "owned_ci"
+    if client:
+        return "owned_ci" if client in _owned_client_names() else "declared_external"
+    if actor == "declared_external":
+        return "declared_external"
+    return "unattributed"
+
+
 def classify_actor(meta: dict[str, Any] | None):
     meta = meta or {}
     source = str(meta.get("englandworkswatch/actor", "")).strip().lower()
-    actor = source if source in {"owned_ci", "declared_external"} else "unattributed"
     ci = meta.get("io.modelcontextprotocol/clientInfo")
-    name = ci.get("name") if isinstance(ci, dict) else None
-    return actor, _safe(name)
+    name = _safe(ci.get("name") if isinstance(ci, dict) else None)
+    if source == "owned_ci":
+        return "owned_ci", name
+    if source == "declared_external":
+        return "declared_external", name
+    return _effective_actor(None, name), name
 
 
 def record(
@@ -64,7 +99,7 @@ def record(
             "INSERT INTO events(occurred_at,tool,outcome,billable,payment_state,actor_class,declared_client,latency_ms) "
             "VALUES(?,?,?,?,?,?,?,?)",
             (
-                datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+                datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
                 tool,
                 outcome,
                 int(billable),
@@ -76,67 +111,135 @@ def record(
         )
 
 
-def summary():
+def _parse_time(value: str) -> datetime | None:
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    return parsed.astimezone(UTC)
+
+
+def _load_rows(hours: int | None = None):
     try:
         with _db() as c:
             rows = c.execute(
-                "SELECT tool,outcome,billable,payment_state,actor_class,declared_client FROM events"
-            ).fetchall()
-            unattributed_paid = c.execute(
-                "SELECT occurred_at,tool,payment_state,declared_client FROM events "
-                "WHERE billable=1 AND actor_class='unattributed' ORDER BY id ASC"
+                "SELECT occurred_at,tool,outcome,billable,payment_state,actor_class,declared_client,latency_ms "
+                "FROM events ORDER BY id ASC"
             ).fetchall()
     except sqlite3.Error:
-        rows = []
-        unattributed_paid = []
+        return []
+    if hours is None:
+        return rows
+    cutoff = datetime.now(UTC) - timedelta(hours=hours)
+    selected = []
+    for row in rows:
+        when = _parse_time(row[0])
+        if when is not None and when >= cutoff:
+            selected.append(row)
+    return selected
 
-    paid_rows = [row for row in rows if row[2]]
-    business_tools = {"assess_change_impact", "batch_assess_changes"}
-    business_rows = [row for row in rows if row[0] in business_tools]
 
-    by_actor_tool: dict[str, dict[str, int]] = {}
-    by_actor_outcome: dict[str, dict[str, int]] = {}
+def _window_summary(hours: int | None) -> dict[str, Any]:
+    rows = _load_rows(hours)
+    normalized = [
+        {
+            "occurred_at": row[0],
+            "tool": row[1],
+            "outcome": row[2],
+            "billable": bool(row[3]),
+            "payment_state": row[4] or "none",
+            "actor": _effective_actor(row[5], row[6]),
+            "client": _safe(row[6]),
+            "latency_ms": row[7],
+        }
+        for row in rows
+    ]
+    free_rows = [row for row in normalized if row["tool"] in FREE_TOOLS and not row["billable"]]
+    paid_rows = [row for row in normalized if row["billable"] and row["tool"] in BUSINESS_TOOLS]
+    challenge_rows = [row for row in paid_rows if row["payment_state"] == "challenge"]
+    executed_rows = [row for row in paid_rows if row["payment_state"] == "paid_executed"]
+    payment_error_rows = [row for row in paid_rows if row["payment_state"] == "payment_error"]
+
+    external_free = [row for row in free_rows if row["actor"] == "declared_external"]
+    external_challenge = [row for row in challenge_rows if row["actor"] == "declared_external"]
+    external_executed = [row for row in executed_rows if row["actor"] == "declared_external"]
+
+    paid_by_external_client = Counter(
+        row["client"] for row in external_executed if row["client"]
+    )
+    repeat_clients = {name: count for name, count in paid_by_external_client.items() if count >= 2}
+    repeat_integrations = len(repeat_clients)
+    repeat_executions = sum(count - 1 for count in repeat_clients.values())
+
+    by_actor = Counter(row["actor"] for row in normalized)
+    by_tool = Counter(row["tool"] for row in normalized)
+    paid_funnel = Counter(row["payment_state"] for row in paid_rows)
     paid_funnel_by_actor: dict[str, dict[str, int]] = {}
-    paid_funnel_by_client: dict[str, dict[str, int]] = {}
-
-    for tool, outcome, _billable, _payment_state, actor, _client in rows:
-        tool_bucket = by_actor_tool.setdefault(actor, {})
-        tool_bucket[tool] = tool_bucket.get(tool, 0) + 1
-        outcome_bucket = by_actor_outcome.setdefault(actor, {})
-        outcome_bucket[outcome] = outcome_bucket.get(outcome, 0) + 1
-
-    for _tool, _outcome, _billable, payment_state, actor, client in paid_rows:
-        state = payment_state or "none"
-        actor_bucket = paid_funnel_by_actor.setdefault(actor, {})
-        actor_bucket[state] = actor_bucket.get(state, 0) + 1
-        client_key = client or "undeclared"
-        client_bucket = paid_funnel_by_client.setdefault(client_key, {})
-        client_bucket[state] = client_bucket.get(state, 0) + 1
+    for row in paid_rows:
+        bucket = paid_funnel_by_actor.setdefault(row["actor"], {})
+        state = row["payment_state"]
+        bucket[state] = bucket.get(state, 0) + 1
 
     return {
-        "total_events": len(rows),
-        "by_tool": dict(Counter(row[0] for row in rows)),
-        "by_outcome": dict(Counter(row[1] for row in rows)),
-        "by_actor_class": dict(Counter(row[4] for row in rows)),
-        "by_declared_client": dict(Counter((row[5] or "undeclared") for row in rows)),
-        "by_actor_tool": by_actor_tool,
-        "by_actor_outcome": by_actor_outcome,
-        "business_tool_events_by_actor": dict(Counter(row[4] for row in business_rows)),
-        "business_tool_events_by_client": dict(Counter((row[5] or "undeclared") for row in business_rows)),
-        "paid_funnel": dict(Counter((row[3] or "none") for row in paid_rows)),
+        "hours": hours,
+        "total_events": len(normalized),
+        "by_tool": dict(by_tool),
+        "by_actor_class": dict(by_actor),
+        "paid_funnel": dict(paid_funnel),
         "paid_funnel_by_actor": paid_funnel_by_actor,
-        "paid_funnel_by_client": paid_funnel_by_client,
-        "unattributed_paid_events": [
-            {
-                "occurred_at": occurred_at,
-                "tool": tool,
-                "payment_state": payment_state or "none",
-                "declared_client": client or "undeclared",
-            }
-            for occurred_at, tool, payment_state, client in unattributed_paid
-        ],
+        "commercial_funnel": {
+            "discovery": {
+                "raw": None,
+                "confirmed_external": None,
+                "measured": False,
+                "note": "Machine-discovery HTTP routes are not persistently counted yet.",
+            },
+            "free_business_call": {
+                "raw": len(free_rows),
+                "confirmed_external": len(external_free),
+                "measured": True,
+                "note": "Free MCP info/source/event calls; confirmed external requires a non-owned declared software identity.",
+            },
+            "paid_challenge": {
+                "raw": len(challenge_rows),
+                "confirmed_external": len(external_challenge),
+                "measured": True,
+                "note": "x402 challenges; owner CI and unattributed traffic are excluded from confirmed external.",
+            },
+            "paid_executed": {
+                "raw": len(executed_rows),
+                "confirmed_external": len(external_executed),
+                "measured": True,
+                "note": "Settled/verified paid business executions; owner validation is technical proof only.",
+            },
+            "repeat_paid": {
+                "raw": repeat_integrations,
+                "confirmed_external": repeat_integrations,
+                "measured": True,
+                "repeat_executions_beyond_first": repeat_executions,
+                "note": "Count of non-owned declared software integrations with at least two successful paid executions in the window.",
+            },
+        },
+        "payment_errors": len(payment_error_rows),
         "privacy": (
-            "No employer/worker facts, raw MCP metadata, payment signatures, private keys or seed phrases are stored. "
-            "Declared client names are sanitized software identifiers supplied through MCP metadata."
+            "No employer/worker facts, raw MCP metadata, payment signatures, wallet addresses, private keys or seed phrases are stored. "
+            "Only sanitized self-declared software identifiers are retained for attribution and repeat-use aggregation."
+        ),
+    }
+
+
+def summary():
+    all_time = _window_summary(None)
+    return {
+        **all_time,
+        "generated_at": datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "windows": {
+            "24h": _window_summary(24),
+            "7d": _window_summary(24 * 7),
+            "all_time": all_time,
+        },
+        "classification_note": (
+            "Exact owner client names are excluded. A sanitized declared client name that is not on the owner allow-list is classified as declared_external. "
+            "Requests without a usable client identity remain unattributed and are never counted as confirmed customers."
         ),
     }
