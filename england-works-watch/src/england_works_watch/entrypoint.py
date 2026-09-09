@@ -9,6 +9,7 @@ from __future__ import annotations
 from starlette.responses import JSONResponse
 
 from . import server
+from .analytics import record_discovery
 from .selection_metadata import apply_selection_metadata
 
 # The server module has already registered every tool by import time. Override
@@ -20,6 +21,7 @@ apply_selection_metadata(server.mcp)
 @server.mcp.custom_route("/.well-known/ai-catalog.json", methods=["GET"])
 async def ai_catalog(_request):
     """Machine-readable catalog advertising both MCP and OpenAPI interfaces."""
+    record_discovery("/.well-known/ai-catalog.json")
     return JSONResponse(
         {
             "name": "England Works Watch",
@@ -53,6 +55,7 @@ async def ai_catalog(_request):
 @server.mcp.custom_route("/.well-known/api-catalog", methods=["GET"])
 async def api_catalog(_request):
     """RFC-style linkset for crawlers that discover machine APIs by relation."""
+    record_discovery("/.well-known/api-catalog")
     payload = {
         "linkset": [
             {
