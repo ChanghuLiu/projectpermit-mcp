@@ -35,9 +35,9 @@ jobs:
 
           ready=0
           for attempt in $(seq 1 36); do
-            if curl -fsS --max-time 15 "$ORIGIN/health" -o /tmp/health.json 2>/dev/null \
-              && curl -fsS --max-time 15 "$ORIGIN/.well-known/ai-catalog.json" -o /tmp/ai-catalog.json 2>/dev/null \
-              && curl -fsS --max-time 15 "$ORIGIN/.well-known/api-catalog" -o /tmp/api-catalog.json 2>/dev/null; then
+            if curl -fsS --max-time 15 -H 'X-MCP-Commercial-Actor: owned_ci' "$ORIGIN/health" -o /tmp/health.json 2>/dev/null \
+              && curl -fsS --max-time 15 -H 'X-MCP-Commercial-Actor: owned_ci' "$ORIGIN/.well-known/ai-catalog.json" -o /tmp/ai-catalog.json 2>/dev/null \
+              && curl -fsS --max-time 15 -H 'X-MCP-Commercial-Actor: owned_ci' "$ORIGIN/.well-known/api-catalog" -o /tmp/api-catalog.json 2>/dev/null; then
               if python - <<'PY'
           import json
           h=json.load(open('/tmp/health.json'))
@@ -57,6 +57,11 @@ jobs:
           python - <<'PY'
           import json, os, urllib.request
           origin=os.environ['ORIGIN']
+          owner_headers={'X-MCP-Commercial-Actor':'owned_ci'}
+
+          def open_owner(path):
+              request=urllib.request.Request(f"{origin}/{path}", headers=owner_headers)
+              return urllib.request.urlopen(request, timeout=20)
 
           health=json.load(open('/tmp/health.json'))
           assert health['status']=='ok', health
@@ -66,7 +71,7 @@ jobs:
           print('PUBLIC_HEALTH_SMOKE=PASS')
 
           for path in ('status', 'version', 'metrics', 'robots.txt', 'sitemap.xml', 'llms.txt', 'openapi.json', '.well-known/x402', '.well-known/mcp.json', '.well-known/mcp/server-card.json', '.well-known/agent-card.json', '.well-known/agent.json', '.well-known/glama.json'):
-              with urllib.request.urlopen(f"{origin}/{path}", timeout=20) as response:
+              with open_owner(path) as response:
                   assert response.status == 200, (path, response.status)
               print(f"PUBLIC_SURFACE=PASS /{path}")
 
@@ -78,14 +83,14 @@ jobs:
           assert ai['payment']['network']=='eip155:8453', ai
           print('AI_CATALOG_SMOKE=PASS')
 
-          with urllib.request.urlopen(f"{origin}/.well-known/api-catalog", timeout=20) as response:
+          with open_owner('.well-known/api-catalog') as response:
               linkset=json.load(response)
               content_type=response.headers.get('Content-Type','')
           assert 'application/linkset+json' in content_type, content_type
           assert linkset.get('linkset'), linkset
           print('API_CATALOG_SMOKE=PASS')
 
-          with urllib.request.urlopen(f"{origin}/.well-known/mcp.json", timeout=20) as response:
+          with open_owner('.well-known/mcp.json') as response:
               manifest=json.load(response)
           assert manifest['name']=='io.github.ChanghuLiu/england-works-watch', manifest
           assert manifest['version']=='0.1.0', manifest
@@ -97,6 +102,7 @@ jobs:
             curl -fsS --max-time 30 \
               -H 'Content-Type: application/json' \
               -H 'Accept: application/json, text/event-stream' \
+              -H 'X-MCP-Commercial-Actor: owned_ci' \
               --data "$1" "$MCP_URL"
           }
           post '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"england-discoverability-smoke","version":"1.1"}}}' > /tmp/init.json
