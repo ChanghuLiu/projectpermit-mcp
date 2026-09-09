@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install --upgrade pip
-      - run: pip install -e '.[dev]'
+      - run: pip install -e '.[dev,mcp,x402]'
       - run: PYTHONPATH=src python -m unittest discover -s tests -v
       - run: python -m compileall -q src
       - run: python -m py_compile scripts/bulk_http_remote_smoke.py scripts/mcp_remote_smoke.py scripts/paid_bulk_http_unpaid_smoke.py
@@ -66,7 +66,10 @@ jobs:
           exit 1
 
   remote-mcp-smoke:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # The former ProjectPermit MCP Railway service was retired. Keep this
+    # smoke available for an explicitly restored endpoint, but do not run a
+    # stale production target on every main push.
+    if: github.event_name == 'workflow_dispatch' && vars.PROJECTPERMIT_REMOTE_SMOKES_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -78,7 +81,7 @@ jobs:
       - run: python scripts/mcp_remote_smoke.py
 
   remote-http-preview-smoke:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && vars.PROJECTPERMIT_REMOTE_SMOKES_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -113,7 +116,7 @@ jobs:
           done
 
   remote-paid-mcp-challenge:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && vars.PROJECTPERMIT_REMOTE_SMOKES_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -136,7 +139,7 @@ jobs:
           done
 
   remote-http-bazaar-challenge:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && vars.PROJECTPERMIT_REMOTE_SMOKES_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -171,7 +174,7 @@ jobs:
           done
 
   facilitator-capabilities:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && vars.PROJECTPERMIT_REMOTE_SMOKES_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

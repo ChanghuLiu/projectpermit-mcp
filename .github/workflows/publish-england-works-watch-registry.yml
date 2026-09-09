@@ -2,11 +2,9 @@
 name: Publish England Works Watch MCP Registry
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'england-works-watch/server.json'
-      - '.github/workflows/publish-england-works-watch-registry.yml'
+  # Retired as a push trigger: the canonical publisher is
+  # england-works-watch-publish-mcp-registry.yml, which handles the already
+  # published 0.1.0 version idempotently. Keep manual dispatch for recovery.
   workflow_dispatch:
 
 permissions:
