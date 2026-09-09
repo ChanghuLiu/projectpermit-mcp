@@ -11,6 +11,7 @@ from starlette.responses import JSONResponse, PlainTextResponse, Response
 
 from .analytics import record, summary
 from .policy import RULES, assess_change_impact as decide
+from .selection_metadata import SERVER_SELECTION_DESCRIPTION
 from .source_runtime import ensure_runtime_seeded, production_source_status, start_background_source_monitor
 from .x402_gate import MCP2X402Gate, PaidToolSpec, invoke, meta_to_dict
 
@@ -41,7 +42,8 @@ mcp = MCPServer(
     "England Works Watch",
     version=SERVICE_VERSION,
     instructions=(
-        "UK sponsor compliance/change intelligence. V0.1 covers Skilled Worker sponsor duties only. "
+        SERVER_SELECTION_DESCRIPTION + " "
+        "V0.1 covers Skilled Worker sponsor duties only. "
         "Return only AFFECTED, NOT_AFFECTED, REVIEW_REQUIRED, or INSUFFICIENT_INPUT. "
         "Fail closed on missing inputs, official-source drift/staleness, conflicts, or unsupported routes. "
         "Evidence-first preflight, not legal advice."
@@ -103,7 +105,7 @@ def _server_card() -> dict[str, Any]:
     return {
         "name": "England Works Watch",
         "version": SERVICE_VERSION,
-        "description": "UK sponsor compliance/change intelligence for Skilled Worker sponsor duties.",
+        "description": SERVER_SELECTION_DESCRIPTION,
         "transport": "streamable-http",
         "endpoint": PUBLIC_MCP_URL,
         "scope": RULES["scope"],
@@ -130,7 +132,7 @@ def england_works_watch_info(ctx: Context) -> dict[str, Any]:
         "england_works_watch_info",
         lambda: {
             "service": "England Works Watch",
-            "description": "UK sponsor compliance/change intelligence",
+            "description": SERVER_SELECTION_DESCRIPTION,
             "scope": RULES["scope"],
             "supported_events": SUPPORTED_EVENTS,
             "decision_labels": ["AFFECTED", "NOT_AFFECTED", "REVIEW_REQUIRED", "INSUFFICIENT_INPUT"],
@@ -275,7 +277,7 @@ async def product_page(_request):
         {
             "service": "England Works Watch",
             "version": SERVICE_VERSION,
-            "description": "UK sponsor compliance/change intelligence",
+            "description": SERVER_SELECTION_DESCRIPTION,
             "scope": RULES["scope"],
             "mcp": PUBLIC_MCP_URL,
             "source_gate": source["coverage_complete"],
@@ -416,7 +418,7 @@ async def mcp_json(_request):
         {
             "name": "io.github.ChanghuLiu/england-works-watch",
             "version": SERVICE_VERSION,
-            "description": "UK sponsor compliance/change intelligence for Skilled Worker sponsor duties.",
+            "description": SERVER_SELECTION_DESCRIPTION,
             "remotes": [{"type": "streamable-http", "url": PUBLIC_MCP_URL}],
         }
     )
@@ -480,7 +482,7 @@ async def openapi(_request):
             "info": {
                 "title": "England Works Watch",
                 "version": SERVICE_VERSION,
-                "description": "UK sponsor compliance/change intelligence. MCP is the canonical decision interface.",
+                "description": SERVER_SELECTION_DESCRIPTION,
             },
             "paths": {
                 "/health": {"get": {"summary": "Serving/source readiness gate"}},

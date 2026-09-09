@@ -33,7 +33,7 @@ async def ai_catalog(_request):
         {
             "name": "England Works Watch",
             "version": server.SERVICE_VERSION,
-            "description": "UK sponsor compliance/change intelligence for Skilled Worker sponsor duties.",
+            "description": server.SERVER_SELECTION_DESCRIPTION,
             "interfaces": [
                 {"type": "mcp", "transport": "streamable-http", "url": server.PUBLIC_MCP_URL},
                 {"type": "openapi", "url": f"{server.PUBLIC_ORIGIN}/openapi.json"},
