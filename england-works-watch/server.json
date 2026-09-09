@@ -1,7 +1,7 @@
 {
   "$schema":"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name":"io.github.ChanghuLiu/england-works-watch",
-  "description":"Evidence-backed England Skilled Worker sponsor-compliance change-impact decisions for Home Office/UKVI sponsor reporting. Supported events include absence, salary, role or occupation-code changes, work-location or home-working changes, delayed starts, stopping sponsorship or worker departure, organisation changes, TUPE transfers, and mergers/takeovers. One-event and batch decisions remain evidence-linked and fail closed when inputs or official source evidence are insufficient.",
+  "description":"Skilled Worker sponsor-change preflight: absence, salary, role, location, TUPE and mergers.",
   "version":"0.1.0",
   "packages":[],
   "remotes":[{"type":"streamable-http","url":"https://england-works-watch-production.up.railway.app/mcp"}],
