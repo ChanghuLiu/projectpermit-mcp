@@ -12,6 +12,7 @@ from uuid import uuid4
 from .analytics import record_discovery
 
 UTC = timezone.utc
+EVENT_VERSION = 2
 DISCOVERY_SURFACES = {
     "/": "root",
     "/robots.txt": "robots",
@@ -61,6 +62,11 @@ def _path() -> Path:
     return root / "discovery_ecosystem.jsonl"
 
 
+def current_revision() -> str:
+    raw = (os.getenv("RAILWAY_GIT_COMMIT_SHA") or os.getenv("EWW_DEPLOY_REV") or "unknown").strip()
+    return re.sub(r"[^A-Za-z0-9._-]", "_", raw)[:40] or "unknown"
+
+
 def _safe(value: str | None) -> str:
     return re.sub(r"[^a-z0-9_]+", "_", str(value or "unknown_machine").strip().lower())[:40] or "unknown_machine"
 
@@ -100,12 +106,13 @@ def record_ecosystem(surface: str, family: str, category: str) -> None:
     if family == "owner_monitor" or category == "owner_monitor":
         return
     row = {
-        "event_version": 1,
+        "event_version": EVENT_VERSION,
         "event_id": uuid4().hex,
         "occurred_at": datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "surface": _safe(surface),
         "source_family": _safe(family),
         "source_category": _safe(category),
+        "observed_revision": current_revision(),
     }
     try:
         with _path().open("a", encoding="utf-8") as handle:
@@ -138,11 +145,30 @@ def summary(hours: int) -> dict[str, Any]:
         except json.JSONDecodeError:
             continue
         when = _parse(row.get("occurred_at")) if isinstance(row, dict) else None
-        if isinstance(row, dict) and when is not None and when >= cutoff:
+        if isinstance(row, dict) and int(row.get("event_version") or 0) in {1, 2} and when is not None and when >= cutoff:
             rows.append(row)
+
     surfaces = Counter(str(row.get("surface") or "unknown") for row in rows)
     families = Counter(str(row.get("source_family") or "unknown_machine") for row in rows)
     categories = Counter(str(row.get("source_category") or "unknown_machine") for row in rows)
+    revision = current_revision()
+    latest: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        family = str(row.get("source_family") or "unknown_machine")
+        occurred = str(row.get("occurred_at") or "")
+        prior = latest.get(family)
+        if prior is None or occurred > str(prior.get("last_seen_at") or ""):
+            observed = str(row.get("observed_revision") or "unknown")
+            latest[family] = {
+                "last_seen_at": occurred,
+                "observed_revision": observed,
+                "current_revision_seen": observed != "unknown" and revision != "unknown" and observed == revision,
+            }
+    stale_families = sorted(
+        family for family, row in latest.items()
+        if revision != "unknown" and not bool(row.get("current_revision_seen"))
+    )
+
     return {
         "machine_discovery_non_owner_hits": len(rows),
         "machine_discovery_confirmed_external": None,
@@ -150,7 +176,12 @@ def summary(hours: int) -> dict[str, Any]:
         "by_surface": dict(sorted(surfaces.items())),
         "by_source_family": dict(sorted(families.items())),
         "by_source_category": dict(sorted(categories.items())),
-        "privacy": "bounded_labels_only_no_ip_raw_user_agent_query_payload_headers_signature_wallet_or_address",
+        "current_revision": revision,
+        "index_freshness_by_source_family": dict(sorted(latest.items())),
+        "source_families_not_seen_on_current_revision": stale_families,
+        "revision_drift_detected": bool(stale_families),
+        "freshness_semantics": "A family is current only after that bounded crawler/router family is observed against the current deployment revision. Legacy events without revision are unknown, not fresh.",
+        "privacy": "bounded labels plus deployment revision only; no IP, raw user-agent, query, payload, headers, signature, wallet or address",
         "interpretation": "Machine discovery activity only; not a customer, buyer-intent, settlement, or revenue count.",
     }
 
@@ -175,7 +206,7 @@ def overlay_metrics(payload: dict[str, Any]) -> dict[str, Any]:
                 stage["confirmed_external"] = None
                 stage["measured"] = True
                 stage["note"] = "Privacy-safe bounded machine discovery. Discovery is not a customer count."
-    payload["discovery_observability_version"] = "1.0"
+    payload["discovery_observability_version"] = "2.0"
     return payload
 
 
