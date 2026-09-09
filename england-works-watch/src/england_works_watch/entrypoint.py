@@ -17,11 +17,25 @@ from .selection_metadata import apply_selection_metadata
 # server.py and policy.py.
 apply_selection_metadata(server.mcp)
 
+OWNER_DISCOVERY_HEADER = "x-mcp-commercial-actor"
+
+
+def _record_external_discovery(request, route: str) -> None:
+    """Record discovery unless the caller explicitly marks an owner/CI probe.
+
+    The marker is evaluated in-memory and is not persisted. This keeps our own
+    deployment/discoverability smoke traffic out of commercial discovery stats.
+    """
+    marker = str(request.headers.get(OWNER_DISCOVERY_HEADER, "")).strip().lower()
+    if marker in {"owned", "owned_ci", "owner", "test", "smoke"}:
+        return
+    record_discovery(route)
+
 
 @server.mcp.custom_route("/.well-known/ai-catalog.json", methods=["GET"])
 async def ai_catalog(_request):
     """Machine-readable catalog advertising both MCP and OpenAPI interfaces."""
-    record_discovery("/.well-known/ai-catalog.json")
+    _record_external_discovery(_request, "/.well-known/ai-catalog.json")
     return JSONResponse(
         {
             "name": "England Works Watch",
@@ -55,7 +69,7 @@ async def ai_catalog(_request):
 @server.mcp.custom_route("/.well-known/api-catalog", methods=["GET"])
 async def api_catalog(_request):
     """RFC-style linkset for crawlers that discover machine APIs by relation."""
-    record_discovery("/.well-known/api-catalog")
+    _record_external_discovery(_request, "/.well-known/api-catalog")
     payload = {
         "linkset": [
             {
