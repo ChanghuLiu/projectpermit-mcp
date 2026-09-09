@@ -1,7 +1,7 @@
 {
   "$schema":"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name":"io.github.ChanghuLiu/england-works-watch",
-  "description":"Skilled Worker sponsor-change preflight: absence, salary, role, location, TUPE and mergers.",
+  "description":"UKVI sponsor: absence, salary, role/code, home-working, delayed start, stop sponsorship, TUPE, M&A.",
   "version":"0.1.0",
   "packages":[],
   "remotes":[{"type":"streamable-http","url":"https://england-works-watch-production.up.railway.app/mcp"}],
